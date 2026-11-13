@@ -9,7 +9,9 @@ python3 -m http.server 3000
 ## Organização
 
 - `catalogo.js`: nove identidades, nichos, paletas e conteúdo comercial inicial editável.
-- `ilustracoes.js`: smartphones, mecanismo, dentes e veículos em SVG/CSS.
+- `ilustracoes.js` e `arte/`: smartphones com camadas de vidro e metal, mecanismo usinado, esmalte cerâmico, contornos dourados e veículos em perspectiva, todos em SVG/CSS.
+- `agua-site.js`: superfície de água procedural em WebGL, com reflexos, ondas e resposta ao ponteiro e ao toque.
+- `estilos/materiais.css`: acabamentos de vidro, metal escovado, cerâmica, arquitetura e carroceria, com adaptações próprias para celular.
 - `componentes.js`: elementos semânticos compartilhados, contatos e seções.
 - `modelos/`: composições distintas por modelo; ordem, agrupamentos e elementos próprios.
 - `estilos/`: base, linguagem visual de cada nicho e adaptações responsivas de cada identidade.
@@ -21,7 +23,9 @@ python3 -m http.server 3000
 
 ## Geração
 
-Cada ZIP tem `index.html`, `css/estilos.css`, `css/responsividade.css`, `js/configuracao.js`, `js/interacoes.js`, `assets/icones/marca.svg`, `robots.txt`, `sitemap.xml`, `vercel.json`, `netlify.toml` e `LEIA-ME.md`.
+Cada ZIP tem `index.html`, `css/estilos.css`, `css/responsividade.css`, `css/materiais.css`, `js/configuracao.js`, `js/interacoes.js`, `assets/icones/marca.svg`, `robots.txt`, `sitemap.xml`, `vercel.json`, `netlify.toml` e `LEIA-ME.md`.
+
+Blue Wash e Brisa Auto Spa também incluem `js/agua.js`. A água usa apenas shaders matemáticos, sem texturas de imagem, bibliotecas ou acesso externo. O efeito é limitado a 24 quadros por segundo e a 840 × 440 pixels, pausa fora da área visível ou em abas ocultas e renderiza um quadro estático com movimento reduzido. Sem WebGL, as ondas vetoriais permanecem.
 
 O HTML já contém os textos públicos renderizados; o JavaScript apenas acrescenta as interações. O conteúdo permanece legível sem animações e sem JavaScript. O formulário de WhatsApp precisa de JavaScript, mas os links de serviço funcionam diretamente.
 
