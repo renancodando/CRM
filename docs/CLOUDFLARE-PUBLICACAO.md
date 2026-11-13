@@ -10,6 +10,11 @@
 
 Republicar reaproveita o mesmo projeto (mesmo endereço) e só envia o que mudou. Se algo falhar no meio, tentar de novo não reenvia o que já subiu.
 
+## Cache incremental e recuperação de falhas
+- **Identidade do pacote = conteúdo.** Antes de enviar, o navegador calcula o SHA-256 de cada arquivo do pacote **já preparado** (HTML, CSS, JS, script de acompanhamento) e dos cabeçalhos (`_headers`), e guarda por arquivo o hash da Cloudflare. Só é reenviado o que mudou: ativar/desativar o acompanhamento ou trocar o modo altera `index.html` e/ou `js/orbita-rastreio.js` e apenas eles sobem. Pacote idêntico não reenvia nada nem cria outro deploy. A versão do Estúdio **não** é usada como chave.
+- Se a Cloudflare recusar a criação do deploy por causa de assets reaproveitados que possam ter expirado, o Órbita reenvia todos os arquivos e tenta uma vez mais.
+- **Estados do deploy:** *pendente* (retomado com o mesmo id, sem criar outro), *concluído* (reaproveitado se o conteúdo for o mesmo) e *falho* (`failure`, `canceled` ou etapa com falha). Ao falhar, os identificadores são invalidados (`deployId`, `deployManifestoHash`), o id fica em `deploysFalhos` e a próxima tentativa **cria um novo deploy** no mesmo projeto/endereço, sem reenviar assets. Deploy que sumiu (404) também é descartado.
+
 ## Configuração (uma vez)
 1. Cloudflare → *Manage Account* → *Account API tokens* (ou *My Profile → API Tokens*) → criar token **customizado** com a permissão *Account → Cloudflare Pages → Edit*, restrito à sua conta.
 2. Copie o *Account ID* (32 caracteres hexadecimais).

@@ -5,6 +5,9 @@ export function agregar(eventosBrutos,{agora=Date.now()}={}){
  const vistos=new Set(),eventos=[];
  for(const e of eventosBrutos||[]){if(!e||!e.i||vistos.has(e.i))continue;vistos.add(e.i);eventos.push(e);}
  eventos.sort((a,b)=>a.ts-b.ts);
+ // consentimento concedido depois da visualização anônima: o evento "sessao" liga a visualização já contada à sessão (sem contar duas vezes)
+ const ligacoes=new Map(eventos.filter(e=>e.t==='sessao'&&e.s).map(e=>[e.v,e]));
+ for(let k=0;k<eventos.length;k++){const e=eventos[k];if(e.t==='pagina'&&!e.s&&ligacoes.has(e.i)){const l=ligacoes.get(e.i);eventos[k]={...e,s:l.s,disp:e.disp||l.disp,org:e.org||l.org,recorrente:e.recorrente||l.recorrente};}}
  const por=t=>eventos.filter(e=>e.t===t),paginas=por('pagina');
  const sess=new Map();for(const e of eventos){if(!e.s)continue;if(!sess.has(e.s))sess.set(e.s,{id:e.s,eventos:[],disp:e.disp,org:e.org,inicio:e.ts,fim:e.ts});const s=sess.get(e.s);s.eventos.push(e);s.fim=Math.max(s.fim,e.ts);s.inicio=Math.min(s.inicio,e.ts);}
  const sessoes=[...sess.values()];
@@ -16,7 +19,7 @@ export function agregar(eventosBrutos,{agora=Date.now()}={}){
  const dias={};for(const e of paginas){const d=new Date(e.ts).toISOString().slice(0,10);dias[d]=(dias[d]||0)+1;}
  const interagiu=sessoes.filter(s=>s.eventos.some(e=>INTERACOES.has(e.t)));
  const contatos=sessoes.filter(s=>s.eventos.some(e=>e.t==='whatsapp'||e.t==='telefone'));
- const retornos=sessoes.filter(s=>s.eventos.some(e=>e.t==='pagina'&&e.recorrente)).length;
+ const retornos=sessoes.filter(s=>s.eventos.some(e=>(e.t==='pagina'||e.t==='sessao')&&e.recorrente)).length;
  const r={
   vazio:eventos.length===0,
   visualizacoes:paginas.length,

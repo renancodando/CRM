@@ -1,5 +1,5 @@
 /* Coletor de eventos das demonstrações (Cloudflare Worker + R2). Recebe só identificadores opacos e eventos mínimos. Não guarda IP, país, user-agent nem dados do CRM. */
-const TIPOS=new Set(['pagina','secao','botao','servico','faq','ancora','whatsapp','telefone','tempo','consentimento']);
+const TIPOS=new Set(['pagina','secao','botao','servico','faq','ancora','whatsapp','telefone','tempo','consentimento','sessao']);
 const DISP=new Set(['celular','tablet','computador']),ORG=new Set(['direto','whatsapp','instagram','busca','interno','outro']);
 const ROBO=/bot|crawl|spider|headless|preview|facebookexternalhit|whatsapp\/|slurp|lighthouse|pagespeed|curl|wget|python|node-fetch|go-http|java\//i;
 const LIM={corpo:8192,eventos:40,porMinutoIp:120,porMinutoDemo:600,idadeMaxMs:864e5,leituraObjetos:2000};
@@ -21,7 +21,7 @@ export function criarWorker({agora=()=>Date.now(),aleatorio=()=>Math.random().to
   const ip=req.headers.get('cf-connecting-ip')||'x';if(!limitar('i:'+c.d+ip,LIM.porMinutoIp,t)||!limitar('d:'+c.d,LIM.porMinutoDemo,t))return resp({erro:'limite'},429,{...cors,'retry-after':'60'});
   const lista=Array.isArray(c.e)?c.e.slice(0,LIM.eventos):[],ok=[];
   for(const e of lista){if(!e||typeof e!=='object'||!TIPOS.has(e.t)||!/^[a-z0-9]{6,16}$/.test(String(e.i||'')))continue;const ts=Number(e.ts);if(!Number.isFinite(ts)||Math.abs(t-ts)>LIM.idadeMaxMs)continue;
-   const o={i:e.i,t:e.t,ts};if(e.v!=null)o.v=limpo(e.v);if(e.t==='tempo'){const s=Number(e.v);if(!(s>=0&&s<=14400))continue;o.v=String(Math.round(s));}if(e.t==='pagina'&&e.recorrente===true)o.recorrente=true;ok.push(o);}
+   const o={i:e.i,t:e.t,ts};if(e.v!=null)o.v=limpo(e.v);if(e.t==='tempo'){const s=Number(e.v);if(!(s>=0&&s<=14400))continue;o.v=String(Math.round(s));}if(e.t==='sessao'&&!/^[a-z0-9]{6,16}$/.test(String(e.v||'')))continue;if((e.t==='pagina'||e.t==='sessao')&&e.recorrente===true)o.recorrente=true;ok.push(o);}
   if(!ok.length)return new Response(null,{status:204,headers:cors});
   const d=new Date(t),dia=d.toISOString().slice(0,10),hora=d.toISOString().slice(11,19).replace(/:/g,'');
   const obj={r:t,s:/^[a-z0-9]{6,16}$/.test(String(c.s||''))?c.s:null,disp:DISP.has(c.disp)?c.disp:null,org:ORG.has(c.org)?c.org:null,e:ok};

@@ -2,7 +2,7 @@
 import {t,campo,dadosForm,dataHora,confirmar,linkWhatsapp,abrirExterno} from './util.js';
 import {tabela,barras,linhas,funil} from './graficos.js';
 import {criarTransporte} from '../nucleo/connect/transporte.js';
-import {criarPublicador,novaPublicacao} from '../nucleo/publicacao/cliente.js';
+import {criarPublicador,novaPublicacao,impressaoDoPacote} from '../nucleo/publicacao/cliente.js';
 import {prepararParaPublicar,nomeDoProjeto} from '../nucleo/publicacao/preparar.js';
 import {auditarPrivacidade} from '../nucleo/publicacao/privacidade.js';
 import {agregar,compararModelos} from '../nucleo/rastreio/agregar.js';
@@ -33,13 +33,14 @@ export function criarPublicacoes(ctx){
   const audit=auditarPrivacidade(pronto.arquivos,{empresa,empresas:est.empresas});
   if(audit.erros){mostrarAuditoria(audit,projeto);return null;}
   if(!est.config.publicacao.automatica&&!confirmar(`Publicar a demonstração de "${empresa.nome}" em https://${projeto}.pages.dev?\n\nO site fica acessível a quem tiver o link (sem indexação no Google) até você excluir. ${pronto.lista.length} arquivos, ${(pronto.tamanho/1e6).toFixed(1)} MB.`))return null;
-  if(!pub){pub=novaPublicacao({empresaId:empresa.id,demonstracaoId:demo.id,projeto,modeloId:demo.modeloId,versao:versao?.numero||1,versaoPacote:versao?.hash||String(Date.now())});est.publicacoes.push(pub);}
-  else{pub.versao=versao?.numero||pub.versao+1;pub.versaoPacote=versao?.hash||String(Date.now());}
+  const imp=await impressaoDoPacote(pronto.arquivos,pronto.cabecalhos);
+  if(!pub){pub=novaPublicacao({empresaId:empresa.id,demonstracaoId:demo.id,projeto,modeloId:demo.modeloId,versao:versao?.numero||1,versaoPacote:imp.pacote});est.publicacoes.push(pub);}
+  else{pub.versao=versao?.numero||(pub.versao||0)+1;pub.versaoPacote=imp.pacote;}
   pub.rastreio=rast;pub.empresaNome=empresa.nome;salvar();
   progresso={pub,texto:'Preparando…'};abrir('publicacoes');
   try{
    await pb().publicar(pub,{arquivos:pronto.arquivos,cabecalhos:pronto.cabecalhos,aoEtapa:p=>{progresso={pub:p,texto:{iniciando:'Conectando à Cloudflare…',enviando:`Enviando arquivos${p.progresso?` (${p.progresso.lote}/${p.progresso.de})`:''}…`,finalizando:'Criando o deploy…',aguardando:'Aguardando a Cloudflare publicar…',verificando:'Verificando se o link responde…',concluida:'Concluído'}[p.etapa]||p.etapa};if(sel===''||true)atualizarProgresso();salvar();}});
-   pub.historico.push({quando:new Date().toISOString(),versao:pub.versao,deployId:pub.deployId,hashPacote:pub.versaoPacote,arquivos:pronto.lista.length,tamanho:pronto.tamanho});
+   pub.historico.push({quando:new Date().toISOString(),versao:pub.versao,deployId:pub.deployId,hashPacote:pub.pacoteHash||pub.versaoPacote,arquivos:pronto.lista.length,tamanho:pronto.tamanho});
    if(pub.estado==='publicada'){demo.urlPublica=pub.urlPublica;demo.publicacaoVerificada=true;demo.status='publicada';demo.linkCadastrado=pub.urlPublica;}
    salvar();progresso=null;avisar(pub.estado==='publicada'?'Publicado e verificado: '+pub.urlPublica:pub.estado==='em-processamento'?'A Cloudflare ainda está processando. Verifique em instantes.':'Publicado, mas o link ainda não respondeu. Tente verificar novamente.');abrir('publicacoes');return pub;
   }catch(e){progresso=null;salvar();avisar('Publicação interrompida: '+e.message+' Você pode tentar de novo; os arquivos já enviados não serão reenviados.');abrir('publicacoes');return null;}

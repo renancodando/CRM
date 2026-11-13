@@ -5,7 +5,7 @@ export function criarTransporte(base='/api/connect'){
  async function chamar(acao,{q={},metodo='GET',corpo}={}){
   const r=await fetch(url(acao,q),{method:metodo,credentials:'same-origin',headers:{...(metodo!=='GET'?{'content-type':'application/json','x-orbita-csrf':csrf}:{})},body:corpo?JSON.stringify(corpo):undefined});
   if(r.status===429)throw Object.assign(Error('Limite de requisições atingido. Tente em 1 minuto.'),{codigo:'limite'});
-  const j=await r.json().catch(()=>({}));if(!r.ok&&r.status!==200)throw Object.assign(Error(j.erro||('Falha '+r.status)),{codigo:r.status===401?'nao-autenticado':'http'});return j;
+  const j=await r.json().catch(()=>({}));if(!r.ok&&r.status!==200)throw Object.assign(Error(j.erro||('Falha '+r.status)),{codigo:r.status===401?'nao-autenticado':'http',http:r.status});return j;
  }
  return {
   chamar,
