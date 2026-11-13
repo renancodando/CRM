@@ -23,12 +23,14 @@ function nomeProjeto(texto){
 }
 const nomeValido=n=>typeof n==='string'&&n.length>=1&&n.length<=58&&/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(n);
 function extensao(c){const m=/\.([A-Za-z0-9]+)$/.exec(c);return m?m[1].toLowerCase():'';}
+/* igual a path.extname(...).substring(1) do wrangler: preserva a caixa e ignora arquivos que só começam com ponto */
+function extensaoHash(c){const base=String(c).split('/').pop(),i=base.lastIndexOf('.');return i<=0||i===base.length-1?'':base.slice(i+1);}
 function validarCaminho(c){
  if(typeof c!=='string'||!c||c.length>250)return 'caminho inválido';if(c.startsWith('/')||c.includes('\\')||c.includes('//')||c.split('/').some(p=>p==='..'||p==='.'||p===''))return 'caminho inválido: '+c.slice(0,60);
  if(PROIBIDOS.test(c))return 'arquivo não permitido na publicação: '+c.slice(0,60);if(!/^[\w.\-\/@+ ]+$/.test(c))return 'caracteres não permitidos no caminho: '+c.slice(0,60);return '';
 }
-/* hash de asset: BLAKE3(base64(conteúdo)+extensão), 32 hex. Algoritmo conforme o comportamento do wrangler; confirme na documentação atual antes de depender de implantações reais. */
-function hashAsset(caminho,bytes){return blake3Hex(Buffer.from(bytes).toString('base64')+extensao(caminho)).slice(0,32);}
+/* hash de asset: BLAKE3(base64(conteúdo)+extensão), 32 hex, idêntico a hashFile() de @cloudflare/deploy-helpers (workers-sdk, conferido no código aberto). */
+function hashAsset(caminho,bytes){return blake3Hex(Buffer.from(bytes).toString('base64')+extensaoHash(caminho)).slice(0,32);}
 function criarCliente({contaId,token,f=globalThis.fetch,espera=ms=>new Promise(r=>setTimeout(r,ms))}){
  if(!contaId||!token)throw Object.assign(Error('Cloudflare não configurada no servidor (CLOUDFLARE_ACCOUNT_ID e CLOUDFLARE_API_TOKEN).'),{status:503,publico:true,naoConfigurada:true});
  if(!/^[a-f0-9]{32}$/i.test(contaId))throw Object.assign(Error('CLOUDFLARE_ACCOUNT_ID inválido (esperado 32 caracteres hexadecimais).'),{status:503,publico:true,naoConfigurada:true});
@@ -84,4 +86,4 @@ function criarCliente({contaId,token,f=globalThis.fetch,espera=ms=>new Promise(r
   async excluirProjeto(nome){await req(`${base}/${nome}`,{metodo:'DELETE',tentativas:1,contexto:'excluir-projeto'});return true;}
  };
 }
-module.exports={criarCliente,nomeProjeto,nomeValido,validarCaminho,hashAsset,extensao,LIM,TIPOS};
+module.exports={criarCliente,extensaoHash,nomeProjeto,nomeValido,validarCaminho,hashAsset,extensao,LIM,TIPOS};

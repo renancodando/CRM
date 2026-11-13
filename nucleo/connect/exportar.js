@@ -12,13 +12,13 @@ import {calcularFunil} from '../diagnostico/funil.js';
 import {diagnosticarGargalos} from '../diagnostico/gargalos.js';
 import {planoDoDia} from '../diagnostico/plano-dia.js';
 import {condicaoVigente} from '../ofertas/condicoes.js';
-const PAGINA=200;
+const PAGINA=200,TAM_MAX=90000;
 const pick=(o,ks)=>Object.fromEntries(ks.filter(k=>o[k]!==undefined).map(k=>[k,o[k]]));
 const hash=t=>{let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16);};
 export function exportarAutorizado(estado,agora=new Date()){
  const cfg=estado.config.connect,c=cfg.compartilhado,vd=versaoDados(estado),geradoEm=agora.toISOString(),arquivos={},indice=[];
  const escopo=Object.entries(c).filter(([,v])=>v).map(([k])=>k);
- const pagina=(nome,regs,extra={})=>{const n=Math.max(1,Math.ceil(regs.length/PAGINA));for(let i=0;i<n;i++){const caminho=`saida/exportacoes/${nome}-${String(i+1).padStart(4,'0')}.json`,corpo={protocolo:VERSAO_PROTOCOLO,entidade:nome,geradoEm,versaoDados:vd,escopo,total:regs.length,pagina:i+1,paginas:n,aviso:'Dados do navegador do usuário no momento de geradoEm. Se geradoEm for antigo, os dados podem estar desatualizados.',...extra,registros:regs.slice(i*PAGINA,(i+1)*PAGINA)};arquivos[caminho]=JSON.stringify(corpo,null,1);indice.push({arquivo:caminho,entidade:nome,total:regs.length});}};
+ const pagina=(nome,regs,extra={})=>{const grupos=[];let atual=[],tam=0;for(const r of regs){const t=JSON.stringify(r,null,1).length+4;if(atual.length&&(atual.length>=PAGINA||tam+t>TAM_MAX)){grupos.push(atual);atual=[];tam=0;}atual.push(r);tam+=t;}if(atual.length||!grupos.length)grupos.push(atual);const n=grupos.length;grupos.forEach((g,i)=>{const caminho=`saida/exportacoes/${nome}-${String(i+1).padStart(4,'0')}.json`,corpo={protocolo:VERSAO_PROTOCOLO,entidade:nome,geradoEm,versaoDados:vd,escopo,total:regs.length,pagina:i+1,paginas:n,aviso:'Dados do navegador do usuário no momento de geradoEm. Se geradoEm for antigo, os dados podem estar desatualizados.',...extra,registros:g};arquivos[caminho]=JSON.stringify(corpo,null,1);indice.push({arquivo:caminho,entidade:nome,total:regs.length});});};
  if(c.empresas){const base=['id','nome','nicho','cidade','whatsapp','telefone','email','contato','instagram','site','statusSite','etapa','etapaEm','situacao','interesse','potencial','diferenciais','servicosOferecidos','proximaAcao','retornoEm','primeiroContato','ultimoContato','fonte','verificadoEm','criada','rev','modelo','solicitouDemo'];
   pagina('empresas',estado.empresas.map(e=>({...pick(e,base),...(c.notas?{notas:e.notas}:{}),...(c.financeiro?{valorEstimadoCentavos:aCentavos(e.valor),valorNegociadoCentavos:e.valorNegociado==null?null:aCentavos(e.valorNegociado)}:{})})));
   pagina('demonstracoes',estado.demonstracoes.map(d=>({id:d.id,empresaId:d.empresaId,modeloId:d.modeloId,nome:d.nome||'',status:d.status||'rascunho',urlPublica:d.urlPublica||'',publicacaoVerificada:!!d.publicacaoVerificada,versoes:(d.versoes||[]).map(v=>({id:v.id,numero:v.numero,criadaEm:v.criadaEm})),apresentacoes:(d.apresentacoes||[]).map(a=>({quando:a.quando,versao:a.versao}))})));}

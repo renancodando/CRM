@@ -1,6 +1,6 @@
 /* Cloudflare SIMULADA: todos os testes usam um servidor falso (mock explícito). Nenhuma publicação real é validada aqui. */
 const assert=require('assert');const crypto=require('crypto');const {Readable}=require('stream');
-const {criarHandler,interno}=require('../api/connect.js');const {hashAsset,validarCaminho,nomeProjeto}=require('../api/_lib/cloudflare.js');const {blake3Hex}=require('../api/_lib/blake3.js');
+const {criarHandler,interno}=require('../api/connect.js');const {hashAsset,validarCaminho,nomeProjeto,extensaoHash}=require('../api/_lib/cloudflare.js');const {blake3Hex}=require('../api/_lib/blake3.js');
 const CONTA='a'.repeat(32),TOKEN='cf-token-secreto-de-teste-123';
 const E={ORBITA_ALLOWED_ORIGIN:'https://orbita.exemplo',ORBITA_OWNER_GITHUB_ID:'1234',SESSION_SECRET:'segredo-de-teste-com-32-bytes-ou-mais!!',CLOUDFLARE_ACCOUNT_ID:CONTA,CLOUDFLARE_API_TOKEN:TOKEN};
 let n=0,falhas=0;const ok=async(nome,f)=>{try{await f();n++;console.log('✔',nome);}catch(e){falhas++;console.log('✘',nome,e.stack.split('\n').slice(0,3).join(' | '));}};
@@ -39,6 +39,7 @@ const b64=t=>Buffer.from(t).toString('base64');
 (async()=>{
  await ok('BLAKE3: vetores oficiais conferem',()=>{assert.equal(blake3Hex(''),'af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262');assert.equal(blake3Hex('abc'),'6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85');const v=Buffer.alloc(3072);for(let i=0;i<3072;i++)v[i]=i%251;assert.equal(blake3Hex(v),'b98cb0ff3623be03326b373de6b9095218513e64f1ee2edd2525c7ad1e5cffd2');});
  await ok('hash do asset = 32 hex e depende do conteúdo e da extensão',()=>{const a=hashAsset('a.css',Buffer.from('x')),b=hashAsset('a.js',Buffer.from('x')),c=hashAsset('a.css',Buffer.from('y'));assert.match(a,/^[a-f0-9]{32}$/);assert.notEqual(a,b);assert.notEqual(a,c);});
+ await ok('hash idêntico ao wrangler (hashFile): extensão sem alterar a caixa; dotfile e sem extensão ficam vazios',()=>{assert.equal(extensaoHash('a/b.JPG'),'JPG');assert.equal(extensaoHash('x.tar.gz'),'gz');assert.equal(extensaoHash('.htaccess'),'');assert.equal(extensaoHash('LICENSE'),'');assert.equal(extensaoHash('a.'),'');const c=Buffer.from('conteudo');assert.equal(hashAsset('a.JPG',c),blake3Hex(c.toString('base64')+'JPG').slice(0,32));assert.notEqual(hashAsset('a.JPG',c),hashAsset('a.jpg',c));});
  await ok('nomes e caminhos: normalização e bloqueio de arquivos perigosos',()=>{assert.equal(nomeProjeto('Smart Tech — Lavras!'),'smart-tech-lavras');for(const r of ['.env','../x','js/../a','/abs','a//b','.git/config','chave.pem','a\\b','node_modules/x.js'])assert.ok(validarCaminho(r),r);assert.equal(validarCaminho('assets/icones/marca.svg'),'');});
  const cf=cfFalso(),h=criarHandler(E,cf);
  await ok('sem sessão: 401; Cloudflare nunca é chamada',async()=>{const r=await chamar(h,{url:'/api/connect?acao=publicar-status'});assert.equal(r.status,401);assert.equal(cf.est.log.length,0);});

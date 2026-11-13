@@ -28,10 +28,10 @@ Os tokens nunca aparecem em JavaScript público, HTML, LocalStorage, IndexedDB, 
 ## Limites (conferir no plano atual da sua conta)
 Direct Upload: até 20.000 arquivos por deploy e 25 MiB por arquivo; quantidade de projetos e de deploys por mês variam por plano. Custos: Pages é gratuito no plano free dentro desses limites. A função serverless da Vercel está configurada com `maxDuration` de 60 s; cada requisição de upload é limitada a ~4,4 MB.
 
-## ⚠ O que NÃO foi validado
-- **Nenhuma publicação real foi executada** durante o desenvolvimento: não havia credenciais da Cloudflare no ambiente. Todos os testes usam Cloudflare **simulada** (mock explícito).
-- A documentação oficial da Cloudflare não pôde ser aberta pelo ambiente de desenvolvimento. O fluxo (upload-token JWT → `check-missing` → `upload` → `upsert-hashes` → deployment com `manifest`) foi confirmado pela referência de API encontrada por busca, mas **o algoritmo de hash dos assets** (BLAKE3 de `base64(conteúdo)+extensão`, 32 caracteres hexadecimais — comportamento do `wrangler`) veio de fontes secundárias. Se o primeiro deploy real falhar com assets 404 ou hash recusado, o ajuste está isolado em `api/_lib/cloudflare.js` → `hashAsset`. O BLAKE3 em si foi validado contra os vetores oficiais.
-- Restaurar versão usa o *rollback* da Cloudflare, que só vale para deploys de produção anteriores.
+## ⚠ O que foi (e o que NÃO foi) validado
+- **Nenhuma publicação real foi executada**: não havia credenciais da Cloudflare no ambiente. Todos os testes usam Cloudflare **simulada** (mock explícito). O primeiro deploy real é o teste de verdade: faça-o com uma demonstração de teste.
+- A documentação oficial (developers.cloudflare.com) não pôde ser aberta pelo ambiente. Em vez disso, o fluxo foi **conferido no código aberto do Wrangler** (`cloudflare/workers-sdk`): `GET …/upload-token` → JWT; `POST /pages/assets/check-missing` `{hashes}`; `POST /pages/assets/upload` `[{key,value(base64),metadata:{contentType},base64:true}]`; `POST /pages/assets/upsert-hashes`; `POST …/deployments` em multipart com `manifest` (`{"/caminho":"hash"}`), `branch`, `commit_message` e `_headers`. O **hash** é `BLAKE3(base64(conteúdo)+extensão)` truncado a 32 hex, **sem alterar a caixa da extensão**, idêntico a `hashFile` do Wrangler; o BLAKE3 em si foi validado contra os vetores oficiais. Limites do Wrangler: 20.000 arquivos e 25 MiB por arquivo.
+- Pontos que o código aberto não garante e que a Cloudflare pode mudar: formato exato de erros, limites por plano, comportamento de *rollback* (só vale para deploys de produção anteriores). Se algo falhar, a mensagem da Cloudflare aparece em Publicações → registro de operações.
 
 ## Alternativa sempre disponível
 O botão **Exportar ZIP** continua funcionando; a publicação manual (Vercel/Netlify/Cloudflare) segue possível.
