@@ -34,8 +34,8 @@ const URL_=process.env.ORBITA_URL||'http://localhost:3111/';let falhas=0;const o
  e=await estado();const msg=e.eventos.find(x=>x.tipo==='mensagem-enviada');ok(!!msg&&msg.experimentoId&&msg.variante,'envio confirmado registra evento com experimento e variante');
  ok(e.empresas.find(x=>x.nome==='Precision Cell').etapa==='mensagem','pipeline avança para "Mensagem enviada" só após a confirmação');
  ok(e.lembretes.some(l=>/Retomar/.test(l.titulo)),'retorno em 3 dias agendado');
- // resposta
- await clicar('[data-m="empresa.resposta"]');await p.fill('#f-resposta [name=texto]','Tenho interesse, pode mostrar');await p.selectOption('#f-resposta [name=interesse]','alto');await p.check('#f-resposta [name=pediuDemo]');await clicar('#f-resposta [type=submit]');
+ // resposta (a ficha da empresa continua oferecendo o registro rápido)
+ await nav('empresas');await clicar('.nome-empresa >> text=Precision Cell');await clicar('[data-m="empresa.resposta"]');await p.fill('#f-resposta [name=texto]','Tenho interesse, pode mostrar');await p.selectOption('#f-resposta [name=interesse]','alto');await p.check('#f-resposta [name=pediuDemo]');await clicar('#f-resposta [type=submit]');
  e=await estado();ok(e.eventos.some(x=>x.tipo==='resposta')&&e.empresas.find(x=>x.nome==='Precision Cell').etapa==='respondeu','resposta registrada e etapa atualizada');
  // Hoje deve sugerir produzir demonstração
  await nav('hoje');ok(/Demonstrações a produzir[\s\S]*Precision Cell/.test(await textoPainel()),'Hoje: sugere produzir a demonstração para quem pediu');
