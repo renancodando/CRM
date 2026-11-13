@@ -1,0 +1,101 @@
+{
+ "protocolo": "1.0",
+ "operacoes": {
+  "empresa.criar": {
+   "rotulo": "Cadastrar empresa",
+   "categoria": "cadastro",
+   "sensivel": false,
+   "esquema": "esquemas/empresa.criar.schema.json"
+  },
+  "empresa.atualizar": {
+   "rotulo": "Atualizar empresa",
+   "categoria": "cadastro",
+   "sensivel": false,
+   "esquema": "esquemas/empresa.atualizar.schema.json"
+  },
+  "empresa.etapa": {
+   "rotulo": "Atualizar etapa",
+   "categoria": "pipeline",
+   "sensivel": false,
+   "esquema": "esquemas/empresa.etapa.schema.json"
+  },
+  "empresa.situacao": {
+   "rotulo": "Alterar situação",
+   "categoria": "pipeline",
+   "sensivel": false,
+   "esquema": "esquemas/empresa.situacao.schema.json"
+  },
+  "conversa.mensagem_enviada": {
+   "rotulo": "Registrar mensagem enviada",
+   "categoria": "conversa",
+   "sensivel": false,
+   "esquema": "esquemas/conversa.mensagem_enviada.schema.json"
+  },
+  "conversa.resposta_recebida": {
+   "rotulo": "Registrar resposta recebida",
+   "categoria": "conversa",
+   "sensivel": false,
+   "esquema": "esquemas/conversa.resposta_recebida.schema.json"
+  },
+  "demonstracao.apresentada": {
+   "rotulo": "Registrar demonstração apresentada",
+   "categoria": "estudio",
+   "sensivel": true,
+   "esquema": "esquemas/demonstracao.apresentada.schema.json"
+  },
+  "demonstracao.link_registrado": {
+   "rotulo": "Registrar link de demonstração",
+   "categoria": "estudio",
+   "sensivel": false,
+   "esquema": "esquemas/demonstracao.link_registrado.schema.json"
+  },
+  "proposta.criar": {
+   "rotulo": "Criar proposta",
+   "categoria": "financeiro",
+   "sensivel": true,
+   "esquema": "esquemas/proposta.criar.schema.json"
+  },
+  "venda.registrar": {
+   "rotulo": "Registrar venda fechada",
+   "categoria": "financeiro",
+   "sensivel": true,
+   "esquema": "esquemas/venda.registrar.schema.json"
+  },
+  "pagamento.registrar": {
+   "rotulo": "Registrar pagamento recebido",
+   "categoria": "financeiro",
+   "sensivel": true,
+   "esquema": "esquemas/pagamento.registrar.schema.json"
+  },
+  "custo.registrar": {
+   "rotulo": "Registrar custo",
+   "categoria": "financeiro",
+   "sensivel": false,
+   "esquema": "esquemas/custo.registrar.schema.json"
+  },
+  "sessao.registrar": {
+   "rotulo": "Registrar horas de trabalho",
+   "categoria": "tempo",
+   "sensivel": false,
+   "esquema": "esquemas/sessao.registrar.schema.json"
+  },
+  "tarefa.criar": {
+   "rotulo": "Criar tarefa",
+   "categoria": "tarefas",
+   "sensivel": false,
+   "esquema": "esquemas/tarefa.criar.schema.json"
+  },
+  "tarefa.atualizar": {
+   "rotulo": "Atualizar tarefa",
+   "categoria": "tarefas",
+   "sensivel": false,
+   "esquema": "esquemas/tarefa.atualizar.schema.json"
+  },
+  "reversao.solicitar": {
+   "rotulo": "Solicitar reversão de uma operação",
+   "categoria": "reversao",
+   "sensivel": true,
+   "esquema": "esquemas/reversao.solicitar.schema.json"
+  }
+ }
+}
