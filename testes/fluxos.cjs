@@ -63,7 +63,7 @@ const URL_=process.env.ORBITA_URL||'http://localhost:3111/';let falhas=0;const o
  await nav('propostas');await clicar('[data-m="propostas.nova"]');await p.selectOption('#f-proposta [name=empresaId]',{label:'Precision Cell'});await esperar(400);
  ok(await p.inputValue('[name=valorFinal]')==='800'&&await p.inputValue('[name=valorOriginal]')==='1230','proposta usa a configuração comercial inicial (1.230 / 800)');
  await clicar('#f-proposta [type=submit]');await esperar(300);e=await estado();const prop=e.propostas[0];ok(prop&&prop.estado==='criada'&&prop.valorPix===600&&prop.desconto===430,'proposta criada com desconto calculado e Pix R$ 600');
- await clicar('[data-m="propostas.enviada"]');e=await estado();ok(e.propostas[0].estado==='enviada'&&e.eventos.some(x=>x.tipo==='proposta-enviada'),'proposta enviada só após confirmação');
+ await clicar('[data-m="propostas.enviada"]');await p.waitForTimeout(400);e=await estado();ok(e.propostas[0].estado==='enviada'&&e.eventos.some(x=>x.tipo==='proposta-enviada'),'proposta enviada só após confirmação');
  await p.evaluate(()=>{window.__html=null;});
  await clicar('[data-m="propostas.editar"]');await p.fill('[name=valorFinal]','750');await clicar('#f-proposta [type=submit]');await esperar(300);e=await estado();ok(e.propostas[0].versao===2&&e.propostas[0].versoes.length===1,'editar proposta enviada cria versão 2 e arquiva a anterior');
  const [dlp]=await Promise.all([p.waitForEvent('download'),p.click('[data-m="propostas.html"]')]);const cam='/tmp/proposta-teste.html';await dlp.saveAs(cam);const htmlp=fs.readFileSync(cam,'utf8');ok(/R\$\s*750/.test(htmlp)&&/noindex/.test(htmlp)&&!/script/i.test(htmlp),'HTML independente da proposta sem scripts');
