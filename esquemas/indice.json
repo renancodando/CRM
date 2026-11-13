@@ -91,6 +91,30 @@
    "sensivel": false,
    "esquema": "esquemas/tarefa.atualizar.schema.json"
   },
+  "conversao.rascunho_mensagem": {
+   "rotulo": "Salvar rascunho de mensagem (não envia)",
+   "categoria": "conversao",
+   "sensivel": false,
+   "esquema": "esquemas/conversao.rascunho_mensagem.schema.json"
+  },
+  "conversao.objecao_registrada": {
+   "rotulo": "Registrar objeção do cliente",
+   "categoria": "conversao",
+   "sensivel": false,
+   "esquema": "esquemas/conversao.objecao_registrada.schema.json"
+  },
+  "conversao.consentimento": {
+   "rotulo": "Registrar consentimento/revogação por canal",
+   "categoria": "conversao",
+   "sensivel": true,
+   "esquema": "esquemas/conversao.consentimento.schema.json"
+  },
+  "conversao.experimento_criar": {
+   "rotulo": "Criar experimento de conversão (sem distribuir nem enviar)",
+   "categoria": "conversao",
+   "sensivel": false,
+   "esquema": "esquemas/conversao.experimento_criar.schema.json"
+  },
   "reversao.solicitar": {
    "rotulo": "Solicitar reversão de uma operação",
    "categoria": "reversao",

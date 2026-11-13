@@ -57,6 +57,10 @@ Regras gerais
 | `pagamento.registrar` | sim | Pagamento informado pelo usuário (`valorCentavos`, `recebidoEm`). Não é conciliação. |
 | `custo.registrar` / `sessao.registrar` | não | Custos e horas de trabalho. |
 | `tarefa.criar` / `tarefa.atualizar` | não | Tarefas/follow-ups; geram lembrete **dentro do Órbita** (não é notificação do ChatGPT). |
+| `conversao.rascunho_mensagem` | não | Salva um **rascunho** de mensagem para sua revisão (auditoria de linguagem anexada). Nunca envia e nunca registra mensagem enviada. |
+| `conversao.objecao_registrada` | não | Registra uma objeção do cliente (catálogo do Órbita Conversão). |
+| `conversao.consentimento` | sim | Registra/revoga consentimento por canal (`origemConsentimento` obrigatória ao autorizar). Revogar bloqueia o contato. |
+| `conversao.experimento_criar` | não | Cria um experimento de conversão (hipótese, critério, 2–4 variantes, mínimo ≥ 10). Não sorteia empresas nem envia nada. |
 | `reversao.solicitar` | sim | Pede a reversão de uma operação aplicada; sempre revisão. |
 
 ### Estados de processamento
