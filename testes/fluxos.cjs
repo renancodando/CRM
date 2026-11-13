@@ -78,7 +78,7 @@ const URL_=process.env.ORBITA_URL||'http://localhost:3111/';let falhas=0;const o
  await p.fill('#f-pv [name=entregueEm]','2026-11-10');await clicar('#f-pv [type=submit]');e=await estado();ok(e.posVenda[0].estado==='entregue'&&!!e.posVenda[0].suporteAte,'pós-venda: entrega calcula o fim do suporte (30 dias)');
  // laboratório com dados reais
  await nav('laboratorio');const tl=await textoPainel();ok(/Cadastradas \/ contatadas\s*2 \/ 1/.test(tl),'laboratório: 2 cadastradas, 1 contatada (denominador correto)');ok(/Receita efetivamente recebida\s*R\$\s*300/.test(tl),'laboratório: receita = somente pagamento confirmado');
- await clicar('[data-m="laboratorio.aba"][data-id=experimentos]');ok(/Amostra insuficiente/.test(await textoPainel()),'experimento: amostra pequena não declara vencedora');
+ await clicar('[data-m="laboratorio.aba"][data-id=experimentos]');ok(/Amostra insuficiente|dados suficientes/.test(await textoPainel())&&!/Indício de diferença/.test(await textoPainel()),'experimento: amostra pequena não declara vencedora');
  // pipeline: botões e fechar via arrasto/seletor
  await nav('pipeline');await clicar('.cartao-op:has-text("Clínica Aurora") [data-m="trabalho.mover"][data-dir="1"]');e=await estado();ok(e.empresas.find(x=>x.nome==='Clínica Aurora').etapa==='verificada','pipeline: botão ▶ move a etapa (teclado/celular)');
  await p.selectOption('.cartao-op:has-text("Clínica Aurora") [data-mover-select]','fechada');await esperar(700);e=await estado();ok(e.empresas.find(x=>x.nome==='Clínica Aurora').etapa!=='fechada','pipeline: mover para Fechada exige confirmar a venda (não fecha sozinho)');

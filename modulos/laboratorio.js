@@ -47,5 +47,5 @@ export function criarLaboratorio(ctx){
    if(variantes.length<2){avisar('Informe pelo menos duas variantes válidas.');return;}
    estado().experimentos.push({id:novoId(),nome:d.nome.trim(),tipo:d.tipo,ativo:true,criadoEm:new Date().toISOString(),variantes});salvar();avisar('Experimento criado. Ele aparece no gerador de mensagens.');abrir('experimentos');});
  }
- return {abrir,acoes:{abrir:()=>abrir(),aba:id=>abrir(id),alternar:id=>{const x=estado().experimentos.find(k=>k.id===id);x.ativo=!x.ativo;salvar();abrir('experimentos');},excluir:id=>{if(!confirmar('Excluir o experimento? As mensagens já registradas continuam no histórico.'))return;estado().experimentos=estado().experimentos.filter(k=>k.id!==id);salvar();abrir('experimentos');}}};
+ return {abrir,acoes:{abrir:()=>abrir('indicadores'),aba:id=>abrir(id),alternar:id=>{const x=estado().experimentos.find(k=>k.id===id);x.ativo=!x.ativo;salvar();abrir('experimentos');},excluir:id=>{if(!confirmar('Excluir o experimento? As mensagens já registradas continuam no histórico.'))return;estado().experimentos=estado().experimentos.filter(k=>k.id!==id);salvar();abrir('experimentos');}}};
 }
