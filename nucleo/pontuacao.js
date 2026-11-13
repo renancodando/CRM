@@ -34,10 +34,10 @@ export function montarRadar(estado,filtros={}){
   const e=x.empresa;if(!ativa(e)||!contatoPermitido(e))continue;
   const ultimoMsg=eventosDaEmpresa(estado,e.id,'mensagem-enviada').at(-1),ultimaResposta=eventosDaEmpresa(estado,e.id,'resposta').at(-1);
   if(x.pontuacao.total>=50)grupos.prioritarias.push(x);
-  if(e.etapa==='mensagem'&&ultimoMsg&&!(ultimaResposta&&ultimaResposta.quando>ultimoMsg.quando))grupos.aguardando.push({...x,dias:diasDesde(ultimoMsg.quando)});
+  if(e.etapa==='mensagem'&&ultimoMsg&&!(ultimaResposta&&ultimaResposta.quando>=ultimoMsg.quando))grupos.aguardando.push({...x,dias:diasDesde(ultimoMsg.quando)});
   if(['medio','alto'].includes(e.interesse))grupos.interessadas.push(x);
   const demo=eventosDaEmpresa(estado,e.id,'demonstracao-apresentada').at(-1);
-  if(demo&&!(ultimaResposta&&ultimaResposta.quando>demo.quando)&&diasDesde(demo.quando)>=1)grupos.demoSemRetorno.push({...x,dias:diasDesde(demo.quando)});
+  if(demo&&!(ultimaResposta&&ultimaResposta.quando>=demo.quando)&&diasDesde(demo.quando)>=1)grupos.demoSemRetorno.push({...x,dias:diasDesde(demo.quando)});
   const parado=diasDesde(e.etapaEm);if(['negociacao','proposta'].includes(e.etapa)&&parado>=(auto.diasNegociacaoParada||7))grupos.paradas.push({...x,dias:parado});
   if(e.retornoEm&&new Date(e.retornoEm)<new Date())grupos.atrasados.push({...x,dias:diasDesde(e.retornoEm)});
   if(!e.proximaAcao&&!e.retornoEm)grupos.precisamAcao.push(x);

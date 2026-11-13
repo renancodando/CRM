@@ -57,7 +57,7 @@ export function validarIntegridade(estado){
  return problemas;
 }
 export function registrarAuditoria(estado,tipo,alvo,resumo){estado.auditoria.push({id:novoId(),quando:new Date().toISOString(),tipo,alvo,resumo});if(estado.auditoria.length>1500)estado.auditoria.splice(0,estado.auditoria.length-1500);}
-export function registrarEvento(estado,empresaId,tipo,dados={},quando=new Date().toISOString()){const ev={id:novoId(),empresaId,tipo,quando,...dados};estado.eventos.push(ev);return ev;}
+export function registrarEvento(estado,empresaId,tipo,dados={},quando=new Date().toISOString()){const ev={...dados,id:novoId(),empresaId,tipo,quando};estado.eventos.push(ev);return ev;}
 export function eventosDaEmpresa(estado,id,tipo){return estado.eventos.filter(e=>e.empresaId===id&&(!tipo||e.tipo===tipo));}
 export function moverEtapa(estado,empresa,etapa,origem='manual'){
  if(empresa.etapa===etapa)return false;const anterior=empresa.etapa;empresa.etapa=etapa;empresa.etapaEm=new Date().toISOString();
