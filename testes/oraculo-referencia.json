@@ -1,0 +1,199 @@
+{
+ "precision": {
+  "preview": "8264d6077b11b444",
+  "arquivos": {
+   "index.html": "cc082a88188d3616",
+   "css/estilos.css": "9ad152120e002471",
+   "css/responsividade.css": "cd996cf3639518f0",
+   "css/materiais.css": "18bc925629e1f546",
+   "css/fidelidade.css": "17da0c3d8116c6f3",
+   "js/configuracao.js": "6249dc2020fdf39e",
+   "js/interacoes.js": "b3dccfc923257ef8",
+   "js/motor.js": "7f76425b176d5a68",
+   "js/cena.js": "b9d038b043ae9bc0",
+   "LICENCA-THREE.txt": "bfe119ea4fd413f5",
+   "assets/icones/marca.svg": "b655b99e1bf1c7ff",
+   "robots.txt": "331ea9090db0c9f6",
+   "sitemap.xml": "674772a3e9bf869f",
+   "vercel.json": "00dd4cb3ce497a39",
+   "netlify.toml": "96fffd899af349d3",
+   "LEIA-ME.md": "841a03bd8a6674bd"
+  }
+ },
+ "oficina": {
+  "preview": "036bacbc5b9703f4",
+  "arquivos": {
+   "index.html": "e0d0078d35b3d965",
+   "css/estilos.css": "ec2a68f90a86410d",
+   "css/responsividade.css": "cd996cf3639518f0",
+   "css/materiais.css": "18bc925629e1f546",
+   "css/fidelidade.css": "17da0c3d8116c6f3",
+   "js/configuracao.js": "fcce9e14ed5955ca",
+   "js/interacoes.js": "b3dccfc923257ef8",
+   "js/motor.js": "7f76425b176d5a68",
+   "js/cena.js": "b9d038b043ae9bc0",
+   "LICENCA-THREE.txt": "bfe119ea4fd413f5",
+   "assets/icones/marca.svg": "f476b870d983d081",
+   "robots.txt": "331ea9090db0c9f6",
+   "sitemap.xml": "674772a3e9bf869f",
+   "vercel.json": "00dd4cb3ce497a39",
+   "netlify.toml": "96fffd899af349d3",
+   "LEIA-ME.md": "37bc839d351e0b18"
+  }
+ },
+ "pronto": {
+  "preview": "8dcfe28ccb00230f",
+  "arquivos": {
+   "index.html": "3933824bc329c579",
+   "css/estilos.css": "2d9ed4e49a6437a8",
+   "css/responsividade.css": "cd996cf3639518f0",
+   "css/materiais.css": "18bc925629e1f546",
+   "css/fidelidade.css": "17da0c3d8116c6f3",
+   "js/configuracao.js": "d0c3dde563703d74",
+   "js/interacoes.js": "b3dccfc923257ef8",
+   "js/motor.js": "7f76425b176d5a68",
+   "js/cena.js": "b9d038b043ae9bc0",
+   "LICENCA-THREE.txt": "bfe119ea4fd413f5",
+   "assets/icones/marca.svg": "e6a94d60b10e9714",
+   "robots.txt": "331ea9090db0c9f6",
+   "sitemap.xml": "674772a3e9bf869f",
+   "vercel.json": "00dd4cb3ce497a39",
+   "netlify.toml": "96fffd899af349d3",
+   "LEIA-ME.md": "d9ba40d1a0713467"
+  }
+ },
+ "sorriso": {
+  "preview": "32c08c0a385a482f",
+  "arquivos": {
+   "index.html": "7680e0ee45f27a91",
+   "css/estilos.css": "c6c14ccff67ad623",
+   "css/responsividade.css": "cd996cf3639518f0",
+   "css/materiais.css": "18bc925629e1f546",
+   "css/fidelidade.css": "17da0c3d8116c6f3",
+   "js/configuracao.js": "100dac602531750e",
+   "js/interacoes.js": "b3dccfc923257ef8",
+   "js/motor.js": "7f76425b176d5a68",
+   "js/cena.js": "b9d038b043ae9bc0",
+   "LICENCA-THREE.txt": "bfe119ea4fd413f5",
+   "assets/icones/marca.svg": "084af083f0003b97",
+   "robots.txt": "331ea9090db0c9f6",
+   "sitemap.xml": "674772a3e9bf869f",
+   "vercel.json": "00dd4cb3ce497a39",
+   "netlify.toml": "96fffd899af349d3",
+   "LEIA-ME.md": "c6216217b3ed3600"
+  }
+ },
+ "clara": {
+  "preview": "7574d7765e93544d",
+  "arquivos": {
+   "index.html": "a19aab34e79edaa5",
+   "css/estilos.css": "4485de38bd6e12a7",
+   "css/responsividade.css": "cd996cf3639518f0",
+   "css/materiais.css": "18bc925629e1f546",
+   "css/fidelidade.css": "17da0c3d8116c6f3",
+   "js/configuracao.js": "e38aeec6b1c47437",
+   "js/interacoes.js": "b3dccfc923257ef8",
+   "js/motor.js": "7f76425b176d5a68",
+   "js/cena.js": "b9d038b043ae9bc0",
+   "LICENCA-THREE.txt": "bfe119ea4fd413f5",
+   "assets/icones/marca.svg": "ab70231d5f5a5808",
+   "robots.txt": "331ea9090db0c9f6",
+   "sitemap.xml": "674772a3e9bf869f",
+   "vercel.json": "00dd4cb3ce497a39",
+   "netlify.toml": "96fffd899af349d3",
+   "LEIA-ME.md": "6e72024e21a23713"
+  }
+ },
+ "essenza": {
+  "preview": "6f72783573061780",
+  "arquivos": {
+   "index.html": "0f5e440a34cd2944",
+   "css/estilos.css": "4a37feb03f9a7a08",
+   "css/responsividade.css": "cd996cf3639518f0",
+   "css/materiais.css": "18bc925629e1f546",
+   "css/fidelidade.css": "17da0c3d8116c6f3",
+   "js/configuracao.js": "835dcb95da3bc6dd",
+   "js/interacoes.js": "b3dccfc923257ef8",
+   "js/motor.js": "7f76425b176d5a68",
+   "js/cena.js": "b9d038b043ae9bc0",
+   "LICENCA-THREE.txt": "bfe119ea4fd413f5",
+   "assets/icones/marca.svg": "d2791866d62edf1a",
+   "robots.txt": "331ea9090db0c9f6",
+   "sitemap.xml": "674772a3e9bf869f",
+   "vercel.json": "00dd4cb3ce497a39",
+   "netlify.toml": "96fffd899af349d3",
+   "LEIA-ME.md": "a84e6d58a84556be"
+  }
+ },
+ "blue": {
+  "preview": "9bdd7e5fa5b53900",
+  "arquivos": {
+   "index.html": "e877208f78a904f8",
+   "css/estilos.css": "6f3ab7409696c48f",
+   "css/responsividade.css": "cd996cf3639518f0",
+   "css/materiais.css": "18bc925629e1f546",
+   "css/fidelidade.css": "17da0c3d8116c6f3",
+   "js/configuracao.js": "90a33d560d05c86e",
+   "js/interacoes.js": "b3dccfc923257ef8",
+   "js/motor.js": "7f76425b176d5a68",
+   "js/cena.js": "b9d038b043ae9bc0",
+   "LICENCA-THREE.txt": "bfe119ea4fd413f5",
+   "assets/icones/marca.svg": "b2a37f51f520f61c",
+   "robots.txt": "331ea9090db0c9f6",
+   "sitemap.xml": "674772a3e9bf869f",
+   "vercel.json": "00dd4cb3ce497a39",
+   "netlify.toml": "96fffd899af349d3",
+   "LEIA-ME.md": "0f9f039f6b10cb6d",
+   "js/agua.js": "9832d8f422af5250",
+   "js/geometria.js": "27d4d2fbca43e977",
+   "js/carro.js": "877253626c16308c",
+   "LICENCA-MODELO-3D.md": "1a9253c9d5766a32"
+  }
+ },
+ "impacto": {
+  "preview": "4bca927311937f8f",
+  "arquivos": {
+   "index.html": "63f7167e34ccbfc7",
+   "css/estilos.css": "567b5a723c31a0e0",
+   "css/responsividade.css": "cd996cf3639518f0",
+   "css/materiais.css": "18bc925629e1f546",
+   "css/fidelidade.css": "17da0c3d8116c6f3",
+   "js/configuracao.js": "e7b06569e4c799ba",
+   "js/interacoes.js": "b3dccfc923257ef8",
+   "js/motor.js": "7f76425b176d5a68",
+   "js/cena.js": "b9d038b043ae9bc0",
+   "LICENCA-THREE.txt": "bfe119ea4fd413f5",
+   "assets/icones/marca.svg": "b9eb6ab195c38c37",
+   "robots.txt": "331ea9090db0c9f6",
+   "sitemap.xml": "674772a3e9bf869f",
+   "vercel.json": "00dd4cb3ce497a39",
+   "netlify.toml": "96fffd899af349d3",
+   "LEIA-ME.md": "9e6ce0b9d07ecbad",
+   "js/geometria.js": "27d4d2fbca43e977",
+   "js/carro.js": "877253626c16308c",
+   "LICENCA-MODELO-3D.md": "1a9253c9d5766a32"
+  }
+ },
+ "brisa": {
+  "preview": "94b620e5e462b388",
+  "arquivos": {
+   "index.html": "cbd343bb27d7369e",
+   "css/estilos.css": "161405ffd192770b",
+   "css/responsividade.css": "cd996cf3639518f0",
+   "css/materiais.css": "18bc925629e1f546",
+   "css/fidelidade.css": "17da0c3d8116c6f3",
+   "js/configuracao.js": "c62edf2516fdb35d",
+   "js/interacoes.js": "b3dccfc923257ef8",
+   "js/motor.js": "7f76425b176d5a68",
+   "js/cena.js": "b9d038b043ae9bc0",
+   "LICENCA-THREE.txt": "bfe119ea4fd413f5",
+   "assets/icones/marca.svg": "c5a4c6df1f8bc967",
+   "robots.txt": "331ea9090db0c9f6",
+   "sitemap.xml": "674772a3e9bf869f",
+   "vercel.json": "00dd4cb3ce497a39",
+   "netlify.toml": "96fffd899af349d3",
+   "LEIA-ME.md": "1d10ef8ddddff85d",
+   "js/agua.js": "9832d8f422af5250"
+  }
+ }
+}

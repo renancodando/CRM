@@ -1,26 +1,18 @@
-import {etapas,modelos,criarEstadoInicial} from './dados.js';
+import {etapas,modelos} from './dados.js';
+import {carregarEstado,salvarEstado,aoFalhar,garantirBackupDiario} from './nucleo/armazenamento.js';
+import {registrarAuditoria,registrarEvento,moverEtapa,situacoes} from './nucleo/esquema.js';
+import {criarModulos} from './modulos/indice.js';
 import {icone} from './icones.js';
 import {textoSeguro as t,normalizar,moeda,baixarArquivo,dataLocal,dataHumana} from './utilitarios.js';
 import {montarModelo} from './modelos.js';
 import {criarEstudio} from './estudio/painel.js';
 import {nichos,catalogo} from './estudio/catalogo.js';
 
-const chave='orbita-prospeccao-v2',painel=document.querySelector('#painel'),conteudo=document.querySelector('#conteudo-painel');
-let estado=lerEstado(),periodo='mes',anteriorFoco=null,fechamento,temporizadorAviso,arrastando='',painelAtual='',filtroEtapa='',termoEmpresas='';
+const arranque=await carregarEstado(),painel=document.querySelector('#painel'),conteudo=document.querySelector('#conteudo-painel');
+let estado=arranque.estado,periodo='mes',anteriorFoco=null,fechamento,temporizadorAviso,arrastando='',painelAtual='',filtroEtapa='',termoEmpresas='';
 const menu=[['geral','Visão Geral','inicio'],['empresas','Empresas','camadas'],['pipeline','Pipeline','pipeline'],['mensagens','Mensagens','mensagem'],['estudio','Estúdio de Sites','brilho'],['modelos','Modelos clássicos','modelos'],['lembretes','Lembretes','sino'],['relatorios','Relatórios','grafico'],['configuracoes','Configurações','engrenagem']];
-function lerEstado(){
- const base=criarEstadoInicial();
- try{
-  const salvo=JSON.parse(localStorage.getItem(chave));
-  if(salvo?.versao===2&&Array.isArray(salvo.empresas)&&Array.isArray(salvo.lembretes)&&Array.isArray(salvo.rascunhos))return {...base,...salvo,demonstracoes:Array.isArray(salvo.demonstracoes)?salvo.demonstracoes:[],preferencias:{...base.preferencias,...salvo.preferencias}};
-  const anterior=JSON.parse(localStorage.getItem('orbita-prospeccao-v1'));
-  if(anterior?.preferencias)Object.assign(base.preferencias,anterior.preferencias);
-  localStorage.setItem(chave,JSON.stringify(base));
-  localStorage.removeItem('orbita-prospeccao-v1');
- }catch{}
- return base;
-}
-function salvar(){try{localStorage.setItem(chave,JSON.stringify(estado));}catch{avisar('Seu navegador não permitiu salvar. Você ainda pode usar e exportar os dados desta sessão.');}atualizarVisao();}
+aoFalhar(()=>avisar('Não foi possível gravar no navegador. Exporte um backup agora para não perder seus dados.'));
+function salvar(){salvarEstado(estado);atualizarVisao();}
 function avisar(texto){const aviso=document.querySelector('#aviso');clearTimeout(temporizadorAviso);aviso.textContent=texto;aviso.hidden=false;temporizadorAviso=setTimeout(()=>aviso.hidden=true,4300);}
 function inserirIcones(raiz=document){raiz.querySelectorAll('[data-icone]').forEach(no=>{no.innerHTML=icone(no.dataset.icone);});}
 function buscarEmpresa(id){return estado.empresas.find(empresa=>empresa.id===id);}
