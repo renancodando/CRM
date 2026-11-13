@@ -13,8 +13,21 @@ async function verificarLink(url,subdominio,f){
   return {status:r.status,disponivel:r.ok,noindex:/name=["']robots["'][^>]*noindex/i.test(texto),titulo:(/<title>([^<]{0,200})/i.exec(texto)||[])[1]||'',tamanho:texto.length,verificadoEm:new Date().toISOString()};}
  catch(x){clearTimeout(t);return {status:0,disponivel:false,erro:x.name==='AbortError'?'Tempo esgotado.':'Sem resposta.',verificadoEm:new Date().toISOString()};}
 }
+const crypto=require('node:crypto');
+const DEMO=/^[a-z0-9]{12,32}$/;
+function coletor(e){const u=String(e.RASTREIO_URL||'').trim().replace(/\/$/,'');if(!u||!e.RASTREIO_SEGREDO||!e.RASTREIO_TOKEN_LEITURA)return null;let x;try{x=new URL(u);}catch{return null;}if(x.protocol!=='https:'||x.username||x.password)return null;return {url:x.origin};}
+async function rastreio(acao,{e,f,url,corpo,metodo}){
+ const c=coletor(e),q=url.searchParams;
+ if(acao==='rastreio-status'){if(!c)return {status:200,corpo:{configurado:false,orientacao:['Implante o coletor (pasta rastreio/) na Cloudflare e defina RASTREIO_URL, RASTREIO_SEGREDO e RASTREIO_TOKEN_LEITURA na Vercel.']}};try{const r=await f(c.url+'/saude',{signal:AbortSignal.timeout(6000)});const j=await r.json().catch(()=>({}));return {status:200,corpo:{configurado:true,coletorAtivo:r.ok&&j.ok===true,retencaoDias:j.retencaoDias||null,endereco:c.url}};}catch{return {status:200,corpo:{configurado:true,coletorAtivo:false,endereco:c.url,erro:'O coletor não respondeu.'}};}}
+ if(!c)throw ERR('Acompanhamento não configurado no servidor.',503);
+ if(acao==='rastreio-credencial'&&metodo==='POST'){const demo=corpo.demo&&DEMO.test(corpo.demo)?corpo.demo:Array.from(crypto.randomBytes(16),b=>'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]).join('');const chave=crypto.createHmac('sha256',e.RASTREIO_SEGREDO).update(demo).digest('hex').slice(0,24);return {status:200,corpo:{demo,chave,url:c.url}};}
+ if(acao==='rastreio-ler'){const d=q.get('demo');if(!DEMO.test(d||''))throw ERR('Identificador inválido.');const r=await f(c.url+'/r?d='+d+(q.get('desde')?'&desde='+encodeURIComponent(q.get('desde').slice(0,10)):''),{headers:{authorization:'Bearer '+e.RASTREIO_TOKEN_LEITURA},signal:AbortSignal.timeout(9000)});if(!r.ok)throw ERR('O coletor recusou a leitura ('+r.status+').',502);return {status:200,corpo:await r.json()};}
+ if(acao==='rastreio-excluir'&&metodo==='POST'){if(!DEMO.test(corpo.demo||'')||corpo.confirmacao!=='EXCLUIR DADOS '+corpo.demo)throw ERR('Confirmação ausente.');const r=await f(c.url+'/d/'+corpo.demo,{method:'DELETE',headers:{authorization:'Bearer '+e.RASTREIO_TOKEN_LEITURA},signal:AbortSignal.timeout(9000)});if(!r.ok)throw ERR('O coletor recusou a exclusão ('+r.status+').',502);return {status:200,corpo:await r.json()};}
+ throw ERR('Ação de acompanhamento desconhecida.',404);
+}
 const LIMITE_LOTE=4400000;
 async function tratar(acao,{e,f,url,corpo,metodo}){
+ if(acao.startsWith('rastreio-'))return rastreio(acao,{e,f,url,corpo,metodo});
  const q=url.searchParams;
  if(acao==='publicar-status'){
   const configurada=!!(e.CLOUDFLARE_ACCOUNT_ID&&e.CLOUDFLARE_API_TOKEN);
