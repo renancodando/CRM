@@ -1,0 +1,51 @@
+/* Ponte segura do Órbita Connect (Vercel Serverless, Node 18+). Não guarda dados; só autentica o dono e repassa operações permitidas ao repositório privado de dados. */
+'use strict';
+const crypto=require('node:crypto');
+const GH='https://api.github.com';
+const LEITURA=/^(entrada|saida|conflitos|orbita)(\/[A-Za-z0-9._-]+)*$/;
+const ESCRITA=/^(saida|conflitos|entrada\/processadas|entrada\/pendentes|orbita)\/[A-Za-z0-9._\/-]+\.json$/;
+const LIMITES={arquivo:200000,arquivos:60,corpo:2500000,porMinuto:90};
+const buckets=new Map();
+const b64=b=>Buffer.from(b).toString('base64url');
+function env(e,k,obrig=true){const v=e[k];if(obrig&&!v)throw Object.assign(Error('Configuração ausente: '+k),{status:500});return v;}
+function assinar(payload,segredo){const corpo=b64(JSON.stringify(payload)),mac=crypto.createHmac('sha256',segredo).update(corpo).digest('base64url');return corpo+'.'+mac;}
+function verificar(token,segredo){if(!token||typeof token!=='string'||!token.includes('.'))return null;const [corpo,mac]=token.split('.'),esperado=crypto.createHmac('sha256',segredo).update(corpo).digest('base64url');const a=Buffer.from(mac),b=Buffer.from(esperado);if(a.length!==b.length||!crypto.timingSafeEqual(a,b))return null;try{const p=JSON.parse(Buffer.from(corpo,'base64url').toString());return p.exp>Date.now()?p:null;}catch{return null;}}
+function cookies(req){const o={};for(const p of String(req.headers.cookie||'').split(';')){const i=p.indexOf('=');if(i>0)o[p.slice(0,i).trim()]=decodeURIComponent(p.slice(i+1).trim());}return o;}
+function validarCaminho(caminho,modo){if(typeof caminho!=='string'||caminho.length>200||caminho.includes('..')||caminho.includes('//')||caminho.startsWith('/'))return false;return modo==='escrita'?ESCRITA.test(caminho):LEITURA.test(caminho);}
+function limitar(chave,agora=Date.now()){const b=buckets.get(chave)||[];const r=b.filter(t=>agora-t<60000);r.push(agora);buckets.set(chave,r);return r.length<=LIMITES.porMinuto;}
+function jwtApp(appId,pem,agora=Date.now()){const iat=Math.floor(agora/1000)-30,h=b64(JSON.stringify({alg:'RS256',typ:'JWT'})),p=b64(JSON.stringify({iat,exp:iat+540,iss:String(appId)})),s=crypto.sign('RSA-SHA256',Buffer.from(h+'.'+p),pem);return h+'.'+p+'.'+b64(s);}
+let cacheToken={t:null,exp:0};
+async function tokenInstalacao(e,f){if(cacheToken.t&&cacheToken.exp>Date.now()+60000)return cacheToken.t;const [owner,repo]=env(e,'ORBITA_DATA_REPO').split('/');const r=await f(`${GH}/app/installations/${env(e,'GITHUB_APP_INSTALLATION_ID')}/access_tokens`,{method:'POST',headers:{authorization:'Bearer '+jwtApp(env(e,'GITHUB_APP_ID'),env(e,'GITHUB_APP_PRIVATE_KEY').replace(/\\n/g,'\n')),accept:'application/vnd.github+json','x-github-api-version':'2022-11-28','content-type':'application/json'},body:JSON.stringify({repositories:[repo],permissions:{contents:'write'}})});if(!r.ok)throw Object.assign(Error('Falha ao obter token da instalação ('+r.status+')'),{status:502});const j=await r.json();cacheToken={t:j.token,exp:Date.parse(j.expires_at)};return j.token;}
+async function gh(e,f,caminho,init={}){const t=await tokenInstalacao(e,f);return f(GH+caminho,{...init,headers:{authorization:'Bearer '+t,accept:'application/vnd.github+json','x-github-api-version':'2022-11-28','content-type':'application/json',...(init.headers||{})}});}
+function resp(res,status,corpo,extra={}){res.statusCode=status;res.setHeader('content-type','application/json; charset=utf-8');res.setHeader('cache-control','no-store');res.setHeader('x-content-type-options','nosniff');for(const [k,v] of Object.entries(extra))res.setHeader(k,v);res.end(JSON.stringify(corpo));}
+function lerCorpo(req){return new Promise((ok,erro)=>{let n=0;const p=[];req.on('data',c=>{n+=c.length;if(n>LIMITES.corpo){erro(Object.assign(Error('Corpo grande demais'),{status:413}));req.destroy();}else p.push(c);});req.on('end',()=>{try{ok(JSON.parse(Buffer.concat(p).toString()||'{}'));}catch{erro(Object.assign(Error('JSON inválido'),{status:400}));}});req.on('error',erro);});}
+function sessaoDe(req,e){const s=verificar(cookies(req).orbita_sessao,env(e,'SESSION_SECRET'));return s&&String(s.uid)===String(env(e,'ORBITA_OWNER_GITHUB_ID'))?s:null;}
+function criarHandler(e=process.env,f=globalThis.fetch){
+ return async function handler(req,res){
+  try{
+   const url=new URL(req.url,'http://x'),acao=url.searchParams.get('acao')||'';const origemOk=env(e,'ORBITA_ALLOWED_ORIGIN');
+   if(acao==='login'){const estado=crypto.randomBytes(16).toString('base64url');return resp(res,302,{},{location:`https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(env(e,'GITHUB_OAUTH_CLIENT_ID'))}&state=${estado}&scope=`,'set-cookie':`orbita_estado=${estado}; HttpOnly; Secure; SameSite=Lax; Path=/api/connect; Max-Age=600`});}
+   if(acao==='callback'){const c=cookies(req);const st=url.searchParams.get('state');if(!st||st!==c.orbita_estado)return resp(res,400,{erro:'Estado OAuth inválido.'});const tk=await f('https://github.com/login/oauth/access_token',{method:'POST',headers:{accept:'application/json','content-type':'application/json'},body:JSON.stringify({client_id:env(e,'GITHUB_OAUTH_CLIENT_ID'),client_secret:env(e,'GITHUB_OAUTH_CLIENT_SECRET'),code:url.searchParams.get('code')})});const tj=await tk.json();if(!tj.access_token)return resp(res,401,{erro:'Autorização negada pelo GitHub.'});const u=await (await f(GH+'/user',{headers:{authorization:'Bearer '+tj.access_token,accept:'application/vnd.github+json'}})).json();
+    if(String(u.id)!==String(env(e,'ORBITA_OWNER_GITHUB_ID')))return resp(res,403,{erro:'Esta conta GitHub não é a proprietária autorizada.'});
+    const csrf=crypto.randomBytes(16).toString('base64url'),token=assinar({uid:u.id,csrf,exp:Date.now()+8*3600e3},env(e,'SESSION_SECRET'));return resp(res,302,{},{location:origemOk+'/#connect','set-cookie':[`orbita_sessao=${token}; HttpOnly; Secure; SameSite=Strict; Path=/api/connect; Max-Age=28800`,'orbita_estado=; Max-Age=0; Path=/api/connect']});}
+   if(acao==='logout')return resp(res,200,{ok:true},{'set-cookie':'orbita_sessao=; HttpOnly; Secure; SameSite=Strict; Path=/api/connect; Max-Age=0'});
+   const origem=req.headers.origin;if(origem&&origem!==origemOk)return resp(res,403,{erro:'Origem não permitida.'});
+   const s=sessaoDe(req,e);if(!s)return resp(res,acao==='status'?200:401,acao==='status'?{autenticado:false}:{erro:'Não autenticado.'});
+   if(!limitar(String(s.uid)))return resp(res,429,{erro:'Muitas requisições.'},{'retry-after':'60'});
+   if(req.method!=='GET'){if(origem!==origemOk)return resp(res,403,{erro:'Origem obrigatória.'});if(req.headers['x-orbita-csrf']!==s.csrf)return resp(res,403,{erro:'CSRF inválido.'});}
+   if(acao==='status')return resp(res,200,{autenticado:true,usuarioId:s.uid,csrf:s.csrf,repositorio:env(e,'ORBITA_DATA_REPO'),expira:s.exp});
+   const [owner,repo]=env(e,'ORBITA_DATA_REPO').split('/');
+   if(acao==='listar'){const d=url.searchParams.get('dir');if(!validarCaminho(d,'leitura'))return resp(res,400,{erro:'Diretório não permitido.'});const r=await gh(e,f,`/repos/${owner}/${repo}/contents/${d}`);if(r.status===404)return resp(res,200,{itens:[]});if(!r.ok)return resp(res,502,{erro:'GitHub respondeu '+r.status});const j=await r.json();return resp(res,200,{itens:(Array.isArray(j)?j:[]).filter(x=>x.type==='file').map(x=>({nome:x.name,caminho:x.path,sha:x.sha,tamanho:x.size}))});}
+   if(acao==='ler'){const p=url.searchParams.get('path');if(!validarCaminho(p,'leitura')||!p.endsWith('.json'))return resp(res,400,{erro:'Caminho não permitido.'});const r=await gh(e,f,`/repos/${owner}/${repo}/contents/${p}`);if(!r.ok)return resp(res,r.status===404?404:502,{erro:'Arquivo indisponível.'});const j=await r.json();if(j.size>LIMITES.arquivo)return resp(res,413,{erro:'Arquivo grande demais.'});return resp(res,200,{conteudo:Buffer.from(j.content,'base64').toString('utf8'),sha:j.sha});}
+   if(acao==='commit'&&req.method==='POST'){const c=await lerCorpo(req),arqs=c.arquivos;if(!arqs||typeof arqs!=='object')return resp(res,400,{erro:'arquivos ausente.'});const chaves=Object.keys(arqs);if(!chaves.length||chaves.length>LIMITES.arquivos)return resp(res,400,{erro:'Quantidade de arquivos inválida.'});
+    for(const k of chaves){if(!validarCaminho(k,'escrita'))return resp(res,400,{erro:'Caminho não permitido: '+String(k).slice(0,80)});const v=arqs[k];if(v!==null&&(typeof v!=='string'||v.length>LIMITES.arquivo))return resp(res,400,{erro:'Conteúdo inválido ou grande demais: '+k});if(typeof v==='string'){try{JSON.parse(v);}catch{return resp(res,400,{erro:'Conteúdo não é JSON: '+k});}}}
+    const ramo=env(e,'ORBITA_DATA_BRANCH',false)||'main';
+    for(let tent=0;tent<2;tent++){const ref=await (await gh(e,f,`/repos/${owner}/${repo}/git/ref/heads/${ramo}`)).json(),cm=await (await gh(e,f,`/repos/${owner}/${repo}/git/commits/${ref.object.sha}`)).json();const tree=[];for(const k of chaves){if(arqs[k]===null)tree.push({path:k,mode:'100644',type:'blob',sha:null});else{const bl=await (await gh(e,f,`/repos/${owner}/${repo}/git/blobs`,{method:'POST',body:JSON.stringify({content:arqs[k],encoding:'utf-8'})})).json();tree.push({path:k,mode:'100644',type:'blob',sha:bl.sha});}}
+     const nt=await (await gh(e,f,`/repos/${owner}/${repo}/git/trees`,{method:'POST',body:JSON.stringify({base_tree:cm.tree.sha,tree})})).json(),nc=await (await gh(e,f,`/repos/${owner}/${repo}/git/commits`,{method:'POST',body:JSON.stringify({message:String(c.mensagem||'Órbita').slice(0,200),tree:nt.sha,parents:[ref.object.sha]})})).json();
+     const up=await gh(e,f,`/repos/${owner}/${repo}/git/refs/heads/${ramo}`,{method:'PATCH',body:JSON.stringify({sha:nc.sha,force:false})});if(up.ok)return resp(res,200,{ok:true,commit:nc.sha});if(up.status!==422)return resp(res,502,{erro:'Falha ao atualizar a referência ('+up.status+').'});}
+    return resp(res,409,{erro:'Conflito de concorrência no repositório. Tente sincronizar novamente.'});}
+   return resp(res,404,{erro:'Ação desconhecida.'});
+  }catch(err){return resp(res,err.status||500,{erro:err.status&&err.status<500?err.message:'Erro interno da ponte.'});}
+ };
+}
+module.exports=criarHandler();module.exports.criarHandler=criarHandler;module.exports.interno={validarCaminho,assinar,verificar,jwtApp,limitar,LIMITES,buckets};

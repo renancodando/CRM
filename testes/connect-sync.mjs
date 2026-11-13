@@ -1,0 +1,44 @@
+import assert from 'node:assert/strict';
+import {estadoInicial} from '../nucleo/esquema.js';
+import {sincronizar} from '../nucleo/connect/sync.js';
+import {aprovarRevisao} from '../nucleo/connect/motor.js';
+import {calcular} from '../nucleo/quant/metricas.js';
+import {construirModelo} from '../nucleo/quant/modelo.js';
+let n=0;const ok=async(nome,f)=>{try{await f();n++;console.log('✔',nome);}catch(e){console.log('✘',nome,'\n  ',e.stack.split('\n').slice(0,3).join('\n'));process.exitCode=1;}};
+/* "GitHub privado" simulado em memória (apenas em teste): mesmo contrato do transporte real */
+function repoFalso({autenticado=true,falhaCommit=0}={}){const arq=new Map(),commits=[];let falhas=falhaCommit;return {arq,commits,
+ status:async()=>({autenticado,usuarioId:1}),
+ listar:async dir=>[...arq.keys()].filter(k=>k.startsWith(dir+'/')&&!k.slice(dir.length+1).includes('/')).map(k=>({nome:k.split('/').pop(),caminho:k})),
+ ler:async p=>{if(!arq.has(p))throw Error('404');return arq.get(p);},
+ commit:async({mensagem,arquivos})=>{if(falhas>0){falhas--;throw Error('rede indisponível');}for(const [k,v] of Object.entries(arquivos)){if(v===null)arq.delete(k);else arq.set(k,v);}commits.push({mensagem,n:Object.keys(arquivos).length});},
+ assistente:{escreverOp:(op)=>arq.set(`entrada/pendentes/${op.id}.json`,JSON.stringify(op)),confirmacao:id=>arq.has(`saida/confirmacoes/${id}.json`)?JSON.parse(arq.get(`saida/confirmacoes/${id}.json`)):null}};}
+const op=(id,tipo,c)=>({protocolo:'1.0',id,tipo,origem:'chatgpt',criadaEm:'2026-11-14T09:00:00-03:00',...c});
+const novoEstado=(nivel=3)=>{const s=estadoInicial();s.config.connect.nivel=nivel;s.config.connect.compartilhado.financeiro=true;return s;};
+await ok('FLUXO OBRIGATÓRIO: assistente cria operação → repositório → Órbita valida e aplica → confirmação → indicadores → assistente consulta → 2ª execução não duplica',async()=>{
+ const s=novoEstado(),r=repoFalso(),salvou=[];const salvar=async()=>salvou.push(JSON.stringify(s.empresas.length));
+ r.assistente.escreverOp(op('op-cad-1','empresa.criar',{dados:{nome:'Supera Cell',cidade:'Recife',estado:'PE',nicho:'celulares',whatsapp:'81999990001',diferenciais:['Qualidade','Confiança','Bom atendimento']}}));
+ assert.equal(r.assistente.confirmacao('op-cad-1'),null,'antes de processar não existe confirmação (arquivo enviado ≠ cadastro concluído)');assert.equal(s.empresas.length,0);
+ const a=await sincronizar(s,r,{salvar});assert.equal(a.ok,true);assert.equal(a.aplicadas,1);
+ assert.equal(s.empresas.length,1);assert.deepEqual(s.empresas[0].diferenciais,['Qualidade','Confiança','Bom atendimento']);
+ const conf=r.assistente.confirmacao('op-cad-1');assert.equal(conf.aplicada,true);assert.equal(conf.estado,'aplicada');assert.equal(conf.registros[0].entidade,'empresas');
+ assert.ok(salvou.length>=1,'persistiu localmente antes de publicar');assert.ok(r.arq.has('entrada/processadas/'+new Date().toISOString().slice(0,7)+'/op-cad-1.json'));assert.ok(!r.arq.has('entrada/pendentes/op-cad-1.json'));
+ assert.equal(calcular(construirModelo(s),'empresas_encontradas',{},{de:null,ate:null}).valor,1);
+ const exp=JSON.parse(r.arq.get('saida/exportacoes/empresas-0001.json'));assert.equal(exp.total,1);assert.equal(exp.registros[0].nome,'Supera Cell');assert.ok(exp.geradoEm&&exp.versaoDados);assert.ok(r.arq.has('saida/manifesto.json'));
+ r.assistente.escreverOp(op('op-cad-1','empresa.criar',{dados:{nome:'Supera Cell',cidade:'Recife',estado:'PE',nicho:'celulares',whatsapp:'81999990001',diferenciais:['Qualidade','Confiança','Bom atendimento']}}));
+ const b=await sincronizar(s,r,{salvar});assert.equal(b.ok,true);assert.equal(s.empresas.length,1,'segunda execução não duplica');assert.equal(s.operacoes.length,1);});
+await ok('mesmo princípio: resposta, follow-up (tarefa) e pagamento (revisão → aprovar → idempotente)',async()=>{
+ const s=novoEstado(),r=repoFalso();r.assistente.escreverOp(op('c1','empresa.criar',{dados:{nome:'Alfa Cell',cidade:'Recife',estado:'PE',whatsapp:'81988880001'}}));
+ r.assistente.escreverOp(op('r1','conversa.resposta_recebida',{empresaRef:{nome:'Alfa Cell',cidade:'Recife - PE'},texto:'Nosso diferencial é qualidade, confiança e bom atendimento',ocorreuEm:'2026-11-14T10:00:00-03:00',interesse:'medio'},));
+ r.assistente.escreverOp(op('t1','tarefa.criar',{empresaRef:{nome:'Alfa Cell',cidade:'Recife - PE'},titulo:'Falar com a empresa',prazoSomenteData:'2026-11-15'}));
+ r.assistente.escreverOp(op('p1','pagamento.registrar',{empresaRef:{nome:'Alfa Cell',cidade:'Recife - PE'},valorCentavos:30000,recebidoEm:'2026-11-14T12:00:00-03:00',confirmadoPeloUsuario:true}));
+ const a=await sincronizar(s,r);assert.equal(a.aplicadas,3);assert.equal(a.revisao,1);assert.equal(r.assistente.confirmacao('p1').estado,'aguardando-revisao');assert.equal(r.assistente.confirmacao('p1').aplicada,false);assert.equal(s.pagamentos.length,0);
+ assert.equal(s.eventos.find(e=>e.tipo==='resposta').texto,'Nosso diferencial é qualidade, confiança e bom atendimento');
+ aprovarRevisao(s,'p1');assert.equal(s.pagamentos.length,1);await sincronizar(s,r);assert.equal(r.assistente.confirmacao('p1').estado,'aplicada');
+ await sincronizar(s,r);await sincronizar(s,r);assert.equal(s.pagamentos.length,1);assert.equal(s.pagamentos[0].valor,300);});
+await ok('falha de rede no commit: nada se perde; retentativa publica a confirmação sem reaplicar',async()=>{const s=novoEstado(),r=repoFalso({falhaCommit:1});r.assistente.escreverOp(op('f1','empresa.criar',{dados:{nome:'Beta Cell',cidade:'Natal',estado:'RN',whatsapp:'84988880001'}}));const a=await sincronizar(s,r);assert.equal(a.ok,false);assert.match(a.erro,/rede/);assert.equal(s.empresas.length,1,'aplicado e persistido localmente');assert.equal(r.assistente.confirmacao('f1'),null);assert.ok(s.config.connect.sync.proxima);const b=await sincronizar(s,r);assert.equal(b.ok,true);assert.equal(s.empresas.length,1);assert.equal(r.assistente.confirmacao('f1').estado,'aplicada');assert.equal(s.config.connect.sync.tentativas,0);});
+await ok('não autenticado: modo offline preservado, nada é lido nem escrito',async()=>{const s=novoEstado(),r=repoFalso({autenticado:false});r.assistente.escreverOp(op('x','empresa.criar',{dados:{nome:'X',cidade:'Y'}}));const a=await sincronizar(s,r);assert.equal(a.ok,false);assert.equal(a.codigo,'nao-autenticado');assert.equal(s.empresas.length,0);assert.equal(r.commits.length,0);});
+await ok('arquivo corrompido / id divergente / protocolo incompatível: rejeitados com confirmação explicativa',async()=>{const s=novoEstado(),r=repoFalso();r.arq.set('entrada/pendentes/ruim.json','{nao é json');r.arq.set('entrada/pendentes/v9.json',JSON.stringify(op('v9','empresa.criar',{dados:{nome:'A',cidade:'B'}},)).replace('"1.0"','"9.0"'));const a=await sincronizar(s,r);assert.equal(a.rejeitadas,2);assert.equal(r.assistente.confirmacao('ruim').estado,'rejeitada');assert.match(r.assistente.confirmacao('v9').erros.join(' '),/incompatível/);assert.equal(s.empresas.length,0);});
+await ok('exportação respeita o escopo autorizado (privacidade) e é incremental',async()=>{const s=novoEstado();s.config.connect.compartilhado={empresas:true,historico:false,tarefas:false,financeiro:false,indicadores:false,relatorios:false,notas:false};const r=repoFalso();r.assistente.escreverOp(op('e1','empresa.criar',{dados:{nome:'Gama',cidade:'Recife',estado:'PE',whatsapp:'81977770001',notas:'SEGREDO-NOTA'}}));await sincronizar(s,r);const todas=[...r.arq.entries()].filter(([k])=>k.startsWith('saida/exportacoes')).map(([k,v])=>v).join('');assert.ok(!/SEGREDO-NOTA/.test(todas));assert.ok(![...r.arq.keys()].some(k=>/historico|pagamentos|custos|indicadores/.test(k)));const commits=r.commits.length;await sincronizar(s,r);assert.equal(r.commits.length,commits,'sem mudanças: nenhuma gravação nova (não regrava a cada sincronização)');});
+await ok('assistente não consegue elevar permissões nem executar código por arquivo',async()=>{const s=novoEstado(2),r=repoFalso();r.assistente.escreverOp({...op('perm','empresa.criar',{dados:{nome:'A',cidade:'B'}}),permissoes:{nivel:4}});r.assistente.escreverOp(op('js','tarefa.criar',{titulo:'<script>fetch("x")</script>',prazoSomenteData:'2026-11-20'}));await sincronizar(s,r);assert.equal(s.config.connect.nivel,2);assert.equal(r.assistente.confirmacao('perm').estado,'rejeitada');assert.equal(r.assistente.confirmacao('js').estado,'rejeitada');assert.equal(s.empresas.length+s.tarefas.length,0);});
+await ok('lotes paginados: mais operações que o limite do lote são processadas em sincronizações sucessivas',async()=>{const s=novoEstado(),r=repoFalso();for(let i=0;i<55;i++)r.assistente.escreverOp(op('t'+i,'tarefa.criar',{titulo:'T'+i,prazoSomenteData:'2026-11-20'}));const a=await sincronizar(s,r);assert.equal(a.lidas,40);const b=await sincronizar(s,r);assert.equal(b.lidas,15);assert.equal(s.tarefas.length,55);});
+console.log(n+' verificações aprovadas');

@@ -1,5 +1,3 @@
-export const etapas=[{id:'encontrada',nome:'Encontrada',icone:'alvo'},{id:'verificada',nome:'Verificada',icone:'busca'},{id:'mensagem',nome:'Mensagem',icone:'aviao'},{id:'respondeu',nome:'Respondeu',icone:'mensagem'},{id:'demonstracao',nome:'Demonstração',icone:'monitor'},{id:'negociacao',nome:'Negociação',icone:'acordo'},{id:'fechada',nome:'Fechada',icone:'verificado'}];
+export {etapas} from './nucleo/esquema.js';
 export const modelos=[{id:'essencial',nome:'Órbita Essencial',descricao:'Uma presença que passa confiança. Ideal para negócios locais.',cor:'#d89c64',categoria:'Serviços locais'},{id:'horizonte',nome:'Horizonte Studio',descricao:'Projetos em destaque e uma identidade que fica na memória.',cor:'#87add7',categoria:'Criativos e estúdios'},{id:'origem',nome:'Origem Saúde',descricao:'Informação clara, acolhimento e contato a um toque.',cor:'#8bc9ad',categoria:'Saúde e bem-estar'}];
-export function criarEstadoInicial(){
- return {versao:2,empresas:[],lembretes:[],rascunhos:[],demonstracoes:[],preferencias:{nome:'Renan',cargo:'Desenvolvedor',marca:'Órbita',movimento:!matchMedia('(prefers-reduced-motion: reduce)').matches,qualidade:'equilibrada',contraste:false},notificacoesLidas:true};
-}
+export {estadoInicial as criarEstadoInicial} from './nucleo/esquema.js';

@@ -1,0 +1,71 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "orbita-connect/tarefa.atualizar.schema.json",
+ "title": "Atualizar tarefa",
+ "type": "object",
+ "additionalProperties": false,
+ "properties": {
+  "protocolo": {
+   "type": "string",
+   "pattern": "^1\\.\\d+$"
+  },
+  "id": {
+   "type": "string",
+   "maxLength": 80
+  },
+  "tipo": {
+   "const": "tarefa.atualizar"
+  },
+  "origem": {
+   "type": "string",
+   "maxLength": 60
+  },
+  "criadaEm": {
+   "type": "string",
+   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:\\d{2})$"
+  },
+  "dependeDe": {
+   "type": "array",
+   "maxItems": 10,
+   "items": {
+    "type": "string",
+    "maxLength": 80
+   }
+  },
+  "contexto": {
+   "type": "object"
+  },
+  "comentario": {
+   "type": "string",
+   "maxLength": 500
+  },
+  "tarefaId": {
+   "type": "string",
+   "maxLength": 80
+  },
+  "estado": {
+   "enum": [
+    "aberta",
+    "em-andamento",
+    "concluida",
+    "cancelada"
+   ]
+  },
+  "prazo": {
+   "type": "string",
+   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:\\d{2})$"
+  },
+  "observacao": {
+   "type": "string",
+   "maxLength": 300
+  }
+ },
+ "required": [
+  "protocolo",
+  "id",
+  "tipo",
+  "origem",
+  "criadaEm",
+  "tarefaId"
+ ]
+}
