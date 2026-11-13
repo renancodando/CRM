@@ -3,10 +3,10 @@ const ordem=['encontrada','verificada','mensagem','respondeu','demonstracao','ne
 const antes=(a,b)=>ordem.indexOf(a)<ordem.indexOf(b);
 const agoraISO=()=>new Date().toISOString();
 const somar=(n)=>{const d=new Date();d.setDate(d.getDate()+n);d.setHours(10,0,0,0);return d.toISOString();};
-export function confirmarEnvioMensagem(estado,empresa,{texto,estrategia='',variante='',tipo='',demonstracaoId='',experimentoId=''}){
+export function confirmarEnvioMensagem(estado,empresa,{texto,estrategia='',variante='',tipo='',demonstracaoId='',experimentoId='',extra={}}){
  if(!texto?.trim())throw Error('Informe o texto da mensagem enviada.');
  if(empresa.situacao==='nao-contatar')throw Error('Esta empresa está marcada como "não contatar".');
- const quando=agoraISO(),ev=registrarEvento(estado,empresa.id,'mensagem-enviada',{texto:texto.trim(),estrategia,variante,tipoMsg:tipo,demonstracaoId,experimentoId,valorOferecido:empresa.valorNegociado??null,confirmadoPeloUsuario:true},quando);
+ const quando=agoraISO(),ev=registrarEvento(estado,empresa.id,'mensagem-enviada',{...extra,texto:texto.trim(),estrategia,variante,tipoMsg:tipo,demonstracaoId,experimentoId,valorOferecido:empresa.valorNegociado??null,confirmadoPeloUsuario:true},quando);
  if(!empresa.primeiroContato)empresa.primeiroContato=quando;empresa.ultimoContato=quando;if(estrategia)empresa.abordagem=estrategia;
  empresa.historico.push({quando,texto:'Mensagem enviada (confirmada por você)'+(tipo?' · '+tipo:'')+'.'});
  if(antes(empresa.etapa,'mensagem')&&empresa.situacao==='ativa')moverEtapa(estado,empresa,'mensagem','envio');

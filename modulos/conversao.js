@@ -8,52 +8,21 @@ import {gerarAbordagens,propostaDeValor,recomendarModelo,sugestoesDeFeedback} fr
 import {auditarMensagem,objecoes,analisarResposta,contextoResposta,responderObjecao} from '../nucleo/conversao/linguagem.js';
 import {criarExperimentoConversao,elegiveis,distribuir,resultadoExperimentoConversao,registrarDesvio,diagnosticarFunil,memoriaAbordagens,recomendarAbordagem,registrarRecomendacao,cenarios,avaliarTreino,registrarTreino,criterios} from '../nucleo/conversao/laboratorio.js';
 import {estudos,tecnicas,graus,proibicoes,citacao,estudoPorId} from '../nucleo/conversao/evidencias.js';
-const abas=[['fila','Fila'],['conversa','Conversa'],['objecoes','Objeções'],['valor','Valor e Estúdio'],['lab','Laboratório'],['funil','Funil'],['memoria','Memória'],['treino','Treino'],['evidencias','Evidências'],['config','Consentimento e limites']];
+import {criarConversa} from './conversa.js';
+const abas=[['conversa','Conversa'],['fila','Fila'],['objecoes','Objeções'],['valor','Valor e Estúdio'],['lab','Laboratório'],['funil','Funil'],['memoria','Memória'],['treino','Treino'],['evidencias','Evidências'],['config','Consentimento e limites']];
 const pc=v=>v==null?'—':(v*100).toFixed(1).replace('.',',')+'%';
 export function criarConversao(ctx){
  const {obterEstado,salvar,avisar,abrirPainel}=ctx,estado=()=>obterEstado();
- let aba='fila',empId='',abSel='',textoResposta='',analise=null,expSel='',cenSel=cenarios[0].id,avalTreino=null,respTreino='';
- const emp=()=>estado().empresas.find(e=>e.id===empId)||null;
- const selEmpresa=(nome='empresa')=>`<label class="campo"><span>Empresa</span><select name="${nome}" id="cv-emp"><option value="">Selecione…</option>${estado().empresas.filter(e=>e.situacao!=='excluida').map(e=>`<option value="${t(e.id)}" ${e.id===empId?'selected':''}>${t(e.nome)} · ${t(e.cidade)}</option>`).join('')}</select></label>`;
+ let aba='conversa',empId='',expSel='',cenSel=cenarios[0].id,avalTreino=null,respTreino='';
+ const conversa=criarConversa(ctx,()=>abrir(aba));
+ const emp=()=>conversa.empresaAtual();
+ const selEmpresa=(nome='empresa')=>`<label class="campo"><span>Empresa</span><select name="${nome}" id="cv-emp"><option value="">Selecione…</option>${estado().empresas.filter(e=>e.situacao!=='excluida').map(e=>`<option value="${t(e.id)}" ${e.id===conversa.estadoLocal.empId?'selected':''}>${t(e.nome)} · ${t(e.cidade)}</option>`).join('')}</select></label>`;
  const aviso=txt=>`<p class="ajuda">${t(txt)}</p>`;
  const selo=(txt,cl='pausada')=>`<span class="selo-situacao ${cl}">${t(txt)}</span>`;
  /* ---------- fila ---------- */
  function fila(){
   const f=filaOportunidades(estado(),{limite:30});
-  return `${aviso('Pontuação explicável: só conta o que você sabe. Fatores sem informação aparecem como "desconhecido" e reduzem a confiança — não valem zero. Empresas com duplicidade, recusadas, sem contato permitido ou de baixo potencial não entram.')}${f.length?f.map((x,i)=>`<article class="cartao-exp"><div class="cabecalho-lista"><h4>${i+1}. ${t(x.empresa.nome)} ${selo(x.q.potencial,x.q.potencial==='alto'?'ativa':'pausada')}</h4><small>${t(x.empresa.cidade)} · nota ${x.q.nota}/100 · confiança ${x.q.confianca}%</small></div><details><summary>Por que esta posição?</summary><ul>${x.q.fatores.map(ft=>`<li><b>${t(ft.nome)}</b> (peso ${ft.peso}): ${ft.valor==null?'<em>desconhecido</em>':Math.round(ft.valor*100)+'%'} — ${t(ft.detalhe)}</li>`).join('')}</ul></details><div class="acoes-linha"><button type="button" class="botao-principal" data-m="conversao.abrir-conversa" data-id="${t(x.empresa.id)}">Preparar conversa</button></div></article>`).join(''):'<p class="vazio">Nenhuma empresa elegível agora. Cadastre empresas com site/serviços/contato ou registre consentimento.</p>'}`;
- }
- /* ---------- conversa ---------- */
- function conversa(){
-  const e=emp(),est=estado();
-  let h=`<form id="cv-sel">${selEmpresa()}</form>`;if(!e)return h+aviso('Escolha uma empresa para ver o estado da conversa e as abordagens.');
-  const q=qualificar(est,e),ec=estadoConversa(est,e),perm=podeContatar(e,'whatsapp'),pas=proximoPasso(ec.estado),fu=planoFollowUp(est,e);
-  const rec=recomendarAbordagem(est,e),ab=gerarAbordagens(est,e,{demo:est.demonstracoes.filter(d=>d.empresaId===e.id).at(-1)||null});
-  const exp=est.experimentos.filter(x=>x.conv&&x.ativo).map(x=>({x,a:x.atribuicoes.find(a=>a.empresaId===e.id&&!a.enviada)})).find(o=>o.a);
-  if(exp&&!abSel){const v=exp.x.variantes.find(v=>v.id===exp.a.varianteId);const hit=ab.abordagens.find(a=>a.estrategia===v?.abordagem);if(hit)abSel=hit.id;}
-  if(!abSel)abSel=rec.recomendada;
-  h+=`<div class="resumo-relatorio quatro"><div class="numero-relatorio"><small>Estado</small><strong>${t(rotuloEstadoConversa(ec.estado))}</strong></div><div class="numero-relatorio"><small>Potencial</small><strong>${t(q.potencial)} (${q.nota})</strong></div><div class="numero-relatorio"><small>Confiança</small><strong>${q.confianca}%</strong></div><div class="numero-relatorio"><small>Contato</small><strong>${perm.ok?'permitido':'bloqueado'}</strong></div></div>`;
-  h+=`<p><b>Próximo passo sugerido:</b> ${t(pas)}</p><p class="ajuda">Evidências do estado: ${ec.evidencias.map(t).join(' · ')||'—'}. O Órbita nunca infere "venda fechada": isso só acontece pela confirmação explícita.</p>`;
-  if(!perm.ok)h+=`<div class="alerta-risco"><strong>Contato bloqueado:</strong> ${t(perm.motivo)}</div>`;else if(perm.aviso)h+=`<div class="alerta-duplicidade" role="note">${t(perm.aviso)}</div>`;
-  if(exp)h+=`<div class="alerta-duplicidade" role="note">Esta empresa foi sorteada no experimento "${t(exp.x.nome)}": use a abordagem sorteada para manter o experimento válido. Se enviar outra, registre um desvio.</div>`;
-  h+=`<h3>Abordagem recomendada: ${t(rec.recomendada)}</h3><p>${t(rec.porque)}</p>`;
-  h+=`<div class="abas" role="tablist" aria-label="Abordagens">${ab.abordagens.map(a=>`<button type="button" role="tab" aria-selected="${abSel===a.id}" class="${abSel===a.id?'ativa':''}" data-m="conversao.abordagem" data-id="${a.id}" ${a.disponivel?'':'disabled'}>${a.id} · ${t(a.nome)}${a.id===rec.recomendada?' ★':''}</button>`).join('')}</div>`;
-  const a=ab.abordagens.find(x=>x.id===abSel)||ab.abordagens[0];
-  if(!a.disponivel)return h+aviso(a.indisponivel||'Abordagem indisponível para esta empresa.');
-  h+=`<article class="cartao-exp"><label class="campo largo"><span>Mensagem (uma só, em um parágrafo — edite à vontade)</span><textarea id="cv-texto" rows="5" maxlength="1200">${t(a.mensagem)}</textarea></label><div id="cv-audit">${auditoriaHtml(a.auditoria)}</div>
-  <div class="acoes-linha"><button type="button" data-m="conversao.copiar">Copiar</button><button type="button" data-m="conversao.whatsapp" ${perm.ok?'':'disabled'}>Abrir no WhatsApp (não registra envio)</button><button type="button" data-m="conversao.rascunho">Salvar rascunho</button><button type="button" class="botao-principal" data-m="conversao.enviei" data-id="${a.id}" ${perm.ok?'':'disabled'}>Confirmo que enviei</button></div>
-  <details><summary>Por que esta mensagem?</summary><p>${t(a.porque)}</p><p><b>Técnicas:</b> ${a.tecnicas.map(x=>t(x.nome)+' ('+t(x.grau)+')').join('; ')}</p><ul>${a.evidencias.map(x=>`<li>${t(x.ref)} — <em>${t(x.grau)}</em>. Limitações: ${t(x.limitacoes)}</li>`).join('')}</ul><p><b>Pontos negativos:</b> ${a.pontosNegativos.map(t).join(' · ')}</p></details>
-  <details><summary>E depois? (próxima mensagem conforme a resposta)</summary><ul><li><b>Interesse:</b> ${t(a.proximas.positivo)}</li><li><b>Pergunta:</b> ${t(a.proximas.pergunta)}</li><li><b>Recusa:</b> ${t(a.proximas.recusa)}</li><li><b>Silêncio:</b> ${t(a.proximas.silencio)}</li></ul></details></article>`;
-  h+=`<h3>Quando responderem</h3><form id="cv-resp"><label class="campo largo"><span>Cole a resposta recebida</span><textarea name="texto" rows="3" maxlength="1500">${t(textoResposta)}</textarea></label><button class="botao-principal" type="submit">Interpretar</button></form>${analise?analiseHtml(e):''}`;
-  h+=`<h3>Follow-up</h3><p>${fu.permitido?selo('liberado','ativa'):selo('aguarde')} ${t(fu.motivo)}${fu.tipo?' Tipo sugerido: '+t(fu.tipo)+'.':''}${fu.restantes!=null?' Tentativas restantes: '+fu.restantes+'.':''}</p>`;
-  return h;
- }
- const auditoriaHtml=a=>`<ul class="lista-simples">${a.erros.map(x=>`<li class="erro">✖ ${t(x)}</li>`).join('')}${a.avisos.map(x=>`<li>⚠ ${t(x)}</li>`).join('')}${a.ok&&!a.avisos.length?'<li>✔ Sem clichês, urgência ou promessas.</li>':''}<li><small>${a.tamanho} caracteres</small></li></ul>`;
- function analiseHtml(e){
-  const a=analise,r=a.principal?responderObjecao(a,contextoResposta(estado(),e)):null;
-  return `<article class="cartao-exp"><p class="ajuda">${t(a.aviso)}</p><p><b>Leitura:</b> ${a.principal?t(a.principal.rotulo):'sem objeção específica detectada'} · interesse ${t(a.interesse)} · estado sugerido: ${t(rotuloEstadoConversa(a.estadoSugerido||'resposta-recebida'))}${a.ambigua?' · <b>ambígua</b>':''}</p>${a.hipoteses.length?`<ul>${a.hipoteses.map(x=>`<li>${t(x.texto)} <small>(confiança ${t(x.confianca)})</small></li>`).join('')}</ul>`:''}${a.naoSabemos?.length?`<p><b>O que não sabemos:</b> ${a.naoSabemos.map(t).join(' · ')}</p>`:''}${a.perguntasEsclarecedoras?.length?`<p><b>Pergunte:</b> ${a.perguntasEsclarecedoras.map(t).join(' / ')}</p>`:''}
-  ${r?(r.naoInsistir?`<div class="alerta-risco"><strong>Recusa:</strong> não insista. ${t(r.principal.texto)}</div>`:['principal','curta','direta'].map(k=>`<label class="campo largo"><span>Resposta ${k}</span><textarea rows="3" readonly>${t(r[k].texto)}</textarea><small>${r[k].auditoria.ok?'✔ linguagem ok':'⚠ '+t(r[k].auditoria.erros.join(' '))}</small></label>`).join('')):''}
-  <p><b>Evitar:</b> ${t(a.evitar||'')} · <b>Encerrar quando:</b> ${t(a.quandoEncerrar||'')}</p>
-  <div class="acoes-linha"><button class="botao-principal" type="button" data-m="conversao.registrar-resposta">Registrar esta resposta no CRM</button></div></article>`;
+  return `${aviso('Pontuação explicável: só conta o que você sabe. Fatores sem informação aparecem como "desconhecido" e reduzem a confiança — não valem zero. Empresas com duplicidade, recusadas, sem contato permitido ou de baixo potencial não entram.')}${f.length?f.map((x,i)=>`<article class="cartao-exp"><div class="cabecalho-lista"><h4>${i+1}. ${t(x.empresa.nome)} ${selo(x.q.potencial,x.q.potencial==='alto'?'ativa':'pausada')}</h4><small>${t(x.empresa.cidade)} · nota ${x.q.nota}/100 · confiança ${x.q.confianca}%</small></div><details><summary>Por que esta posição?</summary><ul>${x.q.fatores.map(ft=>`<li><b>${t(ft.nome)}</b> (peso ${ft.peso}): ${ft.valor==null?'<em>desconhecido</em>':Math.round(ft.valor*100)+'%'} — ${t(ft.detalhe)}</li>`).join('')}</ul></details><div class="acoes-linha"><button type="button" class="botao-principal" data-m="conversao.abrir-conversa" data-id="${t(x.empresa.id)}">Conversar e converter</button></div></article>`).join(''):'<p class="vazio">Nenhuma empresa elegível agora. Cadastre empresas com site/serviços/contato ou registre consentimento.</p>'}`;
  }
  /* ---------- objeções ---------- */
  function objecoesAba(){
@@ -110,15 +79,14 @@ export function criarConversao(ctx){
   const e=emp();
   return aviso('Limites de follow-up e consentimento por canal. O Órbita não envia nada sozinho, não faz envio em massa e respeita a política do WhatsApp (business.whatsapp.com/policy). Um número publicado na internet não é consentimento.')+`<form id="cv-follow" class="grade-formulario">${campo('intervalos','Intervalos entre tentativas (dias, separados por vírgula)',c.intervalosDias.join(', '))}${campo('max','Máximo de tentativas sem resposta',String(c.maxTentativas),{tipo:'number'})}<button type="submit">Salvar limites</button></form><h3>Consentimento por canal</h3><form id="cv-sel">${selEmpresa()}</form>${e?`<form id="cv-cons" class="grade-formulario">${campo('canal','Canal','whatsapp',{opcoes:canais})}${campo('estado','Situação','autorizado',{opcoes:[['autorizado','Autorizado (ele pediu/aceitou contato)'],['revogado','Revogado (pediu para parar)'],['desconhecido','Desconhecido']]})}${campo('origem','Origem (obrigatória se autorizado)','',{largo:true,dica:'Ex.: "pediu orçamento por WhatsApp em 12/11"'})}<button class="botao-principal" type="submit">Registrar</button></form><p>${canais.map(([k,n])=>`${t(n)}: ${t(consentimento(e,k).estado)}`).join(' · ')}</p>`:''}<h3>Lista de não contatar (${bloq.length})</h3>${bloq.length?bloq.map(b=>`<p>${t(b.nome)} — ${t(b.situacao==='nao-contatar'?'não contatar':'consentimento revogado')}</p>`).join(''):'<p class="vazio">Ninguém bloqueado.</p>'}<h3>IA/LLM opcional</h3><p class="ajuda">Esta versão não usa nenhuma API de IA: todas as recomendações são regras determinísticas explicáveis. Seu assistente externo (ChatGPT/Claude) pode propor rascunhos via Órbita Connect, mas só você confirma e envia.</p>`;
  }
- const tabs={fila,conversa,objecoes:objecoesAba,valor,lab,funil,memoria,treino,evidencias,config};
+ const tabs={fila,conversa:()=>conversa.html(),objecoes:objecoesAba,valor,lab,funil,memoria,treino,evidencias,config};
  function abrir(a=aba,id){
-  aba=a;if(id)empId=id;
+  aba=a;if(id)conversa.definirEmpresa(id);
   abrirPainel('Da primeira mensagem ao fechamento, com método',`<div class="abas" role="tablist">${abas.map(([k,n])=>`<button type="button" role="tab" aria-selected="${aba===k}" class="${aba===k?'ativa':''}" data-m="conversao.aba" data-id="${k}">${n}</button>`).join('')}</div>${tabs[aba]()}`,'ÓRBITA CONVERSÃO');
   const q=s=>document.querySelector(s),f=(s,fn)=>q(s)?.addEventListener('submit',ev=>{ev.preventDefault();try{fn(dadosForm(ev.currentTarget),ev.currentTarget);}catch(x){avisar(x.message);}});
-  q('#cv-emp')?.addEventListener('change',ev=>{empId=ev.target.value;abSel='';analise=null;abrir(aba);});
+  q('#cv-emp')?.addEventListener('change',ev=>{conversa.definirEmpresa(ev.target.value);abrir(aba);});
+  if(aba==='conversa')conversa.ligar(q,f);
   q('#cv-cen')?.addEventListener('change',ev=>{cenSel=ev.target.value;avalTreino=null;respTreino='';abrir('treino');});
-  q('#cv-texto')?.addEventListener('input',ev=>{const a=auditarMensagem(ev.target.value,{primeiraMensagem:true});q('#cv-audit').innerHTML=auditoriaHtml(a);});
-  f('#cv-resp',d=>{textoResposta=d.texto;analise=analisarResposta(d.texto);abrir('conversa');});
   f('#cv-fb',d=>{const s=sugestoesDeFeedback(d.texto);q('#cv-fb-out').innerHTML=Array.isArray(s)?`<ul>${s.map(x=>`<li>${t(typeof x==='string'?x:x.texto||x.ajuste||JSON.stringify(x))}</li>`).join('')}</ul>`:`<p>${t(s.aviso||s.texto||'Sem ajustes concretos: o feedback é vago. Pergunte o que mais chamou atenção.')}</p>${(s.sugestoes||s.ajustes||[]).map(x=>`<p>• ${t(typeof x==='string'?x:x.texto||x.ajuste)}</p>`).join('')}`;});
   f('#cv-exp',d=>{const ab=g=>({nome:g,abordagem:g});const x=criarExperimentoConversao(estado(),{nome:d.nome,hipotese:d.hipotese,criterio:d.criterio,variantes:[ab(d.a),ab(d.b)],nMinimoPorVariante:Number(d.min)||20,nicho:d.nicho.trim()});if(d.a===d.b){estado().experimentos.pop();throw Error('Escolha duas abordagens diferentes.');}salvar();avisar('Experimento criado. Nenhuma empresa foi sorteada ainda.');abrir('lab');});
   f('#cv-est',d=>{const n=k=>d[k]===''?null:Math.max(0,Number(d[k])||0);conv(estado()).estimativa={contatos:n('contatos'),semResposta:n('semResposta'),respondeuSumiu:n('respondeuSumiu'),recusas:n('recusas'),informadaEm:new Date().toISOString(),tipo:'estimativa-do-usuario'};salvar();avisar('Guardada como hipótese. Não entra nas métricas reais.');abrir('funil');});
@@ -128,24 +96,13 @@ export function criarConversao(ctx){
  }
  const acoes={
   aba:id=>abrir(id),
-  'abrir-conversa':id=>{abSel='';analise=null;abrir('conversa',id);},
-  abordagem:id=>{abSel=id;abrir('conversa');},
-  copiar:async()=>{const v=document.querySelector('#cv-texto')?.value||'';try{await navigator.clipboard.writeText(v);avisar('Copiado. Nada foi registrado como enviado.');}catch{avisar('Selecione o texto e copie manualmente.');}},
-  whatsapp:()=>{const e=emp(),v=document.querySelector('#cv-texto')?.value||'';const l=linkWhatsapp(e.whatsapp||e.telefone,v);if(!l)return avisar('Cadastre um WhatsApp válido com DDD na empresa.');abrirExterno(l);avisar('WhatsApp aberto com o texto. Nada foi registrado como enviado: confirme depois de enviar.');},
-  rascunho:()=>{const e=emp(),v=document.querySelector('#cv-texto')?.value||'';if(!v.trim())return;conv(estado()).rascunhos.push({id:novoId(),empresaId:e.id,texto:v,abordagem:abSel,origem:'usuario',criadoEm:new Date().toISOString(),enviado:false,auditoria:auditarMensagem(v,{primeiraMensagem:true})});salvar();avisar('Rascunho salvo (não enviado).');},
-  enviei:id=>{const e=emp(),v=document.querySelector('#cv-texto')?.value||'',est=estado(),perm=podeContatar(e,'whatsapp');if(!perm.ok)return avisar(perm.motivo);
-   const aud=auditarMensagem(v,{primeiraMensagem:!eventosDaEmpresa(est,e.id,'mensagem-enviada').length});if(!aud.ok&&!confirmar('A auditoria encontrou problemas:\n- '+aud.erros.join('\n- ')+'\n\nRegistrar mesmo assim?'))return;
-   if(perm.nivel==='sem-registro'&&!confirmar('Não há consentimento registrado para esta empresa neste canal. Um número publicado não é consentimento. Você confirma que está fazendo um contato comercial legítimo e que vai respeitar um pedido para parar?'))return;
-   const ab=gerarAbordagens(est,e).abordagens.find(a=>a.id===id),exp=est.experimentos.filter(x=>x.conv&&x.ativo).map(x=>({x,a:x.atribuicoes.find(a=>a.empresaId===e.id&&!a.enviada)})).find(o=>o.a);
-   let expId='',varId='';if(exp){const vr=exp.x.variantes.find(v=>v.id===exp.a.varianteId);if(vr?.abordagem===ab.estrategia){expId=exp.x.id;varId=vr.id;exp.a.enviada=true;}else if(confirmar('Esta empresa foi sorteada para outra abordagem. Registrar um DESVIO do experimento e seguir sem contá-la como enviada nele?'))registrarDesvio(est,exp.x,`${e.nome}: enviada abordagem ${ab.estrategia} em vez de ${vr?.abordagem}`);else return;}
-   confirmarEnvioMensagem(est,e,{texto:v,estrategia:ab.estrategia,variante:varId,tipo:'conversao-'+id,experimentoId:expId});registrarRecomendacao(est,recomendarAbordagem(est,e));
-   if(confirmar('Agendar retorno em '+(conv(est).config.follow.intervalosDias[0])+' dias se não houver resposta?')){const q=somarDias(conv(est).config.follow.intervalosDias[0]);e.retornoEm=q;est.lembretes.push({id:novoId(),titulo:'Retomar conversa · '+e.nome,quando:q,empresa:e.id,concluido:false,origem:'conversao'});est.notificacoesLidas=false;}
-   salvar();avisar('Envio registrado (confirmado por você).');abrir('conversa');},
-  'registrar-resposta':()=>{const e=emp(),a=analise;if(!a)return;registrarResposta(estado(),e,{texto:a.texto,interesse:a.interesse,pediuDemo:!!a.pediuDemo,naoReceber:!!a.pediuParar,recusou:!!a.recusaClara});salvar();analise=null;textoResposta='';avisar(a.pediuParar?'Resposta registrada e contato bloqueado (pediu para parar).':'Resposta registrada. O estado da conversa foi atualizado com base nos eventos.');abrir('conversa');},
+  'abrir-conversa':(id,alvo)=>abrirConversa(id,{tipo:alvo?.dataset?.extra||''}),
+  ...conversa.acoes,
   sortear:id=>{const x=estado().experimentos.find(y=>y.id===id),el=elegiveis(estado(),x);if(!confirmar(`Sortear ${el.length} empresa(s) entre as variantes? O sorteio é registrado e não pode ser refeito para as mesmas empresas. Nenhuma mensagem será enviada.`))return;distribuir(estado(),x,el.map(e=>e.id));salvar();avisar('Empresas distribuídas. Abra cada uma na aba Conversa; a abordagem sorteada será usada.');abrir('lab');},
   analisar:id=>{const x=estado().experimentos.find(y=>y.id===id);resultadoExperimentoConversao(estado(),x,{registrarOlhada:true});salvar();abrir('lab');},
   desvio:id=>{const m=window.prompt('Descreva o desvio do protocolo:','');if(!m)return;registrarDesvio(estado(),estado().experimentos.find(y=>y.id===id),m);salvar();abrir('lab');},
   'encerrar-exp':id=>{const x=estado().experimentos.find(y=>y.id===id);if(!confirmar('Encerrar este experimento? Os resultados ficam guardados.'))return;x.ativo=false;x.fim=new Date().toISOString();salvar();abrir('lab');}
  };
- return {abrir,acoes};
+ function abrirConversa(id,opts={}){conversa.definirEmpresa(id,opts);abrir('conversa');}
+ return {abrir,abrirConversa,acoes};
 }
