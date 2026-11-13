@@ -108,4 +108,4 @@
 .cartao-exp.recomendada{border-color:#e3af7e99;box-shadow:0 0 0 1px #e3af7e33}
 .detalhe-pub{margin-top:12px;padding-top:10px;border-top:1px solid #b4c8e533}
 .cartao-exp textarea,.cartao-exp select,.painel-contextual form textarea{width:100%}
-@media(max-width:640px){.plano-dia li{flex-direction:column;align-items:stretch}.plano-dia button{width:100%;min-height:48px}.acoes-linha button{flex:1 1 100%;min-height:46px}.abas{overflow-x:auto;flex-wrap:nowrap}.abas button{flex:0 0 auto}.resumo-relatorio.quatro{grid-template-columns:1fr 1fr}.area-tabela{overflow-x:auto}}
+@media(max-width:640px){.plano-dia li{flex-direction:column;align-items:stretch}.plano-dia button{width:100%;min-height:48px}.acoes-linha button{flex:1 1 100%;min-height:46px}.abas{overflow-x:auto;flex-wrap:nowrap}.abas button{flex:0 0 auto}.area-tabela{overflow-x:auto}}
