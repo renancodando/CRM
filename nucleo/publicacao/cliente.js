@@ -44,18 +44,24 @@ export function criarPublicador({transporte,espera=ms=>new Promise(r=>setTimeout
     const montar=()=>{const m=Object.fromEntries(lista.map(a=>['/'+a.caminho,pub.hashes[a.caminho]]));if(Object.values(m).some(h=>!h))throw Error('Faltam hashes de alguns arquivos; tente novamente.');return m;};
     let manifesto=montar();
     passo('finalizando');
+    if(r1.reenviados<lista.length){
+     const c=await post('publicar-conferir',{projeto:ini.projeto,hashes:[...new Set(Object.values(manifesto))]});
+     const perdidos=new Set(c.faltando||[]);
+     if(perdidos.size){for(const a of lista)if(perdidos.has(pub.hashes[a.caminho])){delete pub.hashes[a.caminho];delete pub.conteudos[a.caminho];}log('aviso',`${perdidos.size} arquivo(s) reaproveitados já não estavam na Cloudflare: reenviando só esses.`);await enviarFaltantes(false);manifesto=montar();}
+    }
+    const chaveCompleta=()=>imp.pacote+':'+chave(manifesto);
     const estadoDeploy=()=>t.chamar('publicar-estado',{q:{projeto:ini.projeto,deploy:pub.deployId}});
     const descartar=(motivo,falho,st)=>{if(falho){pub.deploysFalhos=[...(pub.deploysFalhos||[]).slice(-9),{id:pub.deployId,quando:new Date().toISOString(),estagio:st?.estagios?.find(x=>x.estado==='failure'||x.estado==='canceled')?.nome||st?.estagio||'',motivo}];}log(falho?'aviso':'info',motivo);passo(pub.etapa,{deployId:'',deployUrl:'',deployManifestoHash:''});};
     let st=null;
     if(pub.deployId){
-     if(pub.deployManifestoHash!==chave(manifesto))descartar('O conteúdo mudou desde o último deploy: criando um novo.',false);
+     if(pub.deployManifestoHash!==chaveCompleta())descartar('O conteúdo mudou desde o último deploy: criando um novo.',false);
      else{try{st=await estadoDeploy();}catch(e){if(e.http===404){descartar('O deploy anterior não existe mais na Cloudflare: criando um novo.',true);}else throw e;}
       if(st&&st.falhou){descartar('O deploy anterior falhou na Cloudflare: criando um novo.',true,st);st=null;}}
     }
     if(!pub.deployId){
-     const criar=async()=>{const d=await post('publicar-finalizar',{projeto:ini.projeto,manifesto,mensagem:'Órbita v'+(pub.versao||1),cabecalhos});passo('aguardando',{deployId:d.id,deployUrl:d.url,deployManifestoHash:chave(manifesto)});};
+     const criar=async()=>{const d=await post('publicar-finalizar',{projeto:ini.projeto,manifesto,mensagem:'Órbita v'+(pub.versao||1),cabecalhos});passo('aguardando',{deployId:d.id,deployUrl:d.url,deployManifestoHash:chaveCompleta()});};
      try{await criar();}
-     catch(e){if(r1.reenviados<lista.length&&!/permiss|Credencial|token|Authentication|limite/i.test(e.message)){log('aviso','A criação do deploy falhou ('+e.message+'). Reenviando todos os arquivos, pois os reaproveitados podem ter expirado na Cloudflare.');await enviarFaltantes(true);manifesto=montar();await criar();}else throw e;}
+     catch(e){if(r1.reenviados<lista.length&&[400,404,409,422].includes(e.http)&&!/permiss|Credencial|token|Authentication|limite/i.test(e.message)){log('aviso','A criação do deploy falhou ('+e.message+'). Reenviando todos os arquivos, pois os reaproveitados podem ter expirado na Cloudflare.');await enviarFaltantes(true);manifesto=montar();await criar();}else throw e;}
      st=null;
     }
     const limite=agora()+esperaMaxMs;
@@ -63,7 +69,7 @@ export function criarPublicador({transporte,espera=ms=>new Promise(r=>setTimeout
      if(!st)st=await estadoDeploy();
      if(st.concluido)break;
      if(st.falhou){const motivo='O deploy falhou na Cloudflare ('+(st.estagios?.find(x=>x.estado==='failure'||x.estado==='canceled')?.nome||'etapa desconhecida')+'). Ao tentar de novo, um novo deploy será criado.';descartar(motivo,true,st);throw Error(motivo);}
-     if(agora()>limite){passo('aguardando',{estado:'em-processamento'});log('aviso','A Cloudflare ainda processa o deploy; verifique novamente em instantes.');return pub;}
+     if(agora()>limite){passo('aguardando',{estado:'em-processamento'});log('aviso',`A Cloudflare ainda processa o deploy (etapa "${st.estagio||'?'}", estado "${st.estado||'?'}"); verifique novamente em instantes.`);return pub;}
      st=null;await espera(2500);
     }
     passo('verificando');const v=await verificar(pub,t,espera);
@@ -74,7 +80,7 @@ export function criarPublicador({transporte,espera=ms=>new Promise(r=>setTimeout
   },
   verificar:pub=>verificar(pub,t,espera),
   async listarDeploys(projeto){return (await t.chamar('publicar-deploys',{q:{projeto}})).deploys;},
-  async restaurar(projeto,deploy){return post('publicar-restaurar',{projeto,deploy});},
+  async restaurar(pub,deploy){const r=await post('publicar-restaurar',{projeto:pub.projeto,deploy});pub.deployId='';pub.deployUrl='';pub.deployManifestoHash='';pub.restauradoDe=deploy;pub.restauradoEm=new Date().toISOString();return r;},
   async excluirDeploy(projeto,deploy){return post('publicar-excluir',{projeto,deploy,confirmacao:'EXCLUIR '+projeto});},
   async excluirProjeto(projeto){return post('publicar-excluir',{projeto,confirmacao:'EXCLUIR PROJETO '+projeto});}
  };

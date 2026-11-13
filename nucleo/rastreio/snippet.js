@@ -35,7 +35,7 @@ function faixa(){if(consent||document.getElementById('orb-ac'))return;var d=docu
  document.body.appendChild(d);document.getElementById('orb-s').onclick=function(){escolher('sim');};document.getElementById('orb-n').onclick=function(){escolher('nao');};}
 function recorrente(){try{return !!localStorage.getItem('orb-visto');}catch(e){return false;}}
 function marcarVisto(){try{localStorage.setItem('orb-visto','1');}catch(e){}}
-function descartar(){fila=[];try{sessionStorage.removeItem(KS);}catch(e){}if(!paginaEnviada){paginaId=null;ligada=false;}}
+function descartar(){fila=[];try{sessionStorage.removeItem(KS);localStorage.removeItem('orb-visto');}catch(e){}if(!paginaEnviada){paginaId=null;ligada=false;}}
 function escolher(v){var d=document.getElementById('orb-ac');if(d)d.remove();
  if(v!=='sim'){consent='nao';gravarC('nao');descartar();return;}
  consent='sim';gravarC('sim');

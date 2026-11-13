@@ -27,16 +27,16 @@ export function criarPublicacoes(ctx){
   catch(e){avisar(e.message);abrir('integracoes');return null;}
   const existentes=est.publicacoes.filter(p=>p.demonstracaoId!==demo.id).map(p=>p.projeto);
   const projeto=pub?.projeto||nomeDoProjeto(empresa,existentes);
-  let rast=pub?.rastreio||null;
-  if(est.config.publicacao.rastreioAtivo){try{const s=statusRast=await tr().chamar('rastreio-status');if(s.configurado&&s.coletorAtivo){const c=await tr().chamar('rastreio-credencial',{metodo:'POST',corpo:{demo:rast?.demo}});rast={demo:c.demo,chave:c.chave,url:c.url,modo:est.config.publicacao.modoRastreio};}else avisar('Acompanhamento desativado: o coletor não está ativo. A demonstração será publicada sem medição.');}catch(e){avisar('Acompanhamento indisponível ('+e.message+'). Publicando sem medição.');rast=null;}}
-  const pronto=prepararParaPublicar(arquivos,{empresa,autor:est.preferencias.nome||'o desenvolvedor',rastreio:rast});
+  let cred=pub?.rastreio||null,inj=null;
+  if(est.config.publicacao.rastreioAtivo){try{const s=statusRast=await tr().chamar('rastreio-status');if(s.configurado&&s.coletorAtivo){const c=await tr().chamar('rastreio-credencial',{metodo:'POST',corpo:{demo:cred?.demo}});cred={demo:c.demo,chave:c.chave,url:c.url,modo:est.config.publicacao.modoRastreio};inj=cred;}else avisar('Acompanhamento desativado: o coletor não está ativo. A demonstração será publicada sem medição.');}catch(e){avisar('Acompanhamento indisponível ('+e.message+'). Publicando sem medição.');}}
+  const pronto=prepararParaPublicar(arquivos,{empresa,autor:est.preferencias.nome||'o desenvolvedor',rastreio:inj});
   const audit=auditarPrivacidade(pronto.arquivos,{empresa,empresas:est.empresas});
   if(audit.erros){mostrarAuditoria(audit,projeto);return null;}
   if(!est.config.publicacao.automatica&&!confirmar(`Publicar a demonstração de "${empresa.nome}" em https://${projeto}.pages.dev?\n\nO site fica acessível a quem tiver o link (sem indexação no Google) até você excluir. ${pronto.lista.length} arquivos, ${(pronto.tamanho/1e6).toFixed(1)} MB.`))return null;
   const imp=await impressaoDoPacote(pronto.arquivos,pronto.cabecalhos);
   if(!pub){pub=novaPublicacao({empresaId:empresa.id,demonstracaoId:demo.id,projeto,modeloId:demo.modeloId,versao:versao?.numero||1,versaoPacote:imp.pacote});est.publicacoes.push(pub);}
   else{pub.versao=versao?.numero||(pub.versao||0)+1;pub.versaoPacote=imp.pacote;}
-  pub.rastreio=rast;pub.empresaNome=empresa.nome;salvar();
+  pub.rastreio=cred;pub.rastreioAtivo=!!inj;pub.empresaNome=empresa.nome;salvar();
   progresso={pub,texto:'Preparando…'};abrir('publicacoes');
   try{
    await pb().publicar(pub,{arquivos:pronto.arquivos,cabecalhos:pronto.cabecalhos,aoEtapa:p=>{progresso={pub:p,texto:{iniciando:'Conectando à Cloudflare…',enviando:`Enviando arquivos${p.progresso?` (${p.progresso.lote}/${p.progresso.de})`:''}…`,finalizando:'Criando o deploy…',aguardando:'Aguardando a Cloudflare publicar…',verificando:'Verificando se o link responde…',concluida:'Concluído'}[p.etapa]||p.etapa};if(sel===''||true)atualizarProgresso();salvar();}});
@@ -109,7 +109,7 @@ export function criarPublicacoes(ctx){
   republicar:id=>{ctx.estudio.abrirDemonstracao(P(id).demonstracaoId);},
   versoes:id=>{sel=sel===id?'':id;abrir('publicacoes');},
   deploys:async id=>{const p=P(id);const alvo=document.querySelector('#pub-deploys');try{await garantirSessao();const d=await pb().listarDeploys(p.projeto);alvo.innerHTML=d.length?`<div class="area-tabela"><table class="tabela-empresas"><thead><tr><th>Deploy</th><th>Criado</th><th>Estado</th><th>Ação</th></tr></thead><tbody>${d.map(x=>`<tr><td>${t(x.id.slice(0,8))}</td><td>${t(dataHora(x.criado))}</td><td>${t(x.estado||'—')}</td><td><button type="button" data-m="publicacoes.restaurar" data-id="${t(p.id)}|${t(x.id)}">Restaurar</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="ajuda">Nenhum deploy encontrado.</p>';}catch(e){avisar(e.message);}},
-  restaurar:async v=>{const [id,dep]=v.split('|'),p=P(id);if(!confirmar('Restaurar este deploy como versão ativa de '+p.projeto+'? A Cloudflare só permite isso para deploys de produção anteriores.'))return;try{await pb().restaurar(p.projeto,dep);(p.logs??=[]).push({quando:new Date().toISOString(),nivel:'info',texto:'Deploy '+dep.slice(0,8)+' restaurado.'});salvar();avisar('Versão restaurada.');}catch(e){avisar(e.message);}abrir('publicacoes');},
+  restaurar:async v=>{const [id,dep]=v.split('|'),p=P(id);if(!confirmar('Restaurar este deploy como versão ativa de '+p.projeto+'? A Cloudflare só permite isso para deploys de produção anteriores.'))return;try{await pb().restaurar(p,dep);(p.logs??=[]).push({quando:new Date().toISOString(),nivel:'info',texto:'Deploy '+dep.slice(0,8)+' restaurado.'});salvar();avisar('Versão restaurada.');}catch(e){avisar(e.message);}abrir('publicacoes');},
   arquivar:id=>{const p=P(id);if(!confirmar('Arquivar esta publicação? O site continua no ar; ela só sai da lista.'))return;p.arquivada=true;p.estadoAntes=p.estado;salvar();abrir('publicacoes');},
   excluir:async id=>{const p=P(id);const txt=window.prompt(`Excluir o projeto "${p.projeto}" da Cloudflare apaga o site e o endereço ${p.urlPublica}. Isso não pode ser desfeito.\n\nPara confirmar, digite o nome do projeto:`,'');if(txt!==p.projeto)return avisar('Exclusão cancelada.');try{await garantirSessao();await pb().excluirProjeto(p.projeto);p.arquivada=true;p.estado='arquivada';p.urlPublica='';(p.logs??=[]).push({quando:new Date().toISOString(),nivel:'info',texto:'Projeto excluído da Cloudflare.'});salvar();avisar('Projeto excluído.');}catch(e){avisar(e.message);}abrir('publicacoes');},
   atualizar:async id=>{try{await atualizar(P(id));avisar('Métricas atualizadas.');}catch(e){avisar(e.message);}abrir('acompanhamento');},

@@ -91,3 +91,6 @@ Até 40 operações processadas por sincronização, 60 KB por operação, 200 K
 - `publicacoes`: `publicacoes-*.json` e `metricas-demonstracoes-*.json` (agregados; sem eventos brutos).
 - `diagnostico`: `diagnostico-0001.json` — funil, gargalos (com denominadores) e plano do dia.
 - Com `financeiro`: `condicoes-comerciais-0001.json` (**somente** preços públicos, parcelas, prazos) e `ofertas-*.json`. Custos, margens, preço mínimo, taxas e estratégia **nunca** são exportados.
+
+## Sincronização incremental
+O hash que decide se um arquivo exportado mudou **ignora `geradoEm`**; assim, sem mudanças nos dados, nada é regravado. A cada 6 horas uma sincronização grava `saida/estado-sync.json` (batimento) para que o assistente saiba que a ponte está viva e quando foi a última verificação; `geradoEm` dos arquivos de exportação indica quando aquele conteúdo foi gerado pela última vez (mudou). Em caso de dúvida sobre atualidade, consulte `ultimaSincronizacao`.

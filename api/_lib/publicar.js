@@ -39,6 +39,7 @@ async function tratar(acao,{e,f,url,corpo,metodo}){
  const c=cliente(e,f);
  if(acao==='publicar-iniciar'&&metodo==='POST'){const nome=projetoDe(e,nomeProjeto(corpo.nome));if(!nome)throw ERR('Informe um nome de projeto.');const p=await c.garantirProjeto(nome);return {status:200,corpo:{projeto:p.nome,subdominio:p.subdominio,url:'https://'+p.subdominio,criado:p.criado}};}
  if(acao==='publicar-lote'&&metodo==='POST'){const nome=projetoDe(e,corpo.projeto);return {status:200,corpo:await c.enviarLote(nome,corpo.arquivos)};}
+ if(acao==='publicar-conferir'&&metodo==='POST'){const nome=projetoDe(e,corpo.projeto);return {status:200,corpo:await c.conferirHashes(nome,corpo.hashes)};}
  if(acao==='publicar-finalizar'&&metodo==='POST'){const nome=projetoDe(e,corpo.projeto);const d=await c.finalizar(nome,corpo.manifesto,{mensagem:corpo.mensagem||'Órbita',cabecalhos:typeof corpo.cabecalhos==='string'?corpo.cabecalhos.slice(0,2000):''});return {status:200,corpo:d};}
  if(acao==='publicar-estado'){const nome=projetoDe(e,q.get('projeto'));return {status:200,corpo:await c.statusDeploy(nome,String(q.get('deploy')||'').replace(/[^a-f0-9-]/gi,''))};}
  if(acao==='publicar-deploys'){const nome=projetoDe(e,q.get('projeto'));return {status:200,corpo:{deploys:await c.listarDeploys(nome)}};}

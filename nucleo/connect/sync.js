@@ -26,7 +26,8 @@ export async function sincronizar(estado,transporte,{salvar=async()=>{},agora=()
   const exp=exportarAutorizado(estado,agora());let mudou=0;for(const [p,c] of Object.entries(exp.arquivos)){const h=hashArquivo(c);if(forcarExportacao||sync.hashes[p]!==h){arquivos[p]=c;sync.hashes[p]=h;mudou++;}}
   const antigos=Object.keys(sync.hashes).filter(p=>!(p in exp.arquivos));for(const p of antigos){arquivos[p]=null;delete sync.hashes[p];}
   arquivos['saida/estado-sync.json']=JSON.stringify({protocolo:VERSAO_PROTOCOLO,ultimaSincronizacao:agora().toISOString(),versaoDados:exp.versaoDados,nivel:estado.config.connect.nivel,operacoesPendentesRevisao:estado.operacoes.filter(o=>o.estado==='aguardando-revisao').length},null,1);
-  if(Object.keys(arquivos).length>1||publicar.length){await transporte.commit({mensagem:`Órbita: ${publicar.length} confirmação(ões), ${mudou} exportação(ões)`,arquivos});}
+  const heartbeat=!sync.ultimoCommit||agora().getTime()-new Date(sync.ultimoCommit).getTime()>6*3600e3;
+  if(Object.keys(arquivos).length>1||publicar.length||heartbeat){await transporte.commit({mensagem:`Órbita: ${publicar.length} confirmação(ões), ${mudou} exportação(ões)`,arquivos});sync.ultimoCommit=agora().toISOString();}
   for(const o of publicar)o.publicadaEstado=o.estado;rel.publicadas=publicar.length;rel.exportacoes=mudou;
   Object.assign(sync,{ultima:agora().toISOString(),versaoDados:exp.versaoDados,erro:'',tentativas:0,proxima:null,usuario:st.usuarioId});await salvar();
   return {ok:true,...rel};

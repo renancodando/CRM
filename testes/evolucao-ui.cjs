@@ -11,7 +11,7 @@ const hex=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h.toS
 (async()=>{
  const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
  const ctx=await b.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce',acceptDownloads:true});await ctx.addInitScript(`if(!localStorage.getItem('s')){localStorage.setItem('orbita-prospeccao-v2',${JSON.stringify(JSON.stringify(seed))});localStorage.setItem('s','1');}`);
- const enviados={};let deploys=0,rastreioAtivo=false;const chamadas=[],lotes=[];
+ const enviados={};let deploys=0,rastreioAtivo=false;const chamadas=[],lotes=[],manifestos=[];
  await ctx.route('**/api/connect**',async route=>{const u=new URL(route.request().url()),a=u.searchParams.get('acao'),body=route.request().postDataJSON?.()||{};chamadas.push(a);const j=o=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(o)});
   if(a==='status')return j({autenticado:true,csrf:'c',usuarioId:1,repositorio:'x/y'});
   if(a==='publicar-status')return j({configurada:true,tokenAtivo:true,conta:'abcd…wxyz',projetos:2,limites:{arquivosPorDeploy:20000,tamanhoArquivoMiB:25,observacao:'MOCK'}});
@@ -19,7 +19,8 @@ const hex=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h.toS
   if(a==='rastreio-credencial')return j({demo:'abcdefabcdef1234',chave:'k'.repeat(24),url:'https://coletor.test'});
   if(a==='publicar-iniciar')return j({projeto:body.nome,subdominio:body.nome+'.pages.dev',url:'https://'+body.nome+'.pages.dev',criado:true});
   if(a==='publicar-lote'){lotes.push(body.arquivos.map(f=>f.caminho));const hs={};for(const f of body.arquivos){let buf=Buffer.from(f.base64,'base64');if(f.gz)buf=zlib.gunzipSync(buf);enviados[f.caminho]=buf.toString('utf8');hs[f.caminho]=hex(f.caminho);}return j({hashes:hs,enviados:body.arquivos.length,jaExistiam:0});}
-  if(a==='publicar-finalizar'){deploys++;return j({id:'aaaaaaaa-bbbb-cccc-dddd-00000000000'+deploys,url:'https://h.x.pages.dev'});}
+  if(a==='publicar-conferir')return j({faltando:[]});
+  if(a==='publicar-finalizar'){manifestos.push(body.manifesto);deploys++;return j({id:'aaaaaaaa-bbbb-cccc-dddd-00000000000'+deploys,url:'https://h.x.pages.dev'});}
   if(a==='publicar-estado')return j({id:u.searchParams.get('deploy'),concluido:true,falhou:false,estagios:[]});
   if(a==='publicar-verificar')return j({status:200,disponivel:true,noindex:true,titulo:'Precision',verificadoEm:new Date().toISOString()});
   return route.fulfill({status:404,contentType:'application/json',body:JSON.stringify({erro:'MOCK sem rota '+a})});});
@@ -68,6 +69,13 @@ const hex=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h.toS
  await nav('publicacoes');await clicar('[data-m="publicacoes.aba"][data-id=integracoes]');await p.locator('#pub-cfg [name=rastreioAtivo]').check();await clicar('#pub-cfg [type=submit]');rastreioAtivo=true;
  await nav('publicacoes');await clicar('[data-m="publicacoes.republicar"]');await esp(1500);await p.locator('#confirmar-dados-publicos').check({force:true});const nLotes=lotes.length;await clicar('[data-estudio=publicar]');await esp(3000);const novos=lotes.slice(nLotes).flat().sort();
  ok(JSON.stringify(novos)==='["index.html","js/orbita-rastreio.js"]','ativar acompanhamento reenvia SÓ os arquivos modificados ('+novos.join(',')+')');ok(/orbita-rastreio\.js/.test(enviados['index.html']||'')&&/abcdefabcdef1234/.test(enviados['js/orbita-rastreio.js']||''),'index.html publicado referencia o script de acompanhamento com a credencial da demonstração');e=await estado();ok(e.publicacoes[0].rastreio?.demo==='abcdefabcdef1234'&&!JSON.stringify(e.publicacoes).includes('CLOUDFLARE'),'credencial do acompanhamento guardada na publicação, sem segredos');
+ /* desligar o acompanhamento REMOVE o script (privacidade) mantendo a credencial para excluir dados depois */
+ const republicar=async()=>{await nav('publicacoes');await clicar('[data-m="publicacoes.republicar"]');await esp(1500);await p.locator('#confirmar-dados-publicos').check({force:true});const n=lotes.length;await clicar('[data-estudio=publicar]');await esp(3000);return lotes.slice(n).flat().sort();};
+ const config=async(on)=>{await nav('publicacoes');await clicar('[data-m="publicacoes.aba"][data-id=integracoes]');const c=p.locator('#pub-cfg [name=rastreioAtivo]');on?await c.check():await c.uncheck();await clicar('#pub-cfg [type=submit]');};
+ await config(false);let up=await republicar();ok(JSON.stringify(up)==='["index.html"]'&&!('/js/orbita-rastreio.js' in manifestos.at(-1))&&!/orbita-rastreio/.test(enviados['index.html']),'DESLIGAR acompanhamento: só index.html é reenviado e o script some do deploy ('+up.join(',')+')');
+ e=await estado();ok(e.publicacoes[0].rastreioAtivo===false&&e.publicacoes[0].rastreio?.demo==='abcdefabcdef1234','credencial preservada (para excluir dados) mas sem injeção');
+ await config(true);up=await republicar();ok(JSON.stringify(up)==='["index.html","js/orbita-rastreio.js"]'&&('/js/orbita-rastreio.js' in manifestos.at(-1)),'religar acompanhamento volta a publicar o script');
+ rastreioAtivo=false;up=await republicar();ok(JSON.stringify(up)==='["index.html"]'&&!('/js/orbita-rastreio.js' in manifestos.at(-1))&&!/orbita-rastreio/.test(enviados['index.html']),'coletor inativo com a opção ligada: publica SEM medição (nada é injetado)');e=await estado();ok(e.publicacoes[0].rastreioAtivo===false,'estado da publicação reflete que não há medição');rastreioAtivo=true;
  /* dados internos fora do export Connect por padrão */
  const x=await p.evaluate(()=>JSON.stringify(JSON.parse(localStorage.getItem('orbita-prospeccao-v2')||'{}')).length);
  /* celular */

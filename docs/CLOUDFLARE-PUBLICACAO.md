@@ -12,7 +12,9 @@ Republicar reaproveita o mesmo projeto (mesmo endereço) e só envia o que mudou
 
 ## Cache incremental e recuperação de falhas
 - **Identidade do pacote = conteúdo.** Antes de enviar, o navegador calcula o SHA-256 de cada arquivo do pacote **já preparado** (HTML, CSS, JS, script de acompanhamento) e dos cabeçalhos (`_headers`), e guarda por arquivo o hash da Cloudflare. Só é reenviado o que mudou: ativar/desativar o acompanhamento ou trocar o modo altera `index.html` e/ou `js/orbita-rastreio.js` e apenas eles sobem. Pacote idêntico não reenvia nada nem cria outro deploy. A versão do Estúdio **não** é usada como chave.
-- Se a Cloudflare recusar a criação do deploy por causa de assets reaproveitados que possam ter expirado, o Órbita reenvia todos os arquivos e tenta uma vez mais.
+- **O cache se valida sozinho:** antes de criar o deploy, o Órbita confere na Cloudflare (só por hash, sem enviar bytes) se os arquivos reaproveitados ainda existem e reenvia apenas os que sumiram. Como segurança extra, se a criação do deploy falhar com erro 400/404/409/422, reenvia tudo e tenta uma vez mais (nunca para 429/5xx).
+- A chave do deploy cobre o pacote inteiro (arquivos + cabeçalhos): mudar só `_headers` também gera um novo deploy. **Restaurar** uma versão (rollback) invalida o deploy salvo, para que republicar depois crie um deploy novo em vez de reportar o antigo como ativo.
+- Quando o deploy demora, o registro da publicação guarda a etapa e o estado reais devolvidos pela Cloudflare (diagnóstico do primeiro deploy real).
 - **Estados do deploy:** *pendente* (retomado com o mesmo id, sem criar outro), *concluído* (reaproveitado se o conteúdo for o mesmo) e *falho* (`failure`, `canceled` ou etapa com falha). Ao falhar, os identificadores são invalidados (`deployId`, `deployManifestoHash`), o id fica em `deploysFalhos` e a próxima tentativa **cria um novo deploy** no mesmo projeto/endereço, sem reenviar assets. Deploy que sumiu (404) também é descartado.
 
 ## Configuração (uma vez)

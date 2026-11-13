@@ -20,6 +20,9 @@ Na Vercel defina `RASTREIO_URL` (endereço do Worker, https), `RASTREIO_SEGREDO`
 - Recusar ou revogar descarta tudo que ainda não foi enviado, para o envio e esquece a sessão; aceitar de novo não recontabiliza a visualização.
 - Seções já visíveis no momento do aceite passam a ser registradas (são reobservadas).
 
+> **Atualização do Worker:** o evento `sessao` (liga a visualização anônima à sessão após o aceite) só é aceito por esta versão do Worker. Reimplante (`npx wrangler deploy`) **antes** de republicar demonstrações com acompanhamento; um Worker antigo descarta o evento e a sessão não é ligada.
+> **Desligar o acompanhamento** em Publicações → Integrações faz a próxima publicação **remover** o script do site (a credencial fica guardada só para você poder excluir os dados).
+
 ## Garantias e limites das proteções
 - **Chave por demonstração**: cada site recebe `HMAC(SEGREDO, demo)`; eventos com chave inválida são recusados. Quem ler o código-fonte do site pode ver a chave e forjar eventos *daquela* demonstração: isso impede fabricação em massa para demos inexistentes, não um atacante determinado.
 - **Deduplicação** por id de evento na leitura; **limite de taxa** por demonstração/IP em memória do isolate (melhor esforço, não é global); tamanho máximo 8 KB e 40 eventos por lote; timestamps fora de ±24 h são descartados.

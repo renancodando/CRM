@@ -71,6 +71,10 @@ function criarCliente({contaId,token,f=globalThis.fetch,espera=ms=>new Promise(r
    if(paraEnviar.length)await req(`${API}/pages/assets/upload`,{metodo:'POST',auth:jwt,corpo:paraEnviar,contexto:'upload'});
    return {hashes:Object.fromEntries(itens.map(i=>[i.caminho,i.hash])),enviados:paraEnviar.length,jaExistiam:hashes.length-paraEnviar.length};
   },
+  async conferirHashes(nome,hashes){
+   if(!Array.isArray(hashes)||!hashes.length||hashes.length>LIM.arquivos||hashes.some(h=>!/^[a-f0-9]{32}$/.test(h)))throw Object.assign(Error('Lista de hashes inválida.'),{status:400,publico:true});
+   const jwt=await this.tokenUpload(nome);const falt=(await req(`${API}/pages/assets/check-missing`,{metodo:'POST',auth:jwt,corpo:{hashes:[...new Set(hashes)]},contexto:'conferir'})).result||[];return {faltando:falt};
+  },
   async finalizar(nome,manifesto,{ramo='main',mensagem='Órbita',cabecalhos=''}={}){
    const chaves=Object.keys(manifesto||{});if(!chaves.length)throw Object.assign(Error('Manifesto vazio.'),{status:400,publico:true});if(chaves.length>LIM.arquivos)throw Object.assign(Error('Arquivos demais (limite de '+LIM.arquivos+').'),{status:413,publico:true});
    for(const k of chaves){const v=validarCaminho(k.replace(/^\//,''));if(v||!k.startsWith('/'))throw Object.assign(Error('Manifesto inválido: '+k.slice(0,60)),{status:400,publico:true});if(!/^[a-f0-9]{32}$/.test(manifesto[k]))throw Object.assign(Error('Hash inválido no manifesto.'),{status:400,publico:true});}
