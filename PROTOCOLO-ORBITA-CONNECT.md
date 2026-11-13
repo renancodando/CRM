@@ -61,6 +61,10 @@ Regras gerais
 | `conversao.objecao_registrada` | não | Registra uma objeção do cliente (catálogo do Órbita Conversão). |
 | `conversao.consentimento` | sim | Registra/revoga consentimento por canal (`origemConsentimento` obrigatória ao autorizar). Revogar bloqueia o contato. |
 | `conversao.experimento_criar` | não | Cria um experimento de conversão (hipótese, critério, 2–4 variantes, mínimo ≥ 10). Não sorteia empresas nem envia nada. |
+| `negociacao.oferta_registrada` | sim | Registra oferta apresentada / contraproposta / valor negociado (`tipoOferta`, `valorCentavos`). Não envia proposta nem concede desconto. |
+| `negociacao.proxima_acao` | não | Atualiza o texto da próxima ação (e retorno). |
+| `negociacao.followup_sugerido` | não | Rascunho + tarefa de follow-up para sua revisão. Rejeitada se o contato estiver bloqueado. Nunca envia. |
+| `publicacao.registrar` | não | Registra uma publicação feita fora do Órbita (https obrigatório, **não verificada**). |
 | `reversao.solicitar` | sim | Pede a reversão de uma operação aplicada; sempre revisão. |
 
 ### Estados de processamento
@@ -81,3 +85,9 @@ Leia `saida/confirmacoes/<id>.json`: `estado`, `aplicada`, `mensagem`, `registro
 
 ## Limites
 Até 40 operações processadas por sincronização, 60 KB por operação, 200 KB por arquivo exportado. O GitHub é uma caixa de arquivos, não um banco de dados: não crie milhares de arquivos por dia. Versões compatíveis: `1.x`.
+
+## Consultas novas (escopos em *Dados compartilhados*, desligados por padrão)
+- `negociacoes`: `negociacoes-*.json` — estágio, quem aguarda, dias desde a última interação, próxima ação recomendada (com o que foi descartado) e leituras (fato, hipótese, confiança). Valores só com `financeiro`.
+- `publicacoes`: `publicacoes-*.json` e `metricas-demonstracoes-*.json` (agregados; sem eventos brutos).
+- `diagnostico`: `diagnostico-0001.json` — funil, gargalos (com denominadores) e plano do dia.
+- Com `financeiro`: `condicoes-comerciais-0001.json` (**somente** preços públicos, parcelas, prazos) e `ofertas-*.json`. Custos, margens, preço mínimo, taxas e estratégia **nunca** são exportados.

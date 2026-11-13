@@ -53,6 +53,12 @@ O ChatGPT (ou outro assistente) lê e grava **arquivos JSON** em um repositório
 
 Módulo de negociação baseado em evidências: fila de oportunidades com pontuação **explicável** (dado desconhecido reduz a confiança, não vale zero), seis abordagens de primeira mensagem (direta, consultiva, com demonstração, diagnóstico, baixo atrito, autonomia) com justificativa, técnica, evidência, pontos negativos e próxima mensagem; interpretação de respostas como **hipóteses**; catálogo de 21 objeções com respostas respeitosas (recusa e "pare" encerram o contato); proposta de valor limitada ao que o projeto entrega; follow-up com limites configuráveis; consentimento por canal e lista de não contatar; laboratório de experimentos controlados (sorteio estratificado, Wilson, Fisher, h de Cohen, correção por análises planejadas, sem vencedor em amostra pequena); diagnóstico do funil; memória comercial regularizada; treino com clientes fictícios isolados do CRM. Nada é enviado nem marcado como enviado sem a sua confirmação, e "venda fechada" nunca é inferida. Detalhes, limites científicos e primeiros experimentos: [docs/ORBITA-CONVERSAO.md](docs/ORBITA-CONVERSAO.md).
 
+## Publicação, acompanhamento, negociação e diagnóstico
+
+- **Publicar no Cloudflare** (Estúdio): gera, audita privacidade, envia por Direct Upload via ponte serverless autenticada, verifica o link e registra a publicação. [docs/CLOUDFLARE-PUBLICACAO.md](docs/CLOUDFLARE-PUBLICACAO.md)
+- **Acompanhamento** das demonstrações (Worker + R2, anônimo e com consentimento): [rastreio/LEIA-ME.md](rastreio/LEIA-ME.md)
+- **Negociação, Ofertas e Diagnóstico**: dossiê, leitura contextual, próxima melhor ação, simulador financeiro, motor de desconto, proposta profissional, funil de 19 etapas, gargalos, plano do dia e laboratório: [docs/NEGOCIACAO-E-DIAGNOSTICO.md](docs/NEGOCIACAO-E-DIAGNOSTICO.md)
+
 ## Arquivos
 
 `index.html` e `estilos.css` definem a composição. `interface.js` cuida da navegação e dos painéis originais, `nucleo/` reúne a lógica sem DOM (esquema, armazenamento, migração, backup, duplicidades, pontuação, ações comerciais, mensagens, propostas, métricas, automações, ICS e lote), `modulos/` os painéis novos (empresa, trabalho, mensagens, propostas, laboratório, financeiro e dados) com `modulos/modulos.css`, `dados.js` as etapas e modelos clássicos, `modelos.js` os sites clássicos e `utilitarios.js` os formatos e downloads. `api/` é a ponte serverless opcional do Connect, `esquemas/` os JSON Schemas do protocolo e `testes/` as verificações executáveis. `universo.js` contém o globo, reflexos, partículas, iluminação e órbitas Three.js. `icones.js` e `ativos/simbolo.svg` são vetores independentes.
@@ -93,6 +99,8 @@ node testes/quant-base.mjs; node testes/quant-metricas.mjs; node testes/quant-an
 node testes/connect-motor.mjs; node testes/connect-sync.mjs; node testes/connect-ponte.cjs; node testes/gerar-esquemas.mjs --conferir   # protocolo, sincronização, ponte e esquemas
 node testes/conversao-dominio.mjs; node testes/conversao-linguagem.mjs; node testes/conversao-lab.mjs; node testes/conversao-connect.mjs   # Órbita Conversão
 NODE_PATH=$(npm root -g) node testes/conversao-ui.cjs   # painel de conversão no navegador (servidor em :3111)
+node testes/ofertas.mjs; node testes/negociacao-conversa.mjs; node testes/negociacao-motor.mjs; node testes/diagnostico.mjs; node testes/connect-negociacao.mjs; node testes/rastreio.mjs; node testes/publicacao-cliente.mjs; node testes/migracao-evolucao.mjs; node testes/publicacao-ponte.cjs   # publicação, rastreio, negociação, ofertas e diagnóstico
+NODE_PATH=$(npm root -g) node testes/evolucao-ui.cjs   # novas telas no navegador (ponte simulada)
 node testes/exportacao.mjs DIR   # gera 27 pacotes (9 modelos × padrão/modular/sem 3D) e verifica privacidade e validação
 NODE_PATH=$(npm root -g) node testes/isolamento.cjs DIR   # abre cada pacote em um servidor isolado (desktop, celular e sem WebGL)
 NODE_PATH=$(npm root -g) node testes/responsividade.cjs   # painéis nos oito tamanhos (precisa do servidor em :3111)
