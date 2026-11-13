@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import {estadoInicial,normalizarEmpresa} from '../nucleo/esquema.js';
+import {importarConversaWhatsApp,aplicarMapa,salvarConversa,consolidarConversa} from '../nucleo/negociacao/conversa.js';
+let n=0;const ok=(nome,f)=>{try{f();n++;console.log('✔',nome);}catch(e){console.log('✘',nome,'\n  ',e.stack.split('\n').slice(0,3).join('\n'));process.exitCode=1;}};
+const android=`12/11/2026 14:35 - As mensagens e ligações são protegidas com a criptografia de ponta a ponta.
+12/11/2026 14:35 - Renan: Oi, tudo bem? Aqui é o Renan, desenvolvo sites para assistências.
+12/11/2026 14:40 - Carlos Smart: Oi
+Pode falar
+12/11/2026 14:41 - Carlos Smart: Ajudaria sim.
+12/11/2026 14:52 - Renan: Posso te mostrar uma prévia?
+13/11/2026 09:10 - Carlos Smart: Depende do valor`;
+const ios=`[12/11/2026 14:35:20] Renan: Oi!
+[12/11/2026 14:36:02] Maria Clínica: Olá`;
+const novo=()=>{const s=estadoInicial(),e=normalizarEmpresa({id:'e1',nome:'Smart Tech',cidade:'Lavras - MG'});s.empresas.push(e);return {s,e};};
+ok('Android: separa autores, junta linhas continuadas, ignora mensagem de sistema, preserva texto original',()=>{const r=importarConversaWhatsApp(android,{meuNome:'Renan'});const m=r.mensagens;assert.equal(m.length,6);assert.equal(m[0].autor,'sistema');assert.equal(m[1].autor,'eu');assert.equal(m[2].autor,'cliente');assert.equal(m[2].texto,'Oi\nPode falar');assert.equal(r.textoOriginal,android);assert.equal(r.precisaRevisao,false);assert.equal(new Date(m[5].quando).getDate(),13);});
+ok('iOS com colchetes e segundos',()=>{const r=importarConversaWhatsApp(ios,{meuNome:'Renan'});assert.equal(r.mensagens.length,2);assert.equal(r.mensagens[1].autor,'cliente');assert.equal(r.mensagens[1].nomeOriginal,'Maria Clínica');});
+ok('sem informar quem sou: dois participantes ficam INDEFINIDOS e exigem revisão (não adivinha)',()=>{const r=importarConversaWhatsApp(android);assert.equal(r.mensagens.filter(m=>m.autor==='indefinido').length,5);assert.equal(r.precisaRevisao,true);assert.ok(r.mensagens.find(m=>m.autor==='indefinido').motivosRevisao[0].includes('Não foi possível saber'));assert.throws(()=>salvarConversa(estadoInicial(),{id:'x',historico:[],nome:'x'},r,{confirmado:true}),/indefinido/);});
+ok('aplicar mapa manual resolve a revisão',()=>{const r=importarConversaWhatsApp(android);const a=aplicarMapa(r,{Renan:'eu','Carlos Smart':'cliente'});assert.equal(a.precisaRevisao,false);assert.equal(a.mensagens.filter(m=>m.autor==='eu').length,2);});
+ok('colar sem datas (Nome: texto): ordem do texto, sem inventar datas, pede revisão de data e avisa',()=>{const r=importarConversaWhatsApp('Renan: Oi tudo bem?\nCarlos: Oi\nCarlos: quanto custa?',{meuNome:'Renan'});assert.equal(r.formato,'sem-data');assert.equal(r.mensagens.length,3);assert.ok(r.mensagens.every(m=>m.quando===null&&m.revisar));assert.ok(r.avisos.some(a=>/não tem datas/.test(a)));assert.equal(r.mensagens[2].autor,'cliente');});
+ok('texto livre sem formato: uma mensagem indefinida, com aviso',()=>{const r=importarConversaWhatsApp('só um texto qualquer colado');assert.equal(r.mensagens.length,1);assert.equal(r.mensagens[0].autor,'indefinido');assert.ok(r.avisos.some(a=>/Não reconheci/.test(a)));});
+ok('datas fora de ordem são sinalizadas para revisão',()=>{const r=importarConversaWhatsApp('13/11/2026 10:00 - Renan: a\n12/11/2026 09:00 - Carlos: b',{meuNome:'Renan'});assert.ok(r.avisos.some(a=>/fora de ordem/.test(a)));assert.ok(r.mensagens[1].revisar);});
+ok('entrada vazia é recusada; grupo (3+ participantes) gera aviso',()=>{assert.throws(()=>importarConversaWhatsApp('   '),/Cole/);const r=importarConversaWhatsApp('12/11/2026 10:00 - A: x\n12/11/2026 10:01 - B: y\n12/11/2026 10:02 - C: z');assert.ok(r.avisos.some(a=>/grupo/.test(a)));});
+ok('salvar exige confirmação; consolidar cria eventos só após confirmação, sem duplicar em reimportação',()=>{const {s,e}=novo();const r=aplicarMapa(importarConversaWhatsApp(android),{Renan:'eu','Carlos Smart':'cliente'});assert.throws(()=>salvarConversa(s,e,r),/Confirme/);const c=salvarConversa(s,e,r,{confirmado:true});assert.equal(s.eventos.length,0);assert.throws(()=>consolidarConversa(s,e,c),/Confirme/);const x=consolidarConversa(s,e,c,{confirmado:true});assert.equal(x.criados,5);assert.equal(s.eventos.filter(v=>v.tipo==='mensagem-enviada').length,2);assert.equal(s.eventos.filter(v=>v.tipo==='resposta').length,3);assert.ok(s.eventos.every(v=>v.origem==='conversa-colada'&&v.quandoEstimado===false));const c2=salvarConversa(s,e,r,{confirmado:true});const y=consolidarConversa(s,e,c2,{confirmado:true});assert.equal(y.criados,0);assert.equal(y.duplicados,5);assert.ok(e.ultimoContato);});
+ok('sugestões nunca viram mensagens enviadas: rascunhos e conversa salva não criam eventos de envio',()=>{const {s,e}=novo();s.rascunhos.push({id:'r1',empresa:'e1',texto:'sugestão'});salvarConversa(s,e,aplicarMapa(importarConversaWhatsApp(ios),{Renan:'eu','Maria Clínica':'cliente'}),{confirmado:true});assert.equal(s.eventos.filter(v=>v.tipo==='mensagem-enviada').length,0);});
+console.log(n+' verificações aprovadas');
