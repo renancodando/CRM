@@ -1,6 +1,8 @@
 import {t,campo,dadosForm,dinheiro,dataCurta,paraInputData,lista,confirmar,nomeEmpresa} from './util.js';
 import {criarProposta,mudarEstadoProposta,registrarPagamento,totalPago} from '../nucleo/acoes.js';
-import {estadoExibicao,validarProposta,htmlProposta} from '../nucleo/propostas.js';
+import {estadoExibicao,validarProposta,htmlProposta as htmlBasica} from '../nucleo/propostas.js';
+import {htmlPropostaPremium} from '../nucleo/ofertas/proposta.js';
+const htmlProposta=(p,emp,o={})=>p.alternativas?.length?htmlPropostaPremium(p,emp,{autor:o.autor,marca:o.marca,alternativas:p.alternativas}):htmlBasica(p,emp,o);
 import {novoId,registrarAuditoria} from '../nucleo/esquema.js';
 import {baixarArquivo,normalizar} from '../utilitarios.js';
 export function criarPropostas(ctx){

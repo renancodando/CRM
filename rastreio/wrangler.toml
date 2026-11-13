@@ -1,0 +1,15 @@
+# Coletor de acompanhamento das demonstrações do Órbita.
+# Implantação: veja rastreio/LEIA-ME.md. Nunca coloque segredos neste arquivo.
+name = "orbita-rastreio"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+[[r2_buckets]]
+binding = "DADOS"
+bucket_name = "orbita-rastreio"
+
+[vars]
+RETENCAO_DIAS = "90"
+
+[triggers]
+crons = ["17 4 * * *"]

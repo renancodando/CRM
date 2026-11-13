@@ -115,6 +115,30 @@
    "sensivel": false,
    "esquema": "esquemas/conversao.experimento_criar.schema.json"
   },
+  "negociacao.oferta_registrada": {
+   "rotulo": "Registrar oferta apresentada/recebida",
+   "categoria": "negociacao",
+   "sensivel": true,
+   "esquema": "esquemas/negociacao.oferta_registrada.schema.json"
+  },
+  "negociacao.proxima_acao": {
+   "rotulo": "Atualizar a próxima ação da negociação",
+   "categoria": "negociacao",
+   "sensivel": false,
+   "esquema": "esquemas/negociacao.proxima_acao.schema.json"
+  },
+  "negociacao.followup_sugerido": {
+   "rotulo": "Criar sugestão de follow-up (rascunho + tarefa; não envia)",
+   "categoria": "negociacao",
+   "sensivel": false,
+   "esquema": "esquemas/negociacao.followup_sugerido.schema.json"
+  },
+  "publicacao.registrar": {
+   "rotulo": "Registrar publicação feita fora do Órbita (não verificada)",
+   "categoria": "publicacao",
+   "sensivel": false,
+   "esquema": "esquemas/publicacao.registrar.schema.json"
+  },
   "reversao.solicitar": {
    "rotulo": "Solicitar reversão de uma operação",
    "categoria": "reversao",

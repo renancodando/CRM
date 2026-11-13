@@ -91,3 +91,21 @@
 .resposta-quant{font-size:15px;color:#f0d6bd}
 .relatorio-previa li small{display:block}
 .abas button b{margin-left:6px;padding:1px 7px;border-radius:9px;background:#e4a26944;font-weight:500}
+
+/* Conversão, negociação, ofertas, publicações e diagnóstico */
+.acoes-linha{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.acoes-linha button,.painel-contextual form button[type=submit],.cartao-exp>button,.detalhe-pub button,#conteudo-painel .abas+* .acoes-linha button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:9px 14px;border:1px solid #b4c8e559;border-radius:10px;background:linear-gradient(130deg,#6885b32b,#20304788);color:#d8e4f5;font-size:12px;cursor:pointer;transition:border-color .2s,background .2s}
+.acoes-linha button:hover,.painel-contextual form button[type=submit]:hover{border-color:#e3af7e99}
+.acoes-linha .botao-principal,.painel-contextual form .botao-principal{border-color:#e3af7eb3;background:linear-gradient(130deg,#bd7d4844,#48382966);color:#f7d9b9}
+.acoes-linha .perigo{border-color:#d8979755;color:#edb4ac}
+.acoes-linha button:disabled,.abas button:disabled{opacity:.45;cursor:not-allowed}
+.acoes-linha button:focus-visible,.painel-contextual form button:focus-visible{outline:2px solid #e8b88a;outline-offset:2px}
+.vazio{padding:16px;border:1px dashed #b4c8e544;border-radius:12px;color:#aebcd1;font-size:12px}
+.erro{color:#f0b3a8}
+.lista-simples{list-style:none;padding:0;margin:6px 0}.lista-simples li{font-size:12px;margin:3px 0}
+.linha-do-tempo{list-style:none;margin:0;padding:0;display:grid;gap:10px}.linha-do-tempo li{padding:12px 14px;border:1px solid #b4c8e544;border-radius:12px;background:#0f1b2c80}.linha-do-tempo li.rascunho{border-style:dashed;opacity:.8}.linha-do-tempo p{margin:6px 0 0;word-break:break-word}
+.plano-dia{list-style:none;margin:12px 0;padding:0;display:grid;gap:10px}.plano-dia li{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid #b4c8e544;border-radius:14px;background:#0f1b2c99}.plano-dia li.fora-do-tempo{opacity:.55}.plano-dia p{margin:4px 0 0;font-size:12px;color:#b9c8dc}.plano-dia button{flex-shrink:0;min-height:44px;min-width:84px;border:1px solid #e3af7eb3;border-radius:12px;background:linear-gradient(130deg,#bd7d4844,#48382966);color:#f7d9b9;cursor:pointer}
+.cartao-exp.recomendada{border-color:#e3af7e99;box-shadow:0 0 0 1px #e3af7e33}
+.detalhe-pub{margin-top:12px;padding-top:10px;border-top:1px solid #b4c8e533}
+.cartao-exp textarea,.cartao-exp select,.painel-contextual form textarea{width:100%}
+@media(max-width:640px){.plano-dia li{flex-direction:column;align-items:stretch}.plano-dia button{width:100%;min-height:48px}.acoes-linha button{flex:1 1 100%;min-height:46px}.abas{overflow-x:auto;flex-wrap:nowrap}.abas button{flex:0 0 auto}.area-tabela{overflow-x:auto}}
