@@ -1,0 +1,129 @@
+/* Motor do Órbita Connect: valida, decide a política, aplica de forma atômica e idempotente, detecta conflitos e permite reverter. Mesmo código para troca manual de arquivos e para a sincronização com o GitHub privado. */
+import {validarOperacao,operacoes,VERSAO_PROTOCOLO} from './protocolo.js';
+import {normalizarEmpresa,novoId,registrarAuditoria,moverEtapa,eventosDaEmpresa} from '../esquema.js';
+import {encontrarDuplicidades,excluirEmpresa} from '../duplicidades.js';
+import {confirmarEnvioMensagem,registrarResposta,marcarNaoContatar,registrarPerda,reativar,registrarDemonstracaoApresentada,criarProposta,fecharVenda,registrarPagamento,mudarEstadoProposta} from '../acoes.js';
+import {pagamentoEmPeriodoFechado} from '../quant/auditoria.js';
+export const ESTADOS=['recebida','pendente-dependencia','aguardando-revisao','aplicada','rejeitada','conflito','revertida'];
+const colecoesRastreadas=['empresas','lembretes','demonstracoes','eventos','propostas','pagamentos','posVenda','custos','sessoes','tarefas'];
+const estavel=v=>v&&typeof v==='object'?Array.isArray(v)?v.map(estavel):Object.fromEntries(Object.keys(v).sort().map(k=>[k,estavel(v[k])])):v;
+const hashOp=op=>{const t=JSON.stringify(estavel(op));let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16);};
+const agora=()=>new Date().toISOString();
+export const configConnect=estado=>estado.config.connect;
+export function politica(op,estado){
+ const cfg=configConnect(estado),def=operacoes[op.tipo];if(cfg.nivel<=1)return {decisao:'bloqueada',motivo:'Nível 1 (consulta): o assistente não pode alterar registros.'};
+ const ov=cfg.permissoes?.[op.tipo];if(ov==='bloqueada')return {decisao:'bloqueada',motivo:'Esta operação foi bloqueada nas suas permissões.'};
+ let sens=def.sensivel;if(op.tipo==='empresa.situacao'&&op.situacao==='ativa')sens=true;
+ if(op.tipo==='reversao.solicitar')return {decisao:'revisao',motivo:'Reversões sempre exigem sua revisão.'};
+ if(cfg.nivel===2)return {decisao:'revisao',motivo:'Nível 2 (sugestão): toda operação aguarda sua revisão.'};
+ if(sens){if(cfg.nivel>=4&&cfg.sensiveisAuto?.[def.categoria]===true&&ov!=='revisao')return {decisao:'auto'};return {decisao:'revisao',motivo:'Operação sensível: exige sua revisão.'};}
+ return ov==='revisao'?{decisao:'revisao',motivo:'Você exigiu revisão para esta operação.'}:{decisao:'auto'};
+}
+function resolverEmpresa(estado,op){
+ if(op.empresaId){const e=estado.empresas.find(x=>x.id===op.empresaId);return e?{empresa:e}:{erro:'empresaId inexistente: '+op.empresaId};}
+ if(op.empresaRef){const cand=normalizarEmpresa({id:'ref',nome:op.empresaRef.nome||'',cidade:op.empresaRef.cidade||'',whatsapp:op.empresaRef.whatsapp,telefone:op.empresaRef.telefone,email:op.empresaRef.email,instagram:op.empresaRef.instagram,site:op.empresaRef.site}),d=encontrarDuplicidades(cand,estado.empresas).filter(x=>x.forca>=65);
+  if(!d.length)return {erro:'Nenhuma empresa corresponde à referência informada. Cadastre-a primeiro (empresa.criar).'};
+  if(d.length>1&&d[0].forca-d[1].forca<10)return {revisao:'Referência ambígua: '+d.slice(0,3).map(x=>x.empresa.nome).join(' / '),candidatos:d.slice(0,3).map(x=>x.empresa.id)};
+  if(d[0].forca<80)return {revisao:'Correspondência incerta com "'+d[0].empresa.nome+'" ('+d[0].motivos.join(', ')+').',candidatos:[d[0].empresa.id]};
+  return {empresa:d[0].empresa};}
+ return {erro:'Informe empresaId ou empresaRef.'};
+}
+const dig=v=>String(v??'').replace(/\D/g,'');
+const igualCampo=(k,a,b)=>{if(JSON.stringify(a)===JSON.stringify(b))return true;if(['whatsapp','telefone'].includes(k))return dig(a)&&dig(a).replace(/^55/,'')===dig(b).replace(/^55/,'');if(typeof a==='string'&&typeof b==='string')return a.trim().toLowerCase()===b.trim().toLowerCase();return false;};
+const camposDireto=['nome','nicho','whatsapp','telefone','email','contato','instagram','endereco','site','statusSite','fonte','verificadoEm','potencial','abordagem','proximaAcao','retornoEm','interesse','contatoDireto','responsavel','cro'];
+function dadosParaEmpresa(d){const o={};for(const k of camposDireto)if(d[k]!==undefined)o[k]=d[k];if(d.cidade!==undefined)o.cidade=d.estado?`${d.cidade} - ${d.estado.toUpperCase()}`:d.cidade;if(d.verificadoEm)o.verificadoEm=new Date(d.verificadoEm+'T12:00:00').toISOString();for(const k of ['diferenciais','servicosOferecidos'])if(d[k])o[k]=d[k];return o;}
+function aplicarSiteEvidencia(o,d){if(o.statusSite==='sem-site'&&!d.evidenciaSite){o.statusSite='desconhecido';return 'Status "sem site" não confirmado: falta a evidência da pesquisa. Registrado como desconhecido.';}return '';}
+function tagEventos(estado,antesIds,op){for(const e of estado.eventos){if(antesIds.has(e.id))continue;e.origem=op.origem;e.operacaoId=op.id;if(op.ocorreuEm||op.recebidoEm)e.quando=new Date(op.ocorreuEm||op.recebidoEm).toISOString();}}
+const reais=c=>c/100;
+const H={
+ 'empresa.criar':(estado,op,ctx)=>{const d=op.dados,o=dadosParaEmpresa(d),aviso=aplicarSiteEvidencia(o,d);const cand=normalizarEmpresa({...o,id:'novo'}),dups=encontrarDuplicidades(cand,estado.empresas);
+  if(dups.length&&!ctx.forcarCriacao)return {revisao:`Possível duplicidade com "${dups[0].empresa.nome}" (${dups[0].motivos.join(', ')}).`,candidatos:dups.slice(0,3).map(x=>x.empresa.id),permiteMesclar:dups[0].empresa.id};
+  const e=normalizarEmpresa({...o,id:ctx.idNovo||novoId(),criada:agora(),notas:[d.notas,d.evidenciaSite&&'Evidência sobre o site: '+d.evidenciaSite,aviso].filter(Boolean).join('\n'),fonte:o.fonte||('Assistente ('+op.origem+')'),historico:[{quando:agora(),texto:'Cadastrada pelo assistente ('+op.origem+').'}],origemCadastro:op.origem});estado.empresas.unshift(e);return {mensagem:`Empresa "${e.nome}" cadastrada.`+(aviso?' '+aviso:''),empresa:e};},
+ 'empresa.atualizar':(estado,op,ctx)=>{const r=resolverEmpresa(estado,op);if(r.erro)return {erro:r.erro};if(r.revisao)return r;const e=r.empresa,o=dadosParaEmpresa(op.dados),aviso=aplicarSiteEvidencia(o,op.dados),conflitos=[],base=op.base||{};if(ctx.apenasVazios)for(const k of Object.keys(o)){const a=e[k];if(!(a===''||a==null||a==='desconhecido'||(Array.isArray(a)&&!a.length))&&!Array.isArray(o[k]))delete o[k];}
+  if(op.versaoEsperada!=null&&op.versaoEsperada!==(e.rev||0)&&!op.base)ctx.versaoDivergente=true;
+  for(const [k,novo] of Object.entries(o)){const atual=e[k],igual=igualCampo(k,atual,novo),vazio=atual===''||atual==null||(Array.isArray(atual)&&!atual.length)||atual==='desconhecido';if(igual||Array.isArray(novo))continue;if(vazio)continue;
+   const visto=k in base?base[k]:undefined;if(visto===undefined?true:!igualCampo(k,visto,atual))conflitos.push({campo:k,atual,proposto:novo,base:visto===undefined?null:visto});}
+  if(conflitos.length&&!ctx.resolucoes)return {conflito:conflitos};
+  for(const [k,novo] of Object.entries(o)){const res=ctx.resolucoes?.[k];if(res==='manter')continue;if(Array.isArray(novo))e[k]=[...new Set([...(e[k]||[]),...novo])];else e[k]=novo;}
+  if(op.dados.notas)e.notas=[e.notas,`[${new Date().toLocaleDateString('pt-BR')}] ${op.dados.notas}`].filter(Boolean).join('\n');if(op.dados.evidenciaSite)e.notas=[e.notas,'Evidência sobre o site: '+op.dados.evidenciaSite].filter(Boolean).join('\n');if(aviso)e.notas+='\n'+aviso;
+  e.rev=(e.rev||0)+1;e.historico.push({quando:agora(),texto:'Atualizada pelo assistente ('+op.origem+'): '+Object.keys(op.dados).join(', ')+'.'});return {mensagem:`Empresa "${e.nome}" atualizada.`+(aviso?' '+aviso:''),empresa:e};},
+ 'empresa.etapa':(estado,op)=>{const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;const e=r.empresa;if(e.situacao==='nao-contatar')return {erro:'A empresa está marcada como "não contatar".'};if(e.etapa===op.etapa)return {mensagem:`"${e.nome}" já está em ${op.etapa}.`,empresa:e,semEfeito:true};moverEtapa(estado,e,op.etapa,'assistente');if(op.justificativa)e.historico.push({quando:agora(),texto:'Justificativa: '+op.justificativa});e.rev=(e.rev||0)+1;return {mensagem:`"${e.nome}" movida para ${op.etapa}.`,empresa:e};},
+ 'empresa.situacao':(estado,op)=>{const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;const e=r.empresa;if(op.situacao==='nao-contatar')marcarNaoContatar(estado,e,op.motivo||'');else if(op.situacao==='ativa')reativar(estado,e);else if(['perdida','recusada'].includes(op.situacao)){if(!op.motivo)return {erro:'motivo é obrigatório para perda/recusa.'};registrarPerda(estado,e,{motivo:op.motivo,situacao:op.situacao});}else{e.situacao='pausada';e.historico.push({quando:agora(),texto:'Pausada: '+(op.motivo||'sem motivo informado')});}e.rev=(e.rev||0)+1;return {mensagem:`Situação de "${e.nome}": ${op.situacao}.`,empresa:e};},
+ 'conversa.mensagem_enviada':(estado,op)=>{const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;try{confirmarEnvioMensagem(estado,r.empresa,{texto:op.texto,estrategia:op.estrategia||'',tipo:op.canal||''});}catch(x){return {erro:x.message};}r.empresa.rev=(r.empresa.rev||0)+1;return {mensagem:`Mensagem registrada em "${r.empresa.nome}".`,empresa:r.empresa};},
+ 'conversa.resposta_recebida':(estado,op)=>{const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;const e=r.empresa;registrarResposta(estado,e,{texto:op.texto||'',interesse:op.interesse,pediuDemo:!!op.pediuDemonstracao,naoReceber:!!op.pediuParar,recusou:!!op.recusou});const ev=estado.eventos.at(-1);if(op.interpretacao){const alvo=estado.eventos.filter(x=>x.empresaId===e.id&&x.tipo==='resposta').at(-1);if(alvo)alvo.interpretacao=op.interpretacao;}if(!op.texto)e.historico.push({quando:agora(),texto:'Resposta registrada sem o conteúdo (não informado).'});e.rev=(e.rev||0)+1;return {mensagem:`Resposta registrada em "${e.nome}"${op.texto?'':' (conteúdo não informado)'}.`,empresa:e};},
+ 'demonstracao.apresentada':(estado,op)=>{const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;const demo=estado.demonstracoes.find(d=>d.id===op.demonstracaoId&&d.empresaId===r.empresa.id);if(!demo)return {erro:'Demonstração inexistente ou de outra empresa.'};registrarDemonstracaoApresentada(estado,r.empresa,demo,{versaoId:op.versaoId||demo.versoes?.at(-1)?.id||'',link:demo.urlPublica||''});return {mensagem:`Demonstração "${demo.nome||demo.id}" registrada como apresentada.`,empresa:r.empresa};},
+ 'demonstracao.link_registrado':(estado,op)=>{const demo=estado.demonstracoes.find(d=>d.id===op.demonstracaoId);if(!demo)return {erro:'Demonstração inexistente.'};let u;try{u=new URL(op.url);}catch{return {erro:'URL inválida.'};}if(!['https:','http:'].includes(u.protocol)||u.username)return {erro:'URL não permitida.'};demo.urlPublica=u.href;demo.linkCadastrado=u.href;demo.publicacaoVerificada=false;demo.status='link registrado';demo.atualizado=agora();return {mensagem:'Link cadastrado. A publicação ainda não foi verificada automaticamente.'};},
+ 'proposta.criar':(estado,op)=>{const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;const p=criarProposta(estado,r.empresa,{valorOriginal:reais(op.valorOriginalCentavos),valorFinal:reais(op.valorFinalCentavos),demonstracaoId:op.demonstracaoId||'',escopo:op.escopo||'',condicoesPagamento:op.condicoesPagamento,validade:op.validade},estado.config.comercial);p.origem=op.origem;return {mensagem:`Proposta criada (estado: criada, ainda não enviada).`,empresa:r.empresa,registro:{colecao:'propostas',id:p.id}};},
+ 'venda.registrar':(estado,op)=>{const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;try{fecharVenda(estado,r.empresa,{valor:reais(op.valorContratadoCentavos),condicoes:[op.formaPagamento,op.condicoes].filter(Boolean).join(' · '),confirmado:true,propostaId:op.propostaId||''});}catch(x){return {erro:x.message};}return {mensagem:`Venda contratada registrada. Nenhum pagamento foi registrado.`,empresa:r.empresa};},
+ 'pagamento.registrar':(estado,op)=>{const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;const per=pagamentoEmPeriodoFechado(estado,op.recebidoEm);if(per)return {erro:`O período ${per.de} a ${per.ate} está fechado. Reabra o fechamento antes de registrar este pagamento.`};
+  if(estado.pagamentos.some(p=>p.operacaoId===op.id))return {mensagem:'Pagamento já existia.',semEfeito:true};let prop=op.propostaId;if(prop&&!estado.propostas.some(p=>p.id===prop&&p.empresaId===r.empresa.id))return {erro:'propostaId não pertence a esta empresa.'};
+  try{const pg=registrarPagamento(estado,r.empresa,{propostaId:prop||'',valor:reais(op.valorCentavos),forma:op.forma||'',observacao:op.observacao||'',confirmado:true,quando:new Date(op.recebidoEm).toISOString()});pg.operacaoId=op.id;pg.origem=op.origem;}catch(x){return {erro:x.message};}return {mensagem:`Pagamento de R$ ${(op.valorCentavos/100).toFixed(2).replace('.',',')} registrado como informado pelo usuário (ainda não conciliado).`,empresa:r.empresa};},
+ 'custo.registrar':(estado,op)=>{let emp=null;if(op.empresaId||op.empresaRef){const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;emp=r.empresa;}estado.custos.push({id:novoId(),descricao:op.descricao,tipo:op.categoria||'outro',categoria:op.categoria||'',valor:reais(op.valorCentavos),quando:new Date(op.ocorreuEm).toISOString(),empresaId:emp?.id||'',formaPagamento:op.formaPagamento||'',origem:op.origem,operacaoId:op.id});return {mensagem:`Custo "${op.descricao}" registrado.`};},
+ 'sessao.registrar':(estado,op)=>{let emp=null;if(op.empresaId||op.empresaRef){const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;emp=r.empresa;}const fim=new Date(op.inicio?new Date(op.inicio).getTime()+op.duracaoMinutos*6e4:Date.now()),ini=new Date(fim.getTime()-op.duracaoMinutos*6e4);estado.sessoes.push({id:novoId(),empresaId:emp?.id||'',atividade:op.atividade,inicio:ini.toISOString(),fim:fim.toISOString(),duracaoMin:op.duracaoMinutos,manual:true,observacao:op.observacao||'',origem:op.origem,operacaoId:op.id});return {mensagem:`${(op.duracaoMinutos/60).toFixed(2).replace('.',',')} h registradas em ${op.atividade}.`};},
+ 'tarefa.criar':(estado,op)=>{let emp=null;if(op.empresaId||op.empresaRef){const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;emp=r.empresa;}const id=novoId();estado.tarefas.push({id,titulo:op.titulo,descricao:op.descricao||'',empresaId:emp?.id||'',prazo:op.prazo||'',prazoSomenteData:op.prazoSomenteData||'',prioridade:op.prioridade||'media',categoria:op.categoria||'',duracaoH:op.duracaoHoras??null,dependeDe:op.dependeDe||[],estado:'aberta',criadaEm:agora(),origem:op.origem,operacaoId:op.id});
+  const quando=op.prazo||(op.prazoSomenteData?new Date(op.prazoSomenteData+'T09:00:00').toISOString():'');if(quando){estado.lembretes.push({id:novoId(),titulo:op.titulo+(emp?' · '+emp.nome:''),quando,empresa:emp?.id||'',concluido:false,origem:'assistente',tarefaId:id,operacaoId:op.id});estado.notificacoesLidas=false;}return {mensagem:`Tarefa "${op.titulo}" criada${quando?' com lembrete no Órbita (não é uma notificação do ChatGPT)':' sem data'}.`};},
+ 'tarefa.atualizar':(estado,op)=>{const t=estado.tarefas.find(x=>x.id===op.tarefaId);if(!t)return {erro:'Tarefa inexistente.'};if(op.estado){t.estado=op.estado;if(op.estado==='concluida')t.concluidaEm=agora();}if(op.prazo)t.prazo=op.prazo;if(op.observacao)t.descricao=[t.descricao,op.observacao].filter(Boolean).join('\n');return {mensagem:'Tarefa atualizada.'};}
+};
+function diff(antes,depois){
+ const criados=[],alterados=[];for(const c of colecoesRastreadas){const mapa=new Map((antes[c]||[]).map(x=>[x.id,x]));for(const x of depois[c]||[]){const a=mapa.get(x.id);if(!a)criados.push({colecao:c,id:x.id});else if(JSON.stringify(a)!==JSON.stringify(x)){const antesC={},depoisC={};for(const k of new Set([...Object.keys(a),...Object.keys(x)]))if(JSON.stringify(a[k])!==JSON.stringify(x[k])){antesC[k]=a[k];depoisC[k]=x[k];}alterados.push({colecao:c,id:x.id,antes:antesC,depois:depoisC});}}}
+ return {criados,alterados};
+}
+function restaurar(estado,snap){for(const k of Object.keys(estado))delete estado[k];Object.assign(estado,snap);}
+const confirmacao=(estado,reg,extra={})=>({protocolo:VERSAO_PROTOCOLO,id:'conf_'+reg.id,operacaoId:reg.id,tipo:reg.tipo,estado:reg.estado,processadoEm:reg.processadaEm||null,mensagem:reg.mensagem||'',registros:reg.registros||[],erros:reg.erros||[],conflitos:reg.conflitos||[],revisao:reg.revisao||null,aplicada:reg.estado==='aplicada',versaoDados:versaoDados(estado),...extra});
+export const versaoDados=estado=>`${estado.empresas.length}.${estado.eventos.length}.${estado.pagamentos.length}.${estado.operacoes.length}`;
+export function processarOperacao(estado,opBruto,{recebidaEm=agora(),forcarCriacao=false,resolucoes=null,ignorarPolitica=false,idNovo,apenasVazios=false}={}){
+ const v=validarOperacao(opBruto),h=opBruto&&typeof opBruto==='object'?hashOp(opBruto):'';
+ const existente=estado.operacoes.find(o=>o.id===opBruto?.id);
+ if(existente&&!ignorarPolitica){if(existente.hash!==h)return confirmacao(estado,{...existente,estado:'rejeitada',erros:['Identificador já utilizado por uma operação diferente.']},{repetida:true});if(['aplicada','rejeitada','revertida'].includes(existente.estado)||existente.estado==='aguardando-revisao'||existente.estado==='conflito')return confirmacao(estado,existente,{repetida:true});}
+ const reg=existente||{id:opBruto?.id||novoId(),tipo:opBruto?.tipo||'?',origem:opBruto?.origem||'?',hash:h,criadaEm:opBruto?.criadaEm||recebidaEm,recebidaEm,estado:'recebida',payload:opBruto,historico:[]};
+ if(!existente)estado.operacoes.push(reg);
+ const fim=(estadoNovo,extra={})=>{const alvo=estado.operacoes.find(o=>o.id===reg.id)||reg;Object.assign(alvo,extra,{estado:estadoNovo,processadaEm:agora()});alvo.historico=[...(alvo.historico||[]),{quando:alvo.processadaEm,estado:estadoNovo}];return confirmacao(estado,alvo);};
+ if(!v.ok)return fim('rejeitada',{erros:v.erros,mensagem:'Operação inválida.'});
+ const op=opBruto;
+ for(const dep of op.dependeDe||[]){const d=estado.operacoes.find(o=>o.id===dep);if(!d||d.estado!=='aplicada')return fim('pendente-dependencia',{mensagem:`Aguardando a operação ${dep} ser aplicada.`,erros:[]});}
+ const pol=ignorarPolitica?{decisao:'auto'}:politica(op,estado);
+ if(pol.decisao==='bloqueada')return fim('rejeitada',{erros:[pol.motivo],mensagem:pol.motivo});
+ if(pol.decisao==='revisao'&&!ignorarPolitica)return fim('aguardando-revisao',{revisao:{motivo:pol.motivo},mensagem:'Aguardando sua revisão no Órbita. Nada foi alterado ainda.'});
+ if(op.tipo==='reversao.solicitar'){const r=reverterOperacao(estado,op.operacaoId,op.motivo);return r.ok?fim('aplicada',{mensagem:'Operação revertida.',registros:[]}):fim('rejeitada',{erros:[r.motivo],mensagem:r.motivo});}
+ const snap=structuredClone(estado),antes=structuredClone(estado),eventosAntes=new Set(estado.eventos.map(e=>e.id)),ctx={forcarCriacao,resolucoes,idNovo,apenasVazios};
+ let res;try{res=H[op.tipo](estado,op,ctx);}catch(x){restaurar(estado,snap);return fim('rejeitada',{erros:['Falha interna: '+x.message],mensagem:'A operação não foi aplicada (nada foi alterado).'});}
+ if(res.erro){restaurar(estado,snap);return fim('rejeitada',{erros:[res.erro],mensagem:res.erro});}
+ if(res.revisao){restaurar(estado,snap);return fim('aguardando-revisao',{revisao:{motivo:res.revisao,candidatos:res.candidatos||[],permiteMesclar:res.permiteMesclar||null},mensagem:'Aguardando sua revisão: '+res.revisao});}
+ if(res.conflito){restaurar(estado,snap);return fim('conflito',{conflitos:res.conflito,mensagem:'Conflito com alterações feitas no Órbita. Nada foi sobrescrito.'});}
+ tagEventos(estado,eventosAntes,op);
+ const d=diff(antes,estado);
+ const regs=d.criados.filter(x=>!['eventos','lembretes'].includes(x.colecao)).map(x=>({entidade:x.colecao,id:x.id,rotulo:rotuloReg(estado,x)}));
+ if(res.empresa&&!regs.some(r=>r.id===res.empresa.id))regs.push({entidade:'empresas',id:res.empresa.id,rotulo:res.empresa.nome});
+ const r2=estado.operacoes.find(o=>o.id===reg.id);Object.assign(r2,{resultado:{criados:d.criados,alterados:d.alterados.filter(x=>x.colecao!=='operacoes'),semEfeito:!!res.semEfeito},registros:regs});
+ registrarAuditoria(estado,'connect',reg.id,`${op.tipo} aplicada (${op.origem})`);
+ return fim('aplicada',{mensagem:res.mensagem||'Aplicada.',registros:regs});
+}
+function rotuloReg(estado,{colecao,id}){const x=estado[colecao]?.find(y=>y.id===id);return x?.nome||x?.titulo||x?.descricao||x?.atividade||colecao;}
+export function aprovarRevisao(estado,opId,{forcarCriacao=false,mesclarEm=null}={}){
+ const reg=estado.operacoes.find(o=>o.id===opId);if(!reg||reg.estado!=='aguardando-revisao')throw Error('Operação não está aguardando revisão.');
+ const op=reg.payload;
+ if(mesclarEm&&op.tipo==='empresa.criar'){const novo={protocolo:op.protocolo,id:op.id+'#mesclar',tipo:'empresa.atualizar',origem:op.origem,criadaEm:op.criadaEm,empresaId:mesclarEm,dados:op.dados};const snap=structuredClone(estado),c=processarOperacao(estado,novo,{ignorarPolitica:true,apenasVazios:true});const sub=estado.operacoes.pop();if(c.estado==='aplicada'){Object.assign(reg,{estado:'aplicada',processadaEm:agora(),mensagem:'Mesclada na empresa existente após sua revisão.',registros:c.registros,resultado:sub?.resultado});reg.historico.push({quando:reg.processadaEm,estado:'aplicada'});return confirmacao(estado,reg);}if(c.estado==='conflito'){estado.operacoes.push(sub);Object.assign(reg,{estado:'conflito',conflitos:c.conflitos,processadaEm:agora()});return confirmacao(estado,reg);}restaurar(estado,snap);throw Error(c.mensagem);}
+ const c=processarOperacao(estado,{...op},{ignorarPolitica:true,forcarCriacao,recebidaEm:agora()});return c;
+}
+export function rejeitarRevisao(estado,opId,motivo='Rejeitada pelo usuário'){const reg=estado.operacoes.find(o=>o.id===opId);if(!reg||!['aguardando-revisao','conflito','pendente-dependencia'].includes(reg.estado))throw Error('Operação não pode ser rejeitada neste estado.');reg.estado='rejeitada';reg.erros=[motivo];reg.processadaEm=agora();reg.historico.push({quando:reg.processadaEm,estado:'rejeitada'});registrarAuditoria(estado,'connect',opId,'Rejeitada: '+motivo);return confirmacao(estado,reg);}
+export function resolverConflito(estado,opId,escolhas){const reg=estado.operacoes.find(o=>o.id===opId);if(!reg||reg.estado!=='conflito')throw Error('Operação não está em conflito.');reg.estado='recebida';const c=processarOperacao(estado,{...reg.payload},{ignorarPolitica:true,resolucoes:escolhas});return c;}
+export function reverterOperacao(estado,opId,motivo=''){
+ const reg=estado.operacoes.find(o=>o.id===opId);if(!reg)return {ok:false,motivo:'Operação inexistente.'};if(reg.estado!=='aplicada')return {ok:false,motivo:'Só operações aplicadas podem ser revertidas.'};
+ const dependentes=estado.operacoes.filter(o=>o.estado==='aplicada'&&(o.payload?.dependeDe||[]).includes(opId));if(dependentes.length)return {ok:false,motivo:`Há ${dependentes.length} operação(ões) aplicada(s) que dependem desta: reverta-as primeiro.`,impacto:dependentes.map(o=>o.id)};
+ const r=reg.resultado||{criados:[],alterados:[]},snap=structuredClone(estado);
+ for(const c of r.criados.filter(x=>x.colecao==='empresas')){const refs=[...estado.eventos.filter(e=>e.empresaId===c.id&&e.operacaoId!==opId&&!e.revertido),...['propostas','pagamentos','demonstracoes','sessoes','tarefas','custos'].flatMap(k=>(estado[k]||[]).filter(x=>(x.empresaId===c.id)&&x.operacaoId!==opId&&!(x.estado==='estornado')))];if(refs.length)return {ok:false,motivo:`A empresa criada por esta operação já tem ${refs.length} registro(s) posteriores (eventos, propostas, pagamentos…). Reverter destruiria a consistência do histórico.`,impacto:refs.length};}
+ for(const a of r.alterados){const x=estado[a.colecao].find(y=>y.id===a.id);if(!x)continue;for(const [k,v] of Object.entries(a.depois))if(JSON.stringify(x[k])!==JSON.stringify(v)&&!['historico','rev','ultimoContato','etapaEm','situacao','retornoEm'].includes(k)&&!k.startsWith('valor'))return {ok:false,motivo:`O campo "${k}" de "${x.nome||x.id}" foi alterado depois desta operação. Resolva manualmente.`};}
+ try{
+  for(const c of r.criados){const lst=estado[c.colecao],x=lst?.find(y=>y.id===c.id);if(!x)continue;
+   if(c.colecao==='eventos')x.revertido=true;else if(c.colecao==='pagamentos')x.estado='estornado';else if(c.colecao==='propostas')x.estado='cancelada';else if(c.colecao==='empresas')excluirEmpresa(estado,c.id);else{estado.lixeira.push({id:novoId(),tipo:c.colecao,colecao:c.colecao,item:x,excluidoEm:agora(),motivo:'reversao'});estado[c.colecao]=lst.filter(y=>y.id!==c.id);}}
+  for(const a of r.alterados){const x=estado[a.colecao].find(y=>y.id===a.id);if(!x)continue;for(const [k,v] of Object.entries(a.antes))if(k!=='historico')x[k]=v;if(a.colecao==='empresas'){x.rev=(x.rev||0)+1;x.historico.push({quando:agora(),texto:'Alteração do assistente revertida.'});}}
+  reg.estado='revertida';reg.reversao={em:agora(),motivo};reg.historico.push({quando:agora(),estado:'revertida'});registrarAuditoria(estado,'connect',opId,'Revertida: '+motivo);return {ok:true};
+ }catch(x){restaurar(estado,snap);return {ok:false,motivo:'Falha ao reverter: '+x.message};}
+}
+export function processarLote(estado,ops,{max=200}={}){
+ const saida=[];let criacoes=0;
+ for(const op of ops.slice(0,max)){const massa=op?.tipo==='empresa.criar'&&++criacoes>20;saida.push(processarOperacao(estado,massa?{...op}:op,massa?{}:{}));if(massa){const reg=estado.operacoes.find(o=>o.id===op.id);if(reg&&reg.estado==='aplicada'){}}}
+ return saida;
+}
+export function reprocessarDependencias(estado){const out=[];for(const o of estado.operacoes.filter(x=>x.estado==='pendente-dependencia')){const c=processarOperacao(estado,o.payload,{});out.push(c);}return out;}
+export function pendentesDeRevisao(estado){return estado.operacoes.filter(o=>['aguardando-revisao','conflito'].includes(o.estado));}

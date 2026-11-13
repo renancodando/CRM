@@ -9,6 +9,7 @@ export const tiposEvento=['mensagem-enviada','resposta','demonstracao-apresentad
 export const relacoes=[['lembretes','empresa'],['rascunhos','empresa'],['demonstracoes','empresaId'],['eventos','empresaId'],['propostas','empresaId'],['pagamentos','empresaId'],['posVenda','empresaId'],['custos','empresaId'],['sessoes','empresaId'],['tarefas','empresaId'],['decisoes','empresaId']];
 export const colecoes=['empresas','lembretes','rascunhos','demonstracoes','eventos','propostas','pagamentos','posVenda','custos','experimentos','lixeira','auditoria','mensagensSalvas','sessoes','tarefas','decisoes','metas','conhecimento','operacoes','consultas','fechamentos','extratos'];
 export const configuracaoPadrao=()=>({
+ connect:{nivel:2,permissoes:{},sensiveisAuto:{},fusoHorario:'America/Recife',compartilhado:{empresas:true,historico:true,tarefas:true,financeiro:false,indicadores:true,relatorios:false,notas:false},modo:'manual',repositorio:'',intervaloMin:5,ponte:'',sync:{}},
  quant:{valorHoraCent:null,margemAlvo:null,minimoResultadoCent:null,taxaDescontoAnual:null,saldoInicial:null,horasSemanaDisponiveis:null,limiteDescontoPct:30,diasSemRegistro:14},
  pesos:{semSite:25,contatoDireto:20,resposta:15,interesse:20,demonstracao:20},
  comercial:{precoNormal:1230,precoPromocional:800,precoPix:600,parcelasMax:12,jurosParcelas:0,suporteDias:30,prazoEntregaDias:7,validadeDias:7,pagamento:'Pagamento único pelo desenvolvimento.',suporte:'Um mês de suporte e pequenas alterações.'},
@@ -42,7 +43,7 @@ export function normalizarEstado(bruto){
  for(const c of colecoes)base[c]=Array.isArray(origem[c])?origem[c].filter(x=>x&&typeof x==='object'):[];
  base.empresas=base.empresas.map(normalizarEmpresa);
  base.preferencias={...base.preferencias,...(origem.preferencias||{})};
- const cfg=origem.config||{};base.config={quant:{...base.config.quant,...cfg.quant},pesos:{...base.config.pesos,...cfg.pesos},comercial:{...base.config.comercial,...cfg.comercial},automacoes:{...base.config.automacoes,...cfg.automacoes}};
+ const cfg=origem.config||{};base.config={connect:{...base.config.connect,...cfg.connect,compartilhado:{...base.config.connect.compartilhado,...cfg.connect?.compartilhado}},quant:{...base.config.quant,...cfg.quant},pesos:{...base.config.pesos,...cfg.pesos},comercial:{...base.config.comercial,...cfg.comercial},automacoes:{...base.config.automacoes,...cfg.automacoes}};
  base.notificacoesLidas=origem.notificacoesLidas!==false?true:false;
  for(const [chave,valor] of Object.entries(origem))if(!(chave in base)&&chave!=='versao')base[chave]=valor;
  return base;
@@ -59,7 +60,7 @@ export function validarIntegridade(estado){
 }
 export function registrarAuditoria(estado,tipo,alvo,resumo){estado.auditoria.push({id:novoId(),quando:new Date().toISOString(),tipo,alvo,resumo});if(estado.auditoria.length>1500)estado.auditoria.splice(0,estado.auditoria.length-1500);}
 export function registrarEvento(estado,empresaId,tipo,dados={},quando=new Date().toISOString()){const ev={origem:'usuario',...dados,id:novoId(),empresaId,tipo,quando,registradoEm:new Date().toISOString()};estado.eventos.push(ev);return ev;}
-export function eventosDaEmpresa(estado,id,tipo){return estado.eventos.filter(e=>e.empresaId===id&&(!tipo||e.tipo===tipo));}
+export function eventosDaEmpresa(estado,id,tipo){return estado.eventos.filter(e=>e.empresaId===id&&!e.revertido&&(!tipo||e.tipo===tipo));}
 export function moverEtapa(estado,empresa,etapa,origem='manual'){
  if(empresa.etapa===etapa)return false;const anterior=empresa.etapa;empresa.etapa=etapa;empresa.etapaEm=new Date().toISOString();
  empresa.historico.push({quando:empresa.etapaEm,texto:'Movida para '+(etapas.find(x=>x.id===etapa)?.nome||etapa)+'.'});

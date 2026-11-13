@@ -6,7 +6,7 @@ const mediana=l=>{if(!l.length)return null;const s=[...l].sort((a,b)=>a-b),m=Mat
 export const faixasPreco=[[0,500,'Até R$ 499'],[500,800,'R$ 500 a 799'],[800,1200,'R$ 800 a 1.199'],[1200,Infinity,'R$ 1.200 ou mais']];
 const faixa=v=>v==null?'Sem valor informado':faixasPreco.find(([a,b])=>v>=a&&v<b)?.[2]||'Sem valor informado';
 export function calcularLaboratorio(estado,{desde='',ate='',nicho='',agora=Date.now()}={}){
- const porEmpresa=new Map();for(const ev of estado.eventos){if(!porEmpresa.has(ev.empresaId))porEmpresa.set(ev.empresaId,[]);porEmpresa.get(ev.empresaId).push(ev);}
+ const porEmpresa=new Map();for(const ev of estado.eventos.filter(x=>!x.revertido)){if(!porEmpresa.has(ev.empresaId))porEmpresa.set(ev.empresaId,[]);porEmpresa.get(ev.empresaId).push(ev);}
  const t0=desde?new Date(desde).getTime():-Infinity,t1=ate?new Date(ate+'T23:59:59').getTime():Infinity;
  const linhas=[];
  for(const e of estado.empresas){

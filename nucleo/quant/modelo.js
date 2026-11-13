@@ -24,7 +24,7 @@ export function periodoEquivalente(p,ref=new Date()){ // período anterior de me
 const dentro=(t,p)=>t!=null&&(p.de==null||t>=p.de)&&(p.ate==null||t<=p.ate);
 export function construirModelo(estado,agora=Date.now()){
  const empresas=new Map(estado.empresas.map(e=>[e.id,e]));
- const eventos=estado.eventos.map(e=>({...e,t:T(e.quando),tr:T(e.registradoEm)})).filter(e=>e.t!=null&&empresas.has(e.empresaId)).sort((a,b)=>a.t-b.t);
+ const eventos=estado.eventos.filter(e=>!e.revertido).map(e=>({...e,t:T(e.quando),tr:T(e.registradoEm)})).filter(e=>e.t!=null&&empresas.has(e.empresaId)).sort((a,b)=>a.t-b.t);
  const porEmpresa=new Map();for(const e of eventos){if(!porEmpresa.has(e.empresaId))porEmpresa.set(e.empresaId,[]);porEmpresa.get(e.empresaId).push(e);}
  const pagamentos=estado.pagamentos.filter(p=>p.estado==='confirmado').map(p=>({...p,t:T(p.quando),centavos:aCentavos(p.valor)}));
  const propostas=estado.propostas.map(p=>({...p,orig:aCentavos(p.valorOriginal),final:aCentavos(p.valorFinal)}));

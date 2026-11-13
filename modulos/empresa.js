@@ -51,7 +51,7 @@ export function criarEmpresa(ctx){
   e.solicitouDemo=d.solicitouDemo==='sim';e.notas=d.notas??'';e.valor=Number(d.valor)||0;e.valorNegociado=d.valorNegociado===''||d.valorNegociado==null?null:Number(d.valorNegociado);
   if(d.etapa!==e.etapa){if(d.etapa==='fechada'){avisar('Para fechar uma venda, use "Fechar venda" e confirme a decisão do cliente.');}else moverEtapa(estado(),e,d.etapa,'central');}
   if(d.situacao!==e.situacao){if(d.situacao==='nao-contatar')marcarNaoContatar(estado(),e,'Alterado na central.');else{e.situacao=d.situacao;registrarAuditoria(estado(),'situacao',e.id,e.nome+': '+d.situacao);}}
-  e.historico.push({quando:new Date().toISOString(),texto:'Central comercial atualizada.'});registrarAuditoria(estado(),'edicao',e.id,e.nome+' editada');salvar();avisar('Central salva.');abrir(e.id);
+  e.rev=(e.rev||0)+1;e.historico.push({quando:new Date().toISOString(),texto:'Central comercial atualizada.'});registrarAuditoria(estado(),'edicao',e.id,e.nome+' editada');salvar();avisar('Central salva.');abrir(e.id);
  }
  function dialogo(html,titulo){const area=document.querySelector('#dialogo-empresa');area.innerHTML=`<div class="caixa-dialogo" role="group" aria-label="${t(titulo)}"><h3>${t(titulo)}</h3>${html}</div>`;area.querySelector('input,select,textarea')?.focus();area.scrollIntoView({block:'nearest',behavior:'smooth'});return area.querySelector('.caixa-dialogo');}
  const fecharDialogo=()=>{const a=document.querySelector('#dialogo-empresa');if(a)a.innerHTML='';};
