@@ -27,13 +27,13 @@ export function normalizarEmpresa(e){
   potencial:e.potencial||'',diferenciais:lista(e.diferenciais),servicosOferecidos:lista(e.servicosOferecidos),necessidades:lista(e.necessidades),objecoes:lista(e.objecoes),
   interesse:niveisInteresse.some(x=>x.id===e.interesse)?e.interesse:'desconhecido',contatoDireto:['sim','nao'].includes(e.contatoDireto)?e.contatoDireto:'desconhecido',
   solicitouDemo:e.solicitouDemo===true,abordagem:e.abordagem||'',primeiroContato:e.primeiroContato||'',ultimoContato:e.ultimoContato||'',
-  proximaAcao:e.proximaAcao||'',retornoEm:e.retornoEm||'',etapaEm:e.etapaEm||e.criada||new Date().toISOString(),
+  proximaAcao:e.proximaAcao||'',retornoEm:e.retornoEm||'',etapaEm:e.etapaEm||[...(Array.isArray(e.historico)?e.historico:[])].reverse().find(h=>/^Movida para/.test(h?.texto||''))?.quando||e.criada||new Date().toISOString(),
   valorNegociado:e.valorNegociado===undefined||e.valorNegociado===''?null:Number(e.valorNegociado),condicoes:e.condicoes||'',motivoPerda:e.motivoPerda||'',
   situacao:situacoes.some(x=>x.id===e.situacao)?e.situacao:'ativa',faixaPreco:e.faixaPreco||''
  };
 }
 export function estadoInicial(){
- const base={versao:VERSAO_ESTADO,preferencias:{nome:'Renan',cargo:'Desenvolvedor',marca:'Órbita',movimento:true,qualidade:'equilibrada',contraste:false},notificacoesLidas:true,config:configuracaoPadrao()};
+ const base={versao:VERSAO_ESTADO,preferencias:{nome:'Renan',cargo:'Desenvolvedor',marca:'Órbita',movimento:!(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches),qualidade:'equilibrada',contraste:false},notificacoesLidas:true,config:configuracaoPadrao()};
  for(const c of colecoes)base[c]=[];return base;
 }
 export function normalizarEstado(bruto){

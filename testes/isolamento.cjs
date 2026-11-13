@@ -14,7 +14,7 @@ function servir(dir){return new Promise(ok=>{const s=http.createServer((rq,rs)=>
    const falhasReq=[],externas=[],erros=[];
    p.on('requestfailed',r=>falhasReq.push(r.url()));p.on('response',r=>{if(r.status()>=400)falhasReq.push(r.status()+' '+r.url());});
    p.on('request',r=>{const u=r.url();if(!u.startsWith('http://localhost:'+porta)&&!u.startsWith('data:')&&!u.startsWith('blob:'))externas.push(u);});
-   p.on('pageerror',e=>erros.push(e.message));p.on('console',m=>{if(m.type()==='error')erros.push(m.text());});
+   p.on('pageerror',e=>erros.push(e.message));p.on('console',m=>{if(m.type()==='error'&&!(!webgl&&/Error creating WebGL context/.test(m.text())))erros.push(m.text());});
    await p.goto('http://localhost:'+porta+'/');await p.waitForTimeout(1800);
    for(let y=0;y<4000;y+=700){await p.mouse.wheel(0,700);await p.waitForTimeout(120);}await p.evaluate(()=>scrollTo(0,0));await p.waitForTimeout(500);
    const info=await p.evaluate(()=>({canvas:document.querySelectorAll('canvas').length,h1:!!document.querySelector('h1'),largura:document.documentElement.scrollWidth,vw:innerWidth,ids:[...document.querySelectorAll('a[href^="#"]')].filter(a=>a.getAttribute('href').length>1&&!document.getElementById(a.getAttribute('href').slice(1))).length}));

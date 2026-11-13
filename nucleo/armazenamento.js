@@ -25,8 +25,8 @@ export async function carregarEstado(){
    const meta=await promessa(tx(['meta']).objectStore('meta').get('migracao'));
    if(meta?.status==='concluida'){const bruto=await lerTudo();estado=juntar(bruto);migracao=meta;}
    else{
-    let brutoV2=null,brutoV1=null;try{brutoV2=localStorage.getItem(CHAVE_V2);brutoV1=localStorage.getItem(CHAVE_V1);}catch{}
-    const resultado=migrarDeLegado(brutoV2,brutoV1);estado=resultado.estado;
+    let brutoV2=null,brutoV1=null,reserva=null;try{brutoV2=localStorage.getItem(CHAVE_V2);brutoV1=localStorage.getItem(CHAVE_V1);reserva=localStorage.getItem(CHAVE_RESERVA);}catch{}
+    const resultado=migrarDeLegado(reserva||brutoV2,brutoV1);if(reserva)resultado.relatorio.avisos.push('Alterações feitas no modo de reserva foram incorporadas à migração.');estado=resultado.estado;
     const t=tx(['legado','backups'],'readwrite'),agora=new Date().toISOString();
     if(brutoV2!=null)t.objectStore('legado').put({chave:CHAVE_V2,texto:brutoV2,guardadoEm:agora},CHAVE_V2);
     if(brutoV1!=null)t.objectStore('legado').put({chave:CHAVE_V1,texto:brutoV1,guardadoEm:agora},CHAVE_V1);
