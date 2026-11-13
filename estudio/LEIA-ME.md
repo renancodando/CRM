@@ -1,6 +1,6 @@
 # Estúdio de Sites
 
-Implementação em módulos ES, sem dependências adicionais. Use o mesmo servidor estático do CRM:
+Implementação em módulos ES, com Three.js incluído localmente e sem instalação ou serviços externos. Use o mesmo servidor estático do CRM:
 
 ```sh
 python3 -m http.server 3000
@@ -10,6 +10,9 @@ python3 -m http.server 3000
 
 - `catalogo.js`: nove identidades, nichos, paletas e conteúdo comercial inicial editável.
 - `ilustracoes.js` e `arte/`: smartphones com camadas de vidro e metal, mecanismo usinado, esmalte cerâmico, contornos dourados e veículos em perspectiva, todos em SVG/CSS.
+- `cena-produto.js`: renderização 3D dos celulares, mecanismo, dente cerâmico, contornos em ouro e gota, com materiais físicos e iluminação de estúdio gerada por código.
+- `carro-volume.js` e `arte/geometria-carro.js`: carro detalhado, materiais próprios e geometria quantizada e comprimida.
+- `estilos/fidelidade.css`: proporções, tipografia, composições e atendimento contextual conforme a montagem de referência.
 - `agua-site.js`: superfície de água procedural em WebGL, com reflexos, ondas e resposta ao ponteiro e ao toque.
 - `estilos/materiais.css`: acabamentos de vidro, metal escovado, cerâmica, arquitetura e carroceria, com adaptações próprias para celular.
 - `componentes.js`: elementos semânticos compartilhados, contatos e seções.
@@ -23,9 +26,15 @@ python3 -m http.server 3000
 
 ## Geração
 
-Cada ZIP tem `index.html`, `css/estilos.css`, `css/responsividade.css`, `css/materiais.css`, `js/configuracao.js`, `js/interacoes.js`, `assets/icones/marca.svg`, `robots.txt`, `sitemap.xml`, `vercel.json`, `netlify.toml` e `LEIA-ME.md`.
+Cada ZIP tem `js/motor.js`, `js/cena.js`, `LICENCA-THREE.txt`, `css/fidelidade.css`, `index.html`, `css/estilos.css`, `css/responsividade.css`, `css/materiais.css`, `js/configuracao.js`, `js/interacoes.js`, `assets/icones/marca.svg`, `robots.txt`, `sitemap.xml`, `vercel.json`, `netlify.toml` e `LEIA-ME.md`.
+
+Blue Wash e Impacto Car Care incluem `js/geometria.js`, `js/carro.js` e `LICENCA-MODELO-3D.md`. A geometria licenciada de vicent091036, sob CC BY 4.0, não contém imagens; a atribuição permanece no rodapé e na documentação. O modelo é descompactado pelo navegador, sem loader, worker, WASM ou requisições externas.
+
+As cenas são inicializadas quando aparecem na tela, limitadas a 25 quadros por segundo e com resolução adaptada. Pausam fora de vista e em abas ocultas. Movimento reduzido recebe uma renderização estática. A apresentação SVG/CSS permanece disponível quando o contexto gráfico não pode ser criado. O motor local também acompanha os ZIPs, que continuam independentes do CRM.
 
 Blue Wash e Brisa Auto Spa também incluem `js/agua.js`. A água usa apenas shaders matemáticos, sem texturas de imagem, bibliotecas ou acesso externo. O efeito é limitado a 24 quadros por segundo e a 840 × 440 pixels, pausa fora da área visível ou em abas ocultas e renderiza um quadro estático com movimento reduzido. Sem WebGL, as ondas vetoriais permanecem.
+
+A área de contato abre um diálogo acessível com formulário, endereço e canais da empresa. O teclado e o botão de fechar retornam o foco ao acionador. Os links de WhatsApp continuam disponíveis nas faixas e nos serviços.
 
 O HTML já contém os textos públicos renderizados; o JavaScript apenas acrescenta as interações. O conteúdo permanece legível sem animações e sem JavaScript. O formulário de WhatsApp precisa de JavaScript, mas os links de serviço funcionam diretamente.
 
@@ -38,6 +47,8 @@ Avaliações não são criadas pelo gerador. Somente depoimentos informados e au
 Rascunhos e demonstrações ficam em `demonstracoes` no mesmo estado local do CRM, sem alterar a versão nem apagar dados existentes. Não há upload, sincronização, criação de repositório ou deploy automático. Backups exportados pelo CRM incluem os projetos; a importação mantém os registros atuais.
 
 A configuração exportada é uma lista permitida de campos públicos. Identificadores do CRM, histórico de contato, notas, orçamento de venda do site e credenciais não são exportados.
+
+As prévias dentro do CRM compartilham os scripts locais para aproveitar o cache. Os projetos exportados levam cópias próprias de todos os arquivos necessários.
 
 O SVG aceita somente formas e gradientes locais. Não permite scripts, eventos, imagens, referências remotas, foreignObject ou animações executáveis. URLs aceitam apenas HTTP(S), sem usuário/senha. A cor dos botões e dos painéis precisa manter contraste de pelo menos 4,5:1 com seus textos.
 

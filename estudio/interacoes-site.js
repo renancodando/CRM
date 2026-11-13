@@ -4,6 +4,12 @@
  menu?.addEventListener('click',()=>{const abrir=menu.getAttribute('aria-expanded')!=='true';menu.setAttribute('aria-expanded',String(abrir));navegacao?.classList.toggle('aberto',abrir);});
  navegacao?.querySelectorAll('a').forEach(link=>link.addEventListener('click',fecharMenu));document.addEventListener('keydown',evento=>{if(evento.key==='Escape')fecharMenu();});
  document.addEventListener('click',evento=>{if(!evento.target.closest('.cabecalho-site'))fecharMenu();});
+ const atendimento=document.querySelector('.dialogo-atendimento');let origemAtendimento;
+ function abrirAtendimento(origem){if(!atendimento?.showModal)return;origemAtendimento=origem;atendimento.showModal();document.body.classList.add('atendimento-aberto');fecharMenu();}
+ document.querySelectorAll('[data-abrir-contato],a[href="#contato"]').forEach(elemento=>elemento.addEventListener('click',evento=>{if(atendimento?.showModal){evento.preventDefault();abrirAtendimento(elemento);}}));
+ atendimento?.querySelector('[data-fechar-contato]')?.addEventListener('click',()=>atendimento.close());
+ atendimento?.addEventListener('close',()=>{document.body.classList.remove('atendimento-aberto');origemAtendimento?.focus({preventScroll:true});});
+ atendimento?.addEventListener('click',evento=>{if(evento.target!==atendimento)return;const r=atendimento.getBoundingClientRect();if(evento.clientX<r.left||evento.clientX>r.right||evento.clientY<r.top||evento.clientY>r.bottom)atendimento.close();});
  if('IntersectionObserver' in window){const observador=new IntersectionObserver(entradas=>entradas.forEach(entrada=>{if(entrada.isIntersecting){entrada.target.classList.add('visivel');observador.unobserve(entrada.target);}}),{threshold:.08});
  if(!reduzir.matches){document.querySelectorAll('[data-revelar]').forEach(elemento=>{const area=elemento.getBoundingClientRect();if(area.top<innerHeight)elemento.classList.add('visivel');observador.observe(elemento);});document.body.classList.add('movimento-ativo');}
  const secoes=new IntersectionObserver(entradas=>{for(const entrada of entradas)if(entrada.isIntersecting)navegacao?.querySelectorAll('a').forEach(link=>{const ativo=link.hash==='#'+entrada.target.id;link.classList.toggle('ativo',ativo);if(ativo)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');});},{rootMargin:'-10% 0px -65% 0px'});document.querySelectorAll('main section[id]').forEach(secao=>secoes.observe(secao));}

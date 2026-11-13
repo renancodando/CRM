@@ -1,8 +1,13 @@
 (()=>{
  const reduzir=matchMedia('(prefers-reduced-motion: reduce)'),limiteDensidade=Math.min(devicePixelRatio||1,1.25);
  const vertices='attribute vec2 posicao;varying vec2 coordenada;void main(){coordenada=posicao*.5+.5;gl_Position=vec4(posicao,0.,1.);}';
- const fragmentos=`precision mediump float;varying vec2 coordenada;uniform float tempo;uniform float brisa;uniform vec2 resolucao;uniform vec2 ponteiro;uniform vec3 impulsos[4];
- float acaso(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+ const fragmentos=`#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 coordenada;uniform float tempo;uniform float brisa;uniform vec2 resolucao;uniform vec2 ponteiro;uniform vec3 impulsos[4];
+ float acaso(vec2 p){vec3 q=fract(vec3(p.xyx)*.1031);q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
  float ruido(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(acaso(i),acaso(i+vec2(1.,0.)),f.x),mix(acaso(i+vec2(0.,1.)),acaso(i+vec2(1.)),f.x),f.y);}
  float altura(vec2 p){
   float t=tempo*.3;
@@ -23,11 +28,11 @@
   vec3 normal=normalize(vec3((altura(agua+vec2(eps,0.))-h)*-26.,(altura(agua+vec2(0.,eps))-h)*-18.,1.));
   vec3 luz=normalize(vec3(-.55,.7,1.25)),vista=normalize(vec3(0.,-.75,1.));float difusa=max(0.,dot(normal,luz));float fresnel=.025+.975*pow(1.-max(0.,dot(normal,vista)),5.);
   float espelho=pow(max(0.,dot(normal,normalize(luz+vista))),92.);float espelhoLongo=pow(max(0.,dot(normal,normalize(vec3(.4,.35,1.)))),28.);
-  float caustica=pow(1.-abs(sin((agua.x+normal.x*.09)*45.+(agua.y+normal.y*.09)*21.)),13.);
-  vec3 fundo=mix(vec3(.026,.18,.36),vec3(.43,.65,.52),brisa),reflexo=mix(vec3(.41,.75,.94),vec3(.91,.96,.83),brisa);
+  vec2 corrente=agua+vec2(ruido(agua*8.+tempo*.08),ruido(agua*7.-tempo*.06))*.12;float caustica=pow(1.-abs(sin(corrente.x*45.+corrente.y*21.+normal.x*4.)),17.);
+  vec3 fundo=mix(vec3(.026,.18,.36),vec3(.17,.42,.30),brisa),reflexo=mix(vec3(.41,.75,.94),vec3(.91,.96,.83),brisa);
   vec3 cor=fundo*(.7+difusa*.3)+reflexo*(fresnel*.22+espelho*.65+espelhoLongo*.13+caustica*.035);
-  float linha=abs(sin(agua.y*42.+normal.y*2.8));float anel=pow(1.-linha,16.);cor+=reflexo*anel*.06;
-  float transparencia=plano*silhueta*mix(.45,.7,brisa);transparencia*=smoothstep(0.,.08,uv.x)*(1.-smoothstep(.93,1.,uv.x));
+  float linha=abs(sin(agua.y*42.+normal.y*2.8));float anel=pow(1.-linha,16.);cor+=reflexo*anel*.025;
+  float transparencia=plano*silhueta*mix(.40,.74,brisa);transparencia*=smoothstep(0.,.08,uv.x)*(1.-smoothstep(.93,1.,uv.x));
   gl_FragColor=vec4(cor,transparencia);
  }`;
  document.querySelectorAll('canvas[data-agua]').forEach(tela=>{

@@ -1,0 +1,516 @@
+.linha-titulo{display:block}.nome-oficina{display:block;font-size:15px;line-height:.9;font-weight:850;letter-spacing:.5px}.nome-oficina em{display:block;color:#42c4b4;font-style:normal;font-size:19px;letter-spacing:1.3px}.modelo-precision .marca-site>.simbolo-marca{color:var(--primaria);width:35px}.modelo-impacto .marca-site>.simbolo-marca{color:var(--primaria);width:45px}.modelo-blue .marca-site strong{font-style:italic;text-transform:uppercase}.modelo-brisa .marca-site>.simbolo-marca{width:43px}.modelo-oficina .marca-site small{font-size:5px;letter-spacing:.7px}
+.produto-3d{position:absolute;inset:-6% -9%;width:118%;height:112%;z-index:4;display:block;opacity:0;pointer-events:none;transition:opacity .4s}
+.produto-3d.cena-pronta{opacity:1}
+.produto-pronto>.aparelho,.produto-pronto>.sombra-aparelho,.produto-pronto>.engrenagem,.produto-pronto>.ferramental-realista,.produto-pronto>.dente-escultura,.produto-pronto>.escudo-dental,.produto-pronto>.carro-realista,.produto-pronto>.gota-brisa,.produto-pronto>.luz-lataria{visibility:hidden}
+.arte-clara.produto-pronto>.arco-dental,.arte-clara.produto-pronto>.orbita-dental{visibility:hidden}
+.arte-clara .produto-3d{inset:-17% -20%;width:140%;height:134%}
+.arte-auto .produto-3d{inset:-15% -18%;width:136%;height:130%}
+.arte-brisa .produto-3d{inset:-17% -8%;width:116%;height:134%}
+.arte-brisa.produto-pronto>.reflexo-auto{opacity:.12}
+.arte-brisa .ondas-auto{opacity:.23}
+.arte-blue .ondas-auto{opacity:.5}
+.arte-impacto .ondas-auto{opacity:.12}
+.arte-impacto .faixas-pista{inset:-10% 60% 0 0;opacity:.65}
+.hero-arte:has(.produto-3d){will-change:auto;transform:none!important}
+.arte-clara .escudo-dental{z-index:5}
+.beneficios-bancada{position:absolute;right:-3%;top:16%;width:27%;display:flex;flex-direction:column;gap:23px;z-index:5}
+.beneficios-bancada>div{font-size:9px;gap:8px;font-weight:500}
+.beneficios-bancada .vetor{width:26px;height:26px;color:var(--destaque)}
+.faixa-atendimento{border-top:1px solid var(--linha);padding:20px 0;background:var(--papel)}
+.faixa-atendimento>.limite,.faixa-atendimento>.limite>div{display:flex;align-items:center;gap:16px}
+.faixa-atendimento>.limite{justify-content:space-between;flex-wrap:wrap}
+.faixa-atendimento>.limite>div>.vetor{width:30px;height:30px;color:var(--primaria)}
+.faixa-atendimento strong,.faixa-atendimento small{display:block}
+.faixa-atendimento strong{font-size:18px;line-height:1.25;letter-spacing:-.4px}
+.faixa-atendimento small{font-size:10px;color:var(--suave);margin-top:4px}
+.faixa-atendimento .botao-site{font-size:10px;padding:10px 13px}
+.telefone-faixa{display:flex;align-items:center;gap:7px;font-size:11px;white-space:nowrap}
+.telefone-faixa>.vetor{width:16px;height:16px}
+.dialogo-atendimento{width:min(1000px,calc(100vw - 36px));max-height:calc(100dvh - 40px);margin:auto;padding:0;border:1px solid var(--linha);border-radius:18px;background:var(--fundo);color:var(--texto);box-shadow:0 30px 120px #0006;overscroll-behavior:contain}
+.dialogo-atendimento::backdrop{background:#08121dcc;backdrop-filter:blur(8px)}
+.dialogo-atendimento[open]{animation:atendimento-entrar .25s ease-out}
+.dialogo-atendimento .contato-site{border:0;padding:54px 32px 32px}
+.dialogo-atendimento .limite{width:100%}
+.dialogo-atendimento .contato-grade{gap:40px}
+.dialogo-atendimento .contato-grade h2{font-size:36px}
+.fechar-atendimento{position:absolute;right:12px;top:10px;width:34px;height:34px;border:1px solid var(--linha);border-radius:50%;background:var(--fundo);color:var(--texto);font-size:23px;z-index:2}
+.atendimento-aberto{overflow:hidden}
+@keyframes atendimento-entrar{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+
+@media(min-width:921px){
+ .limite{width:min(1380px,calc(100% - 96px))}
+ .cabecalho-site>.limite{min-height:65px;gap:22px}
+ .cabecalho-site nav{font-size:10px;gap:25px}
+ .cabecalho-site nav a{padding:20px 0}
+ .cabecalho-site nav a:after{bottom:12px}
+ .marca-site{gap:8px;max-width:270px}
+ .marca-site strong{font-size:20px}
+ .marca-site small{font-size:6px;letter-spacing:1px}
+ .marca-site>svg{width:33px;height:38px}
+ .cabecalho-site .botao-site.compacto{padding:7px 12px;font-size:9px;min-height:30px}
+ .hero-grade{grid-template-columns:1.12fr 1fr;gap:28px;min-height:320px!important}
+ .hero-texto{padding:30px 0 26px!important}
+ .hero h1{font-size:clamp(37px,3.48vw,57px)!important;letter-spacing:-1.65px!important;line-height:1.02}
+ .hero .rotulo{font-size:8px;letter-spacing:1.35px;margin-bottom:8px}
+ .hero .resumo{font-size:11px;line-height:1.6;margin-top:12px;max-width:420px}
+ .hero .acoes-hero{margin-top:16px;gap:10px}
+ .hero .acoes-hero .botao-site{font-size:10px;padding:9px 15px;min-height:34px}
+ .hero .acoes-hero .botao-site>.vetor{width:15px;height:15px}
+ .hero .beneficios{margin-top:18px;gap:12px 17px;max-width:430px}
+ .hero .beneficios>div{font-size:8px!important;gap:7px}
+ .hero .beneficios .vetor{width:21px;height:21px}
+ .hero-arte{height:296px!important;margin:0}
+ .hero .nota-editorial{font-size:10px;margin-top:18px}
+ .selo-arte{font-size:14px;right:-2%;top:47%;width:100px;z-index:5}
+ .circulo-tecnico{opacity:.2}
+ .marcacao-tecnica{font-size:6px;letter-spacing:1.5px;bottom:0}
+ .secao{padding-block:26px}
+ .rotulo{font-size:8px;letter-spacing:1.2px;margin-bottom:5px}
+ h2{font-size:clamp(21px,1.85vw,30px);line-height:1.12;letter-spacing:-.7px}
+ h3{font-size:14px}
+ .titulo-bloco{gap:25px;margin-bottom:17px}
+ .titulo-bloco>p{font-size:10px;line-height:1.5;max-width:360px}
+ .titulo-bloco h2{font-size:clamp(21px,1.9vw,29px)!important}
+ .grade-servicos{gap:13px}
+ .servico{padding:17px 16px!important;border-radius:8px}
+ .servico .icone-servico{width:32px;height:32px;margin-bottom:10px;border-radius:7px}
+ .servico .icone-servico .vetor{width:22px;height:22px}
+ .servico h3{font-size:14px!important;margin-bottom:6px}
+ .servico p{font-size:9px!important;line-height:1.55;min-height:0!important}
+ .servico .indice-servico{font-size:8px;top:19px;right:16px}
+ .servico .link-servico{font-size:8px;margin-top:10px;gap:5px}
+ .servico .selecionar-servico{font-size:8px;margin-top:8px}
+ .servico .selecionar-servico input{width:12px;height:12px}
+ .etapas-site{gap:20px}
+ .etapas-site li{padding-top:10px}
+ .etapas-site .numero-etapa{font-size:10px;margin-bottom:8px}
+ .etapas-site h3{font-size:12px!important;margin-bottom:5px}
+ .etapas-site p{font-size:9px;line-height:1.5}
+ .etapas-site li>.vetor{width:18px;height:18px;top:10px}
+ .sobre-grade{gap:50px}
+ .titulo-sobre h2{font-size:26px!important}
+ .texto-sobre{font-size:11px!important;line-height:1.65}
+ .assinatura-grafica{display:none}
+ .diferenciais-lista{gap:10px 20px;margin-top:13px}
+ .diferenciais-lista>div{font-size:9px;gap:7px}
+ .diferenciais-lista .vetor{width:15px;height:15px}
+ .registro-profissional{font-size:9px;margin-top:12px}
+ .garantia-site{padding:10px 12px;margin-top:13px}
+ .garantia-site p{font-size:9px}
+ .faixa-site{padding:15px 0}
+ .faixa-site>.limite{gap:16px}
+ .faixa-site>.limite>.vetor{width:28px;height:28px}
+ .faixa-site h2{font-size:23px}
+ .faixa-site p{font-size:9px;margin-top:3px}
+ .faixa-site .botao-site{font-size:9px;padding:9px 14px;min-height:32px}
+ .faq-grade{grid-template-columns:.55fr 1.45fr;gap:40px}
+ .faq-grade h2{font-size:24px}
+ .faq-grade>div>p:not(.rotulo){font-size:10px;margin-top:8px}
+ .faq-grade .botao-site{font-size:9px;margin-top:12px;padding:8px 12px;min-height:32px}
+ .faq-site details{padding:12px 0}
+ .faq-site summary{font-size:10px;line-height:1.5;gap:10px}
+ .faq-site summary>span{font-size:17px}
+ .faq-site details p{font-size:10px;line-height:1.6;margin-top:8px}
+ .grade-avaliacoes{gap:12px}
+ .grade-avaliacoes figure{padding:17px}
+ .grade-avaliacoes blockquote{font-size:10px}
+ .grade-avaliacoes figcaption{font-size:9px;margin-top:10px}
+ .aspas{font-size:30px}
+ .grade-pacotes{gap:14px}
+ .pacote{padding:19px!important;border-radius:8px}
+ .selo-pacote{font-size:7px;letter-spacing:1px;margin-bottom:9px}
+ .selo-pacote .vetor{width:18px;height:18px}
+ .pacote h3{font-size:20px!important;margin-bottom:8px}
+ .pacote>p{font-size:9px;line-height:1.55;margin-bottom:10px}
+ .pacote .consulta-valor{font-size:8px;margin-bottom:12px}
+ .pacote .botao-site{font-size:8px;padding:8px 10px;min-height:30px}
+ .faixa-atendimento{padding:14px 0}
+ .faixa-atendimento strong{font-size:18px}
+ .faixa-atendimento small{font-size:9px}
+ .faixa-atendimento .botao-site{font-size:9px;min-height:32px;padding:8px 12px}
+ .rodape-site{padding:22px 0 12px}
+ .rodape-site>.limite:first-child{grid-template-columns:1.25fr 1fr 1fr .8fr;gap:25px}
+ .rodape-site>.limite>div{font-size:8px;line-height:1.55;gap:3px}
+ .rodape-site>.limite>div>strong{font-size:9px;margin-bottom:2px}
+ .rodape-site .marca-site strong{font-size:17px}
+ .rodape-site .marca-site small{font-size:5px}
+ .creditos{font-size:8px;margin-top:13px;padding-top:9px}
+
+ .modelo-precision .hero-grade{grid-template-columns:1.16fr 1fr;min-height:320px!important}
+ .modelo-precision .hero h1{max-width:680px;font-size:clamp(37px,3.35vw,57px)!important;line-height:1.0}
+ .modelo-precision .hero .resumo{max-width:410px;font-size:10px}
+ .modelo-precision .hero .beneficios{max-width:410px;margin-top:15px;gap:14px}
+ .modelo-precision .hero .beneficios>div{flex-direction:row;align-items:center;font-size:8px!important}
+ .modelo-precision .hero:before{width:56%;background:repeating-linear-gradient(122deg,transparent 0 120px,#f1f2f7 121px 163px,transparent 164px 200px)}
+ .modelo-precision .diagonal-um{inset:5% -2% 14% -8%}
+ .modelo-precision .diagonal-dois{inset:25% -8% -1% 22%}
+ .modelo-precision .servicos-precision{padding-top:19px;padding-bottom:20px}
+ .servicos-precision>.limite{grid-template-columns:.8fr 2.9fr;gap:25px;align-items:center}
+ .servicos-precision .titulo-bloco{display:block}
+ .servicos-precision .titulo-bloco h2{font-size:23px!important}
+ .servicos-precision .titulo-bloco p{font-size:9px;margin-top:7px}
+ .servicos-precision .grade-servicos{gap:9px}
+ .servicos-precision .servico{padding:13px 12px!important;min-height:122px}
+ .servicos-precision .servico h3{font-size:12px!important}
+ .servicos-precision .servico p{font-size:8px!important}
+ .servicos-precision .icone-servico{width:24px;height:24px;margin-bottom:8px}
+ .servicos-precision .link-servico{font-size:7px}
+ .lista-tecnica{padding:15px 0;margin-bottom:0;gap:25px}
+ .lista-tecnica .vetor{width:19px;height:19px}
+ .lista-tecnica b{font-size:8px}
+ .linha-precision{width:min(1380px,calc(100% - 96px));height:7px}
+ .composicao-precision{display:grid;grid-template-columns:2.15fr 1fr;column-gap:35px;border-top:1px solid var(--linha)}
+ .composicao-precision>.secao{padding:21px 0;background:transparent}
+ .composicao-precision>.secao>.limite{width:100%}
+ .composicao-precision>.processo-site{grid-column:1;grid-row:1}
+ .composicao-precision>.sobre-site{grid-column:1;grid-row:2;border-top:1px solid var(--linha)}
+ .composicao-precision>.faq-site{grid-column:2;grid-row:1/3;border-left:1px solid var(--linha);padding-left:25px}
+ .composicao-precision .faq-grade{display:block}
+ .composicao-precision .faq-grade>div:first-child{margin-bottom:8px}
+ .composicao-precision .faq-grade h2{font-size:22px}
+ .composicao-precision .faq-grade>div>p{font-size:9px}
+ .composicao-precision .faq-grade .rotulo{font-size:7px}
+ .composicao-precision .faq-grade .botao-site{font-size:8px;min-height:28px;padding:7px 10px;margin-top:8px}
+ .composicao-precision .titulo-bloco{display:block;margin-bottom:14px}
+ .composicao-precision .titulo-bloco h2{font-size:23px!important;max-width:350px}
+ .composicao-precision .etapas-site{gap:13px}
+ .composicao-precision .etapas-site li{padding-left:29px}
+ .composicao-precision .etapas-site li>.vetor{left:4px;width:16px;height:16px}
+ .composicao-precision .etapas-site h3{font-size:10px!important}
+ .composicao-precision .etapas-site p{font-size:8px}
+ .composicao-precision .sobre-grade{grid-template-columns:.6fr 1.4fr;gap:25px}
+ .composicao-precision .titulo-sobre h2{font-size:20px!important}
+ .composicao-precision .texto-sobre{font-size:9px!important}
+ .composicao-precision .diferenciais-lista{font-size:8px}
+ .modelo-precision .faixa-atendimento{background:var(--secundaria);color:white}
+ .modelo-precision .faixa-atendimento small{color:#c6d5f1}
+ .modelo-precision .faixa-atendimento .secundario{color:white;border-color:#97aed566}
+ .modelo-precision .faixa-precision{padding:13px 0}
+
+ .modelo-oficina .hero-grade{grid-template-columns:1fr 1.25fr;min-height:298px!important}
+ .modelo-oficina .hero h1{max-width:520px;font-size:clamp(38px,3.5vw,58px)!important}
+ .modelo-oficina .hero-arte>.arte-mecanica{inset:-2% 24% -3% -7%}
+ .modelo-oficina .hero-arte{height:278px!important}
+ .modelo-oficina .hero .resumo{font-size:10px;max-width:390px}
+ .modelo-oficina .leitura-tecnica{font-size:7px;margin-top:17px}
+ .modelo-oficina .tag-tecnica{font-size:6px;letter-spacing:1.1px;bottom:0;right:0;padding:6px 8px}
+ .modelo-oficina .chapa-um{inset:0 -8% 0 -15%}
+ .modelo-oficina .chapa-dois{inset:20% -28% -9% 10%}
+ .servicos-painel{padding:17px 0 16px;background:linear-gradient(#182a2d,#0f1e21)}
+ .servicos-painel .titulo-bloco{margin-bottom:13px}
+ .servicos-painel .titulo-bloco p{margin:5px auto 0}
+ .servicos-painel .servico{padding:15px 15px 13px 63px!important;min-height:102px}
+ .servicos-painel .icone-servico{position:absolute;left:15px;top:17px}
+ .servicos-painel .servico h3{font-size:13px!important}
+ .servicos-painel .indice-servico{display:none}
+ .faixa-tecnica{padding:14px 0 19px}
+ .faixa-tecnica .beneficios>div{font-size:9px}
+ .faixa-tecnica .beneficios .vetor{width:25px;height:25px}
+ .bloco-oficina{display:grid;grid-template-columns:1.45fr 1fr;gap:25px;width:min(1380px,calc(100% - 96px));margin:auto}
+ .bloco-oficina>.secao{padding:15px 0;background:none!important}
+ .bloco-oficina .limite{width:100%}
+ .bloco-oficina .sobre-grade{display:block}
+ .bloco-oficina .titulo-sobre{margin-bottom:12px}
+ .bloco-oficina .titulo-sobre h2{font-size:23px!important}
+ .bloco-oficina .etapas-site{gap:9px}
+ .bloco-oficina .etapas-site li{padding:18px 12px;border-radius:6px}
+ .bloco-oficina .etapas-site h3{font-size:11px!important}
+ .bloco-oficina .etapas-site p{font-size:8px}
+ .bloco-oficina .etapas-site li>.vetor{width:17px;height:17px;right:11px;top:17px}
+ .bloco-oficina .texto-sobre{font-size:10px!important}
+ .bloco-oficina .diferenciais-lista{grid-template-columns:1fr 1fr;gap:9px}
+ .modelo-oficina .faq-site{padding-top:18px;padding-bottom:18px}
+ .modelo-oficina .faixa-cobre{margin-top:10px}
+
+ .modelo-pronto .hero-grade{min-height:302px!important;grid-template-columns:1.05fr 1fr}
+ .modelo-pronto .hero h1{max-width:540px;font-size:clamp(39px,3.8vw,60px)!important}
+ .modelo-pronto .hero .beneficios{margin-top:15px;max-width:420px}
+ .modelo-pronto .hero .beneficios>div{flex-direction:row;align-items:center}
+ .modelo-pronto .hero-arte{height:285px!important}
+ .arte-pronto .diagonal-um{inset:29% -12% 3% 16%}
+ .arte-pronto .diagonal-dois{inset:59% 37% 3% -2%}
+ .arte-pronto .circulo-tecnico{width:90%;height:65%;top:23%;left:0;opacity:.6}
+ .composicao-pronto{width:min(1380px,calc(100% - 96px));margin:0 auto;grid-template-columns:2fr 1fr;gap:25px}
+ .composicao-pronto .secao{padding:22px 0}
+ .composicao-pronto .servicos-editoriais .grade-servicos{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+ .composicao-pronto .servicos-editoriais .servico{padding:12px 11px!important}
+ .composicao-pronto .servico h3{font-size:11px!important}
+ .composicao-pronto .servico p{font-size:8px!important}
+ .composicao-pronto .servico .link-servico{font-size:7px}
+ .composicao-pronto .sobre-pronto{padding:24px!important;align-self:stretch;border-radius:50px 0 0 0}
+ .composicao-pronto .sobre-grade{gap:14px}
+ .composicao-pronto .sobre-pronto h2{font-size:25px!important}
+ .composicao-pronto .sobre-pronto .texto-sobre{font-size:9px!important}
+ .composicao-pronto .sobre-pronto .diferenciais-lista{grid-template-columns:1fr;gap:9px}
+ .composicao-pronto .sobre-pronto .diferenciais-lista>div{font-size:9px}
+ .composicao-atendimento{width:min(1380px,calc(100% - 96px));margin:18px auto 0;gap:30px;grid-template-columns:.74fr 1.6fr}
+ .composicao-atendimento .orcamento-pronto{padding:21px;border-radius:26px 0 22px 0}
+ .composicao-atendimento .orcamento-pronto>.limite{width:100%}
+ .composicao-atendimento .orcamento-pronto h2{font-size:22px}
+ .composicao-atendimento .orcamento-pronto>.limite>.vetor{width:25px;height:25px;margin:0 0 8px}
+ .composicao-atendimento .orcamento-pronto .botao-site{margin:11px 0 0}
+ .composicao-atendimento .processo-editorial{padding-top:6px}
+ .composicao-atendimento .etapas-site{grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
+ .composicao-atendimento .processo-editorial .titulo-bloco h2{font-size:22px!important}
+ .composicao-atendimento .numero-etapa{width:25px;height:25px}
+ .modelo-pronto .faq-site{padding-block:22px}
+
+ .modelo-sorriso .hero-grade,.modelo-essenza .hero-grade{min-height:316px!important;grid-template-columns:1fr 1.12fr}
+ .modelo-sorriso .hero h1,.modelo-essenza .hero h1{font-size:clamp(38px,3.45vw,57px)!important;font-weight:400;line-height:1.04;max-width:510px}
+ .modelo-sorriso .hero-arte,.modelo-essenza .hero-arte{height:300px!important}
+ .modelo-sorriso .hero .resumo,.modelo-essenza .hero .resumo{max-width:395px;font-size:10px}
+ .modelo-sorriso .hero-organico:before{right:-20%;top:-80%;height:190%;width:70%}
+ .arte-sorriso .arco-dental{inset:2% -15% -5% -4%;border-radius:50% 50% 5% 50%;transform:rotate(-21deg)}
+ .arte-sorriso .orbita-dental{inset:-13% -10% -9% -12%}
+ .modelo-sorriso .hero .nota-editorial{display:none}
+ .especialidades-organicas{padding:19px 0}
+ .especialidades-organicas .titulo-bloco,.especialidades-classicas .titulo-bloco{margin-bottom:13px}
+ .especialidades-organicas .titulo-bloco p,.especialidades-classicas .titulo-bloco p{margin:5px auto 0;font-size:9px}
+ .especialidades-organicas .servico,.especialidades-classicas .servico{padding:8px 20px 8px 60px!important;position:relative;border-radius:0}
+ .especialidades-organicas .icone-servico,.especialidades-classicas .icone-servico{position:absolute;left:14px;top:10px;width:32px;height:32px}
+ .especialidades-organicas .servico h3,.especialidades-classicas .servico h3{font-size:16px!important;font-weight:500}
+ .especialidades-organicas .servico p,.especialidades-classicas .servico p{font-size:8px!important}
+ .especialidades-organicas .link-servico,.especialidades-classicas .link-servico{font-size:7px}
+ .clinica-organica{padding-block:21px}
+ .clinica-organica .sobre-grade{grid-template-columns:.8fr 1.65fr;gap:55px}
+ .clinica-organica .titulo-sobre h2{font-size:28px!important;max-width:280px}
+ .clinica-organica .diferenciais-lista{grid-template-columns:repeat(4,1fr);gap:13px}
+ .clinica-organica .diferenciais-lista>div{font-size:8px;align-items:center}
+ .modelo-sorriso .jornada-organica{padding:20px 0}
+ .modelo-sorriso .jornada-organica .titulo-bloco{margin-bottom:18px}
+ .jornada-organica .etapas-site li{gap:10px;padding:0}
+ .jornada-organica .numero-etapa{width:26px;height:26px}
+ .modelo-sorriso .faq-site{padding:20px 0}
+
+ .modelo-clara .hero-grade{grid-template-columns:1fr 1.16fr;min-height:324px!important}
+ .modelo-clara .hero h1{font-size:clamp(39px,3.5vw,57px)!important;max-width:535px;letter-spacing:-1.8px!important}
+ .modelo-clara .hero-arte{height:298px!important}
+ .modelo-clara .hero-clinico:before{width:380px;height:580px;right:-220px;border-width:40px;top:-100px}
+ .modelo-clara .hero-clinico:after{right:35%;top:-430px}
+ .modelo-clara .hero .beneficios{grid-template-columns:repeat(3,1fr);max-width:500px;gap:10px}
+ .modelo-clara .hero .beneficios>div{font-size:7px!important}
+ .modelo-clara .hero .beneficios>div:nth-child(4){grid-column:1/4;justify-content:flex-start}
+ .tratamentos-clinicos{padding:22px 0}
+ .tratamentos-clinicos>.limite{display:grid;grid-template-columns:.8fr 3fr;gap:25px;align-items:center}
+ .tratamentos-clinicos .titulo-bloco{display:block;margin:0}
+ .tratamentos-clinicos .titulo-bloco h2{font-size:26px!important}
+ .tratamentos-clinicos .titulo-bloco p{font-size:9px;margin-top:7px}
+ .tratamentos-clinicos .servico{padding:14px 12px!important}
+ .tratamentos-clinicos .servico h3{font-size:12px!important}
+ .tratamentos-clinicos .servico p{font-size:8px!important}
+ .pilares-clinicos{padding:17px 0;border-radius:0}
+ .pilares-clinicos .rotulo{font-size:7px;margin-bottom:8px}
+ .pilares-clinicos .limite>div{gap:25px}
+ .pilares-clinicos strong{font-size:10px}
+ .pilares-clinicos span{gap:9px}
+ .pilares-clinicos .vetor{width:25px;height:25px}
+ .clinica-clara{padding:22px 0}
+ .clinica-clara .sobre-grade{grid-template-columns:.7fr 1.6fr}
+ .jornada-clinica{padding:23px 0}
+ .jornada-clinica>.limite{display:grid;grid-template-columns:.7fr 2.5fr;gap:30px;align-items:center}
+ .jornada-clinica .titulo-bloco{display:block;margin:0}
+ .jornada-clinica .titulo-bloco h2{font-size:24px!important}
+ .jornada-clinica .etapas-site li{padding:5px 15px}
+ .modelo-clara .faq-site{padding:20px 0}
+
+ .arte-essenza .colunas-dentais{right:-13%;top:-10%;bottom:-4%;width:25%}
+ .arte-essenza .arco-dental{inset:0 8% 0 -2%;border-radius:50% 50% 0 0}
+ .arte-essenza .pedestal-dental{left:-12%;right:-9%;bottom:-2%;height:22%;z-index:5}
+ .arte-essenza .produto-3d{height:110%;width:110%;inset:-12% 0 2% -5%}
+ .especialidades-classicas{padding:20px 0}
+ .clinica-essenza{padding:18px 0}
+ .clinica-essenza .sobre-grade{grid-template-columns:.85fr 1.7fr;gap:55px}
+ .clinica-essenza .titulo-sobre{padding:24px 28px;border-radius:55px 0 0 0}
+ .clinica-essenza .titulo-sobre h2{font-size:28px!important}
+ .jornada-classica{padding:17px 0 22px}
+ .jornada-classica .etapas-site li{padding-left:37px}
+ .jornada-classica .numero-etapa{width:27px;height:27px;top:10px}
+ .modelo-essenza .faq-site{padding:20px 0}
+ .divisor-arquitetonico{width:65%;max-width:1000px}
+
+ .hero-agua{padding-bottom:0;background:radial-gradient(ellipse at 79% 67%,#0768bc,transparent 51%),linear-gradient(110deg,#061332,#052859 70%,#041629)}
+ .hero-agua .hero-grade{grid-template-columns:1fr 1.23fr;min-height:324px!important}
+ .hero-agua .hero h1,.hero-agua h1{font-size:clamp(39px,3.45vw,57px)!important;max-width:515px}
+ .hero-agua .hero .resumo{font-size:10px}
+ .hero-agua .hero-arte{height:302px!important}
+ .hero-agua .beneficios{grid-template-columns:repeat(3,1fr);max-width:510px}
+ .hero-agua .beneficios>div:nth-child(4){grid-column:1/4}
+ .hero-agua .hero-texto{z-index:5}
+ .arte-blue .ondas-auto{inset:-8% -30% -14% -30%}
+ .onda-separadora{height:25px;background:#05346a}
+ .onda-separadora svg{height:43px}
+ .servicos-azuis{padding:13px 0 18px}
+ .servicos-azuis .titulo-bloco{margin-bottom:13px}
+ .servicos-azuis .titulo-bloco p{margin:4px auto 0;font-size:9px}
+ .servicos-azuis .servico{padding:13px 13px 13px 61px!important;min-height:112px}
+ .servicos-azuis .icone-servico{position:absolute;left:14px;top:15px}
+ .servicos-azuis .servico h3{font-size:13px!important}
+ .modelo-blue .pacotes-site{padding-top:12px;padding-bottom:19px}
+ .modelo-blue .pacotes-site>.limite{display:grid;grid-template-columns:.65fr 2.7fr;gap:23px;align-items:center}
+ .modelo-blue .pacotes-site .titulo-bloco{display:block;margin:0}
+ .modelo-blue .pacotes-site .titulo-bloco h2{font-size:25px!important}
+ .modelo-blue .pacotes-site .titulo-bloco p{font-size:9px;margin-top:7px}
+ .modelo-blue .pacote{border-top-width:4px}
+ .sobre-blue .sobre-grade{grid-template-columns:.7fr 1.7fr;gap:50px}
+ .sobre-blue .diferenciais-lista{grid-template-columns:repeat(4,1fr);gap:14px}
+ .sobre-blue .diferenciais-lista>div{font-size:8px}
+ .processo-azul{padding:22px 0}
+ .processo-azul>.limite{display:grid;grid-template-columns:.65fr 2.7fr;gap:25px;align-items:center}
+ .processo-azul .titulo-bloco{display:block;margin:0}
+ .processo-azul .titulo-bloco h2{font-size:24px!important}
+ .processo-azul .etapas-site li{padding-left:31px}
+ .processo-azul .numero-etapa{width:23px;height:23px;font-size:9px;box-shadow:0 0 0 4px #e4f1ff}
+ .modelo-blue .faq-site{padding:20px 0}
+ .modelo-blue .faixa-verde{padding:15px 0}
+ .modelo-blue .faixa-atendimento{background:#072553;color:white}
+ .modelo-blue .faixa-atendimento small{color:#cae3f2}
+ .modelo-blue .faixa-atendimento .secundario{color:#e2effb;border-color:#87afcf77}
+
+ .hero-esportivo{background:radial-gradient(ellipse at 73% 62%,#373d42,transparent 54%),#0c1014!important}
+ .hero-esportivo .hero-grade{grid-template-columns:1.08fr 1.2fr;min-height:315px!important}
+ .hero-esportivo h1{font-size:clamp(38px,3.3vw,56px)!important;max-width:620px;letter-spacing:-.8px!important}
+ .hero-esportivo .hero-arte{height:300px!important}
+ .hero-esportivo .hero-texto{padding-left:12px!important}
+ .hero-esportivo .hero .resumo{font-size:10px}
+ .hero-esportivo:before{width:110px;opacity:.8}
+ .hero-esportivo .beneficios{grid-template-columns:repeat(4,1fr);max-width:560px;gap:14px}
+ .hero-esportivo .beneficios>div{font-size:7px!important;gap:5px}
+ .hero-esportivo .beneficios .vetor{width:19px;height:19px}
+ .faixa-competicao{padding:9px 20px;font-size:7px;letter-spacing:1px}
+ .servicos-impacto>.limite{display:grid;grid-template-columns:.65fr 3.4fr;gap:22px;align-items:center}
+ .servicos-impacto .titulo-bloco{display:block;margin:0}
+ .servicos-impacto .titulo-bloco h2{font-size:25px!important}
+ .servicos-impacto .titulo-bloco p{font-size:9px;margin-top:8px}
+ .servicos-impacto .servico{padding:0 14px 0 42px!important;border-radius:0}
+ .servicos-impacto .icone-servico{position:absolute;left:6px;top:0;width:25px;height:25px}
+ .servicos-impacto .servico h3{font-size:11px!important}
+ .servicos-impacto .servico p{font-size:8px!important}
+ .servicos-impacto .indice-servico{display:none}
+ .servicos-impacto .link-servico{font-size:7px}
+ .modelo-impacto .pacotes-site>.limite{display:grid;grid-template-columns:.65fr 3.4fr;gap:22px;align-items:center}
+ .modelo-impacto .pacotes-site .titulo-bloco{display:block;margin:0}
+ .modelo-impacto .pacotes-site .titulo-bloco h2{font-size:25px!important}
+ .modelo-impacto .pacotes-site .titulo-bloco p{font-size:9px;margin-top:8px}
+ .modelo-impacto .pacote{border-radius:3px;padding:17px!important}
+ .modelo-impacto .pacote h3{font-size:18px!important}
+ .modelo-impacto .pacote .selo-pacote{font-size:7px}
+ .modelo-impacto .protecao-impacto{padding-block:23px}
+ .protecao-impacto .sobre-grade{grid-template-columns:.7fr 1.7fr}
+ .protecao-impacto .titulo-sobre h2{font-size:29px!important}
+ .processo-impacto{padding:22px 0}
+ .processo-impacto>.limite{display:grid;grid-template-columns:.65fr 3.4fr;gap:22px;align-items:center}
+ .processo-impacto .titulo-bloco{display:block;margin:0}
+ .processo-impacto .titulo-bloco h2{font-size:25px!important}
+ .modelo-impacto .faq-site{padding:20px 0}
+ .modelo-impacto .faixa-atendimento{background:#20272b}
+
+ .hero-brisa .hero-grade{grid-template-columns:1fr 1.2fr;min-height:310px!important}
+ .hero-brisa .hero-arte{height:290px!important}
+ .hero-brisa h1{font-size:clamp(39px,3.65vw,58px)!important;max-width:530px;line-height:1.03}
+ .hero-brisa .hero .resumo{font-size:10px}
+ .hero-brisa .nota-editorial{margin-top:12px;font-size:9px}
+ .hero-brisa:after{height:75px;bottom:-49px}
+ .beneficios-brisa{padding:15px 0}
+ .beneficios-brisa>div{font-size:9px}
+ .servicos-brisa{padding:21px 0}
+ .servicos-brisa .titulo-bloco{margin-bottom:17px}
+ .servicos-brisa .titulo-bloco p{margin:5px auto 0;font-size:9px}
+ .servicos-brisa .servico{padding:5px 18px 5px 55px!important;border-radius:0}
+ .servicos-brisa .icone-servico{position:absolute;left:12px;top:5px;width:27px;height:27px}
+ .servicos-brisa .servico h3{font-size:16px!important;font-weight:400}
+ .servicos-brisa .servico p{font-size:8px!important}
+ .brisa-club{padding:17px 0}
+ .brisa-club>.limite{gap:30px}
+ .brisa-club>.limite>div{gap:12px}
+ .brisa-club h2{font-size:23px}
+ .brisa-club p{font-size:10px;max-width:500px}
+ .brisa-club .botao-site{font-size:9px;min-height:30px;padding:9px 13px}
+ .processo-brisa{padding:22px 0 18px}
+ .processo-brisa .titulo-bloco{margin-bottom:18px}
+ .processo-brisa .etapas-site li{padding-left:35px}
+ .processo-brisa .numero-etapa{font-size:10px;left:12px}
+ .sobre-brisa{padding:21px 0}
+ .sobre-brisa .sobre-grade{grid-template-columns:.85fr 1.7fr;gap:40px}
+ .sobre-brisa .titulo-sobre{padding:24px 26px;border-radius:40px 0 40px 0}
+ .sobre-brisa .titulo-sobre h2{font-size:28px!important}
+ .modelo-brisa .pacotes-site{padding:20px 0}
+ .modelo-brisa .pacotes-site>.limite{display:grid;grid-template-columns:.7fr 2.7fr;gap:25px;align-items:center}
+ .modelo-brisa .pacotes-site .titulo-bloco{display:block;margin:0}
+ .modelo-brisa .pacotes-site .titulo-bloco h2{font-size:25px!important}
+ .modelo-brisa .pacotes-site .titulo-bloco p{font-size:9px;margin-top:8px}
+ .modelo-brisa .pacote{border-radius:23px 4px 23px 4px}
+ .modelo-brisa .faq-site{padding:20px 0}
+}
+@media(min-width:1600px){
+ .cabecalho-site>.limite{min-height:76px}
+ .hero-grade{min-height:375px!important}
+ .hero-arte{height:345px!important}
+ .hero .resumo{font-size:12px;max-width:480px}
+ .hero .acoes-hero .botao-site{font-size:11px;padding:11px 17px}
+ .secao{padding-block:30px}
+ .servico p{font-size:10px!important}
+ .servico h3{font-size:15px!important}
+ .etapas-site p{font-size:10px}
+ .texto-sobre{font-size:12px!important}
+}
+@media(min-width:921px) and (max-width:1100px){
+ .limite,.composicao-pronto,.composicao-atendimento,.bloco-oficina,.linha-precision{width:calc(100% - 52px)}
+ .cabecalho-site nav{gap:15px;font-size:9px}
+ .cabecalho-site>.limite{gap:15px}
+ .marca-site strong{font-size:18px}
+ .marca-site{max-width:220px}
+ .hero h1{font-size:38px!important}
+ .hero-grade{gap:18px}
+ .hero .resumo{font-size:10px}
+ .hero .acoes-hero .botao-site{font-size:9px;padding:9px 10px}
+ .beneficios-bancada{width:25%;right:-3%;gap:18px}
+ .beneficios-bancada>div{font-size:8px}
+ .beneficios-bancada .vetor{width:20px;height:20px}
+ .composicao-precision{column-gap:22px}
+ .composicao-precision>.faq-site{padding-left:18px}
+ .composicao-precision .etapas-site{grid-template-columns:repeat(2,1fr);gap:16px}
+ .servicos-precision>.limite,.tratamentos-clinicos>.limite{grid-template-columns:.75fr 2.8fr;gap:18px}
+ .composicao-pronto{grid-template-columns:1.8fr 1fr;gap:18px}
+ .composicao-pronto .servicos-editoriais .grade-servicos{grid-template-columns:repeat(2,1fr)}
+ .composicao-pronto .sobre-pronto{padding:23px 20px!important}
+ .servicos-impacto .servico{padding-left:12px!important}
+ .servicos-impacto .icone-servico{position:relative;left:0;margin-bottom:8px}
+ .faixa-atendimento>.limite>div{gap:10px}
+ .faixa-atendimento strong{font-size:16px}
+ .faixa-atendimento .telefone-faixa{display:none}
+}
+@media(max-width:920px){
+ .composicao-precision{width:100%}
+ .beneficios-bancada{display:none}
+ .arte-clara .produto-3d{inset:-12% -14%;width:128%;height:124%}
+ .faixa-atendimento>.limite{align-items:flex-start;gap:20px}
+ .faixa-atendimento>.limite>div:last-child{flex-wrap:wrap}
+ .faixa-atendimento strong{font-size:20px}
+ .dialogo-atendimento .contato-grade{grid-template-columns:1fr;gap:28px}
+}
+@media(max-width:620px){
+ .produto-3d{inset:-4% -7%;width:114%;height:108%}
+ .arte-auto .produto-3d{inset:-10% -12%;width:124%;height:120%}
+ .arte-brisa .produto-3d{inset:-7% -3%;width:106%;height:114%}
+ .arte-clara .produto-3d{inset:-10% -10%;width:120%;height:120%}
+ .arte-essenza .produto-3d{inset:-9% 0 0 -5%;width:110%;height:110%}
+ .faixa-atendimento{padding:23px 0}
+ .faixa-atendimento>.limite>div:first-child{gap:12px}
+ .faixa-atendimento>.limite>div:last-child{gap:9px;width:100%}
+ .faixa-atendimento .telefone-faixa{width:100%;margin:0 0 7px 0}
+ .faixa-atendimento .botao-site{font-size:10px;min-height:42px;padding:10px 12px}
+ .faixa-atendimento .botao-site>.vetor:last-child{display:none}
+ .faixa-atendimento strong{font-size:21px}
+ .faixa-atendimento small{font-size:11px;line-height:1.6}
+ .dialogo-atendimento{width:calc(100vw - 20px);max-height:calc(100dvh - 20px);border-radius:13px}
+ .dialogo-atendimento .contato-site{padding:52px 18px 22px}
+ .dialogo-atendimento .contato-grade h2{font-size:31px}
+ .dialogo-atendimento .formulario-site{padding:20px 16px}
+}
+@media(prefers-reduced-motion:reduce){.produto-3d{transition:none}.dialogo-atendimento[open]{animation:none}}
+
+.credito-3d{max-width:310px;font-size:9px}.credito-3d summary{cursor:pointer;list-style:none;text-decoration:underline;text-underline-offset:3px}.credito-3d p{font-size:9px;line-height:1.7;margin-top:8px}.credito-3d p a{text-decoration:underline}.creditos{flex-wrap:wrap}
+
+.rio-brisa{position:absolute;inset:0 -25% -8% -30%;width:155%;height:108%;z-index:-2;overflow:visible;animation:rio-em-curso 12s ease-in-out infinite}.arte-brisa .ondas-auto{opacity:.1}@keyframes rio-em-curso{50%{transform:translateX(7px) scaleY(1.025)}}@media(prefers-reduced-motion:reduce){.rio-brisa{animation:none}}
+
+.modelo-blue .marca-site>.simbolo-marca{color:#75dfff}
