@@ -8,6 +8,7 @@ export function criarTransporte(base='/api/connect'){
   const j=await r.json().catch(()=>({}));if(!r.ok&&r.status!==200)throw Object.assign(Error(j.erro||('Falha '+r.status)),{codigo:r.status===401?'nao-autenticado':'http'});return j;
  }
  return {
+  chamar,
   loginUrl:()=>url('login'),
   async status(){const j=await chamar('status');if(j.csrf)csrf=j.csrf;return j;},
   async listar(dir){return (await chamar('listar',{q:{dir}})).itens;},

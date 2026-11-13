@@ -1,5 +1,6 @@
 /* Cliente do Cloudflare Pages (Direct Upload). Roda só no servidor; as credenciais vêm de variáveis de ambiente e nunca saem daqui. fetch é injetável para testes com mocks. */
 'use strict';
+const zlib=require('node:zlib');
 const {blake3Hex}=require('./blake3.js');
 const API='https://api.cloudflare.com/client/v4';
 const LIM={arquivos:20000,tamanhoArquivo:25*1024*1024,loteBytes:3.2*1024*1024,loteArquivos:100,tentativas:3,timeoutMs:12000};
@@ -60,8 +61,8 @@ function criarCliente({contaId,token,f=globalThis.fetch,espera=ms=>new Promise(r
    if(arquivos.length>LIM.loteArquivos)throw Object.assign(Error('Lote com arquivos demais.'),{status:400,publico:true});
    const itens=[];let total=0;
    for(const a of arquivos){const v=validarCaminho(a.caminho);if(v)throw Object.assign(Error(v),{status:400,publico:true});if(typeof a.base64!=='string'||!/^[A-Za-z0-9+/]*={0,2}$/.test(a.base64))throw Object.assign(Error('Conteúdo inválido: '+a.caminho),{status:400,publico:true});
-    const bytes=Buffer.from(a.base64,'base64');if(bytes.length>LIM.tamanhoArquivo)throw Object.assign(Error('Arquivo acima de 25 MiB: '+a.caminho),{status:413,publico:true});total+=bytes.length;itens.push({caminho:a.caminho,bytes,hash:hashAsset(a.caminho,bytes),tipo:TIPOS[extensao(a.caminho)]||'application/octet-stream'});}
-   if(total>LIM.loteBytes*1.4)throw Object.assign(Error('Lote grande demais; envie em partes menores.'),{status:413,publico:true});
+    let bytes=Buffer.from(a.base64,'base64');if(a.gz===true){try{bytes=zlib.gunzipSync(bytes,{maxOutputLength:LIM.tamanhoArquivo+1});}catch{throw Object.assign(Error('Conteúdo comprimido inválido ou grande demais: '+a.caminho),{status:400,publico:true});}}if(bytes.length>LIM.tamanhoArquivo)throw Object.assign(Error('Arquivo acima de 25 MiB: '+a.caminho),{status:413,publico:true});total+=bytes.length;itens.push({caminho:a.caminho,bytes,hash:hashAsset(a.caminho,bytes),tipo:TIPOS[extensao(a.caminho)]||'application/octet-stream'});}
+   if(total>LIM.loteBytes*8)throw Object.assign(Error('Lote grande demais; envie em partes menores.'),{status:413,publico:true});
    const jwt=await this.tokenUpload(nome),hashes=[...new Set(itens.map(i=>i.hash))];
    const faltando=(await req(`${API}/pages/assets/check-missing`,{metodo:'POST',auth:jwt,corpo:{hashes},contexto:'check-missing'})).result||[];
    const falta=new Set(faltando),paraEnviar=[],vistos=new Set();for(const i of itens)if(falta.has(i.hash)&&!vistos.has(i.hash)){vistos.add(i.hash);paraEnviar.push({key:i.hash,value:i.bytes.toString('base64'),metadata:{contentType:i.tipo},base64:true});}
