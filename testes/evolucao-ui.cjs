@@ -1,0 +1,71 @@
+/* Teste de navegador das novas telas. A ponte (/api/connect) é SIMULADA por interceptação de rede: nenhuma publicação real na Cloudflare é feita ou validada aqui. */
+const {chromium}=require('playwright');const zlib=require('zlib');
+const URL_=process.env.ORBITA_URL||'http://localhost:3111/';let falhas=0;const ok=(c,m)=>{console.log((c?'✔ ':'✘ ')+m);if(!c)falhas++;};
+const agora=Date.now(),d=n=>new Date(agora-n*864e5).toISOString();
+const emp=(i,x)=>({id:'e'+i,nome:'Empresa '+i,cidade:'Recife - PE',nicho:'celulares',etapa:'encontrada',valor:0,criada:d(30),historico:[],notas:'Nota interna sigilosa do CRM',contato:'',telefone:'',email:'',site:'',whatsapp:'8199999'+(1000+i),statusSite:'sem-site',servicosOferecidos:['troca de tela','bateria'],diferenciais:['atendimento rápido'],...x});
+const ev=(i,e,tipo,dias,x={})=>({id:'v'+i,empresaId:e,tipo,quando:d(dias),registradoEm:d(dias),origem:'usuario',...x});
+const seed={versao:2,preferencias:{nome:'Renan',cargo:'Dev',marca:'Órbita',movimento:false,qualidade:'equilibrada',contraste:false},lembretes:[],rascunhos:[],demonstracoes:[],propostas:[],pagamentos:[],custos:[],sessoes:[],tarefas:[],posVenda:[],experimentos:[],
+ empresas:[emp(1,{nome:'Precision Cell',contato:'Carlos Silva',notas:'Nota interna sigilosa do CRM'}),emp(2,{nome:'Smart Tech'}),emp(3,{nome:'Bloqueada',situacao:'nao-contatar'})],
+ eventos:[ev(1,'e2','mensagem-enviada',3,{texto:'Oi, tudo bem? Posso te mostrar como ficaria o site da Smart Tech?'}),ev(2,'e2','resposta',2.9,{texto:'Ajudaria sim.',interesse:'medio'}),ev(3,'e2','resposta',2.8,{texto:'Depende do valor.',interesse:'medio'})]};
+const hex=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h.toString(16).padStart(8,'0').repeat(4);};
+(async()=>{
+ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+ const ctx=await b.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce',acceptDownloads:true});await ctx.addInitScript(`if(!localStorage.getItem('s')){localStorage.setItem('orbita-prospeccao-v2',${JSON.stringify(JSON.stringify(seed))});localStorage.setItem('s','1');}`);
+ const enviados={};let deploys=0;const chamadas=[];
+ await ctx.route('**/api/connect**',async route=>{const u=new URL(route.request().url()),a=u.searchParams.get('acao'),body=route.request().postDataJSON?.()||{};chamadas.push(a);const j=o=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(o)});
+  if(a==='status')return j({autenticado:true,csrf:'c',usuarioId:1,repositorio:'x/y'});
+  if(a==='publicar-status')return j({configurada:true,tokenAtivo:true,conta:'abcd…wxyz',projetos:2,limites:{arquivosPorDeploy:20000,tamanhoArquivoMiB:25,observacao:'MOCK'}});
+  if(a==='rastreio-status')return j({configurado:false,orientacao:['MOCK']});
+  if(a==='publicar-iniciar')return j({projeto:body.nome,subdominio:body.nome+'.pages.dev',url:'https://'+body.nome+'.pages.dev',criado:true});
+  if(a==='publicar-lote'){const hs={};for(const f of body.arquivos){let buf=Buffer.from(f.base64,'base64');if(f.gz)buf=zlib.gunzipSync(buf);enviados[f.caminho]=buf.toString('utf8');hs[f.caminho]=hex(f.caminho);}return j({hashes:hs,enviados:body.arquivos.length,jaExistiam:0});}
+  if(a==='publicar-finalizar'){deploys++;return j({id:'aaaaaaaa-bbbb-cccc-dddd-00000000000'+deploys,url:'https://h.x.pages.dev'});}
+  if(a==='publicar-estado')return j({id:u.searchParams.get('deploy'),concluido:true,falhou:false,estagios:[]});
+  if(a==='publicar-verificar')return j({status:200,disponivel:true,noindex:true,titulo:'Precision',verificadoEm:new Date().toISOString()});
+  return route.fulfill({status:404,contentType:'application/json',body:JSON.stringify({erro:'MOCK sem rota '+a})});});
+ const p=await ctx.newPage();p.setDefaultTimeout(9000);const erros=[];p.on('pageerror',e=>{if(!/sandboxed/.test(e.message))erros.push('PAGE:'+e.message);});p.on('console',m=>{if(m.type()==='error'&&!/404|MOCK|sandboxed/.test(m.text()))erros.push('CONSOLE:'+m.text());});p.on('dialog',x=>x.accept('ok'));
+ const esp=ms=>p.waitForTimeout(ms),clicar=async s=>{await p.click(s);await esp(350);},txt=()=>p.textContent('#conteudo-painel'),nav=async s=>{if(await p.evaluate(()=>document.querySelector('#painel').open)){await p.keyboard.press('Escape');await esp(300);}await p.click(`[data-secao=${s}]`);await esp(500);};
+ const estado=()=>p.evaluate(()=>new Promise(res=>{const r=indexedDB.open('orbita-dados');r.onsuccess=()=>{const t=r.result.transaction('colecoes').objectStore('colecoes');const g=t.getAll(),k=t.getAllKeys();g.onsuccess=()=>{k.onsuccess=()=>{const o={};k.result.forEach((c,i)=>o[c]=g.result[i]);res(o);};};};}));
+ await p.goto(URL_);await esp(2200);
+ /* plano do dia */
+ await nav('diagnostico');let t=await txt();ok(/Plano do dia/.test(t)&&/Responder o valor para Smart Tech/.test(t),'plano do dia prioriza quem condicionou ao valor');ok(!/Bloqueada/.test(t.split('Não contatar')[0]),'não contatar fora da lista de tarefas');ok(/Não é uma probabilidade/.test(t),'plano sem pontuação de probabilidade');
+ await clicar('[data-m="diagnostico.aba"][data-id=funil]');t=await txt();ok(/Empresas encontradas|Funil comercial/.test(t)&&/Primeira mensagem enviada/.test(t),'funil de etapas observáveis');
+ await clicar('[data-m="diagnostico.aba"][data-id=gargalos]');t=await txt();ok(/Muitas empresas não respondem/.test(t)&&/Dados insuficientes|dados insuficientes/.test(t)&&/associações e hipóteses/.test(t),'gargalos honestos com amostra pequena');
+ await clicar('[data-m="diagnostico.aba"][data-id=mensagens]');t=await txt();ok(/primeiras mensagens|Nenhuma primeira mensagem/.test(t),'análise de mensagens renderiza');
+ await clicar('[data-m="diagnostico.aba"][data-id=lab]');await p.fill('#dg-amostra [name=p1]','10');await p.fill('#dg-amostra [name=p2]','20');await clicar('#dg-amostra [type=submit]');t=await txt();ok(/mensagens por variante/.test(t),'calculadora de amostra');
+ /* negociação */
+ await nav('negociacao');await p.selectOption('#ng-emp','e2');await esp(400);t=await txt();ok(/Próxima melhor ação: Apresentar preço/.test(t),'caso real "Ajudaria sim"/"Depende do valor" → apresentar preço');ok(/Por que não as outras ações/.test(t),'ação explica o que foi descartado');
+ await clicar('[data-m="negociacao.aba"][data-id=interpretacao]');t=await txt();ok(/condicionou a decisão ao investimento/.test(t)&&/Interpretações alternativas/.test(t)&&/hipóteses/.test(t),'leitura contextual com fato, hipótese e alternativas');
+ await clicar('[data-m="negociacao.aba"][data-id=mensagem]');await clicar('#ng-msg [type=submit]');t=await p.inputValue('#ng-texto');ok(/R\$ 800/.test(t)&&/R\$ 600/.test(t),'mensagem com preços reais configurados');let e=await estado();const antes=(e.eventos||[]).filter(x=>x.tipo==='mensagem-enviada').length;
+ await clicar('[data-m="negociacao.rascunho"]');e=await estado();ok((e.eventos||[]).filter(x=>x.tipo==='mensagem-enviada').length===antes,'rascunho não conta como enviado');
+ await clicar('[data-m="negociacao.enviei"]');e=await estado();ok((e.eventos||[]).filter(x=>x.tipo==='mensagem-enviada').length===antes+1,'só "Confirmo que enviei" registra o envio');
+ await clicar('[data-m="negociacao.gerar-da-acao"]').catch(()=>{});
+ await clicar('[data-m="negociacao.aba"][data-id=conversa]');await p.fill('#ng-imp [name=texto]','12/11/2026 14:35 - Renan: Oi, tudo bem?\n12/11/2026 14:40 - Carlos Silva: Oi\nPode falar\n12/11/2026 14:41 - Carlos Silva: Quanto custa?');await p.fill('#ng-imp [name=meu]','');await clicar('#ng-imp [type=submit]');t=await txt();ok(/REVISAR/.test(t)||/Selecione/.test(t),'conversa sem identificar quem sou exige revisão');
+ const sels=await p.locator('#ng-mapa select').count();if(sels){const nomes=await p.locator('#ng-mapa select').evaluateAll(l=>l.map(s=>s.name));for(const n of nomes)await p.selectOption(`#ng-mapa select[name="${n}"]`,n==='Renan'?'eu':'cliente');await clicar('#ng-mapa [type=submit]');}
+ await p.check('#ng-conf');await clicar('[data-m="negociacao.salvar-conversa"]');e=await estado();ok((e.conversas||[]).length===1,'conversa salva após revisão e confirmação');
+ /* ofertas */
+ await nav('ofertas');t=await txt();ok(/Cartão — preço promocional/.test(t)&&/Pix à vista/.test(t)&&/desconhecid/.test(t),'simulador mostra desconhecidos (nunca zero)');
+ await clicar('[data-m="ofertas.aba"][data-id=condicoes]');await p.fill('#of-cond [name=precoMinimoCent]','550');await p.fill('#of-cond [name=taxaCartaoPct]','3,5');await p.fill('#of-cond [name=impostoPct]','6');await p.fill('#of-cond [name=horasDesenvolvimento]','10');await p.fill('#of-cond [name=horasSuporte]','2');await p.fill('#of-cond [name=valorMinimoHoraCent]','30');await p.fill('#of-cond [name=margemDesejadaPct]','50');await p.fill('#of-cond [name=motivo]','teste');await clicar('#of-cond [type=submit]');e=await estado();ok((e.condicoes||[]).length===2&&e.condicoes[1].dados.precoMinimoCent===55000&&e.condicoes[0].dados.precoMinimoCent==null,'condições versionadas (v1 preservada, v2 com mínimo em centavos)');
+ await clicar('[data-m="ofertas.aba"][data-id=simulador]');t=await txt();ok(/Receita líquida/.test(t),'simulador com receita líquida');
+ await clicar('[data-m="ofertas.aba"][data-id=negociar]');await p.selectOption('#of-emp','e2');await esp(400);await p.fill('#of-neg [name=contra]','400');await p.selectOption('#of-neg [name=forma]','pix');await clicar('#of-neg [type=submit]');t=await txt();ok(/abaixo do seu preço mínimo/.test(t)&&/Não aceitar a contraproposta/.test(t),'contraproposta abaixo do mínimo: recomenda não aceitar');
+ await clicar('[data-m="ofertas.aba"][data-id=proposta]');await clicar('#of-prop [type=submit]');t=await p.locator('iframe[title="Prévia da proposta"]').count();ok(t===1,'prévia da proposta');const html=await p.locator('iframe[title="Prévia da proposta"]').getAttribute('srcdoc');ok(!/margem|preço mínimo|550|Nota interna/i.test(html)&&/R\$\s*800,00/.test(html),'proposta sem dados internos e com valores reais');
+ await clicar('[data-m="ofertas.criar-prop"]');e=await estado();ok(e.propostas.length===1&&e.propostas[0].condicaoVersao===2&&e.propostas[0].estado==='criada','proposta salva como criada (não enviada) ligada à versão das condições');
+ /* publicação */
+ await nav('empresas');await clicar('.nome-empresa >> text=Precision Cell');await clicar('[data-m="estudio.criar"]');await clicar('[data-estudio=personalizar][data-modelo-estudio=precision]');await esp(1500);
+ await p.locator('#confirmar-dados-publicos').check({force:true});await clicar('[data-estudio=publicar]');await esp(2500);t=await txt();
+ e=await estado();ok(e.publicacoes?.length===1,'publicação registrada no CRM'+(e.publicacoes?.length?'':' · painel: '+t.slice(0,200)));
+ const pub=e.publicacoes?.[0]||{};ok(pub.estado==='publicada'&&pub.urlPublica==='https://precision-cell-recife.pages.dev','URL real do projeto devolvida e publicação verificada ('+pub.urlPublica+')');
+ ok(e.demonstracoes[0]?.urlPublica===pub.urlPublica&&e.demonstracoes[0]?.publicacaoVerificada===true,'demonstração recebe o link só após a verificação');
+ ok(/orbita-demo-aviso/.test(enviados['index.html']||'')&&/noindex/.test(enviados['index.html']||'')&&/Disallow: \//.test(enviados['robots.txt']||''),'pacote enviado: aviso de demonstração, noindex e robots bloqueando');
+ ok(!enviados['vercel.json']&&!enviados['LEIA-ME.md']&&!Object.values(enviados).some(c=>/Nota interna sigilosa|orbita-prospeccao|indexedDB/.test(c)),'pacote enviado sem dados internos nem arquivos de outras hospedagens');
+ ok(Object.keys(enviados).length>=8,'arquivos enviados ('+Object.keys(enviados).length+')');
+ await nav('publicacoes');t=await txt();ok(/Precision Cell/.test(t)&&/pages\.dev/.test(t)&&/Verificar disponibilidade/.test(t),'painel de publicações lista link e ações');
+ await clicar('[data-m="publicacoes.aba"][data-id=integracoes]');await clicar('[data-m="publicacoes.testar"]');t=await txt();ok(/Configurada/.test(t)&&/ativo/.test(t),'integrações: teste de conexão');ok(!/CLOUDFLARE_API_TOKEN\s*[:=]/.test(await p.content()),'sem token na página');
+ /* republicação reaproveita o endereço */
+ await nav('publicacoes');await clicar('[data-m="publicacoes.republicar"]');await esp(1500);await p.locator('#confirmar-dados-publicos').check({force:true});await clicar('[data-estudio=publicar]');await esp(2500);e=await estado();ok(e.publicacoes.length===1&&e.publicacoes[0].urlPublica===pub.urlPublica,'republicação reutiliza o mesmo projeto/endereço');
+ /* dados internos fora do export Connect por padrão */
+ const x=await p.evaluate(()=>JSON.stringify(JSON.parse(localStorage.getItem('orbita-prospeccao-v2')||'{}')).length);
+ /* celular */
+ await p.setViewportSize({width:375,height:780});await esp(300);for(const [sec,rot] of [['diagnostico','Plano do dia'],['negociacao','Negociação'],['ofertas','Ofertas'],['publicacoes','Publicações']]){if(await p.evaluate(()=>document.querySelector('#painel').open)){await p.keyboard.press('Escape');await esp(250);}if(await p.locator('.abrir-menu').isVisible())await p.click('.abrir-menu').catch(()=>{});await esp(250);await p.click(`[data-secao=${sec}]`).catch(async()=>{await p.evaluate(s=>document.querySelector(`[data-secao=${s}]`)?.click(),sec);});await esp(500);const w=await p.evaluate(()=>[document.documentElement.scrollWidth,document.querySelector('#painel')?.scrollWidth||0]);ok(w[0]<=376,`celular 375px: ${sec} sem rolagem horizontal da página (${w[0]})`);}
+ ok(!erros.length,'sem erros de JavaScript'+(erros.length?': '+erros.slice(0,3).join(' | '):''));
+ await b.close();console.log(falhas?falhas+' falhas':'todas aprovadas');process.exit(falhas?1:0);
+})().catch(e=>{console.error(e);process.exit(1);});

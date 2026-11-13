@@ -12,6 +12,7 @@ export const configuracaoPadrao=()=>({
  connect:{nivel:2,permissoes:{},sensiveisAuto:{},fusoHorario:'America/Recife',compartilhado:{empresas:true,historico:true,tarefas:true,financeiro:false,indicadores:true,relatorios:false,notas:false,negociacoes:false,publicacoes:false,diagnostico:false},modo:'manual',repositorio:'',intervaloMin:5,ponte:'',sync:{}},
  quant:{valorHoraCent:null,margemAlvo:null,minimoResultadoCent:null,taxaDescontoAnual:null,saldoInicial:null,horasSemanaDisponiveis:null,limiteDescontoPct:30,diasSemRegistro:14},
  pesos:{semSite:25,contatoDireto:20,resposta:15,interesse:20,demonstracao:20},
+ publicacao:{automatica:false,rastreioAtivo:false,modoRastreio:'agregado'},
  comercial:{precoNormal:1230,precoPromocional:800,precoPix:600,parcelasMax:12,jurosParcelas:0,suporteDias:30,prazoEntregaDias:7,validadeDias:7,pagamento:'Pagamento único pelo desenvolvimento.',suporte:'Um mês de suporte e pequenas alterações.'},
  automacoes:{retornoDemo:true,negociacaoParada:true,propostaVencendo:true,proximaAcao:true,cadastroIncompleto:true,suporteVencendo:true,diasRetornoDemo:3,diasNegociacaoParada:7,diasPropostaAviso:2,diasSuporteAviso:7}
 });
@@ -43,7 +44,7 @@ export function normalizarEstado(bruto){
  for(const c of colecoes)base[c]=Array.isArray(origem[c])?origem[c].filter(x=>x&&typeof x==='object'):[];
  base.empresas=base.empresas.map(normalizarEmpresa);
  base.preferencias={...base.preferencias,...(origem.preferencias||{})};
- const cfg=origem.config||{};base.config={connect:{...base.config.connect,...cfg.connect,compartilhado:{...base.config.connect.compartilhado,...cfg.connect?.compartilhado}},quant:{...base.config.quant,...cfg.quant},pesos:{...base.config.pesos,...cfg.pesos},comercial:{...base.config.comercial,...cfg.comercial},automacoes:{...base.config.automacoes,...cfg.automacoes}};
+ const cfg=origem.config||{};base.config={connect:{...base.config.connect,...cfg.connect,compartilhado:{...base.config.connect.compartilhado,...cfg.connect?.compartilhado}},quant:{...base.config.quant,...cfg.quant},pesos:{...base.config.pesos,...cfg.pesos},comercial:{...base.config.comercial,...cfg.comercial},publicacao:{...base.config.publicacao,...cfg.publicacao},automacoes:{...base.config.automacoes,...cfg.automacoes}};
  base.notificacoesLidas=origem.notificacoesLidas!==false?true:false;
  for(const [chave,valor] of Object.entries(origem))if(!(chave in base)&&chave!=='versao')base[chave]=valor;
  return base;
