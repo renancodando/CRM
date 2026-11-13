@@ -14,26 +14,29 @@ Acesse `http://localhost:3000`. Não há instalação, compilação, autenticaç
 
 ## Funcionalidades
 
-- Cadastro e edição de empresas com contato, valor, anotações e histórico.
-- Busca global com `Ctrl K`, filtros por etapa e período e exportação CSV.
-- Pipeline visual com arrastar e soltar; cada cartão também permite mudar a etapa pelo teclado.
-- Indicadores calculados a partir das oportunidades locais.
-- Mensagens personalizáveis por empresa, intenção e tom; cópia, download e rascunhos. Nenhum envio automático.
-- Lembretes editáveis, conclusão de ações e notificações dentro da interface.
-- Estúdio de Sites com nove modelos comerciais, prévias reais, personalização ao vivo e ZIP independente.
-- Modelos clássicos preservados com download de HTML.
-- Relatórios, backup JSON e importação que preserva os registros atuais.
-- Nome da plataforma e perfil editáveis, pausa, qualidade visual e contraste reforçado.
+**Dados e segurança**
+- Armazenamento principal em IndexedDB, com migração versionada e idempotente a partir de `orbita-prospeccao-v1/v2`. As chaves antigas e uma cópia integral do texto original **nunca são apagadas**. Registros da antiga demonstração (v1) são preservados e marcados como "legado v1" (podem ir à lixeira, com recuperação).
+- Backup JSON v3 com checksum (importa também v1 e v2), importação com prévia, comparação e resolução de conflitos, pontos de recuperação automáticos, exportação CSV, lixeira, histórico de alterações, verificação de integridade e pedido de armazenamento persistente. Dados continuam apenas neste navegador: não há sincronização entre dispositivos.
 
-O CRM inicia vazio, sem empresas, oportunidades, mensagens ou lembretes de exemplo. Os indicadores mostram apenas os seus cadastros. A navegação funciona na mesma tela, por painéis contextuais.
+**CRM comercial**
+- Central individual por empresa (identificação, comercial, histórico, produção e negociação) com ações rápidas. Nada é registrado como enviado, aceito ou pago sem a sua confirmação.
+- Prevenção de duplicidades (WhatsApp/telefone, e-mail, domínio, perfil social e nome), mesclagem que preserva todos os relacionamentos e listas de não contatar/recusadas excluídas de campanhas e recomendações.
+- Pontuação de prioridade transparente e configurável (não é probabilidade de venda), Radar Comercial com filtros, central de trabalho diário, cadastro em lote por CSV com prévia, exportação ICS e automações locais que apenas sugerem.
+- Pipeline de oito etapas (Encontrada → Verificada → Mensagem enviada → Respondeu → Demonstração enviada → Negociação → Proposta enviada → Fechada) mais as situações perdida, recusada, pausada e não contatar; arrastar e soltar e controles por teclado/celular.
 
-Na primeira abertura desta versão, os registros da antiga demonstração salvos no navegador são apagados uma única vez. Nome, marca e preferências são preservados. Os novos cadastros permanecem salvos nas próximas visitas. Os modelos de site continuam disponíveis para prévia e download mesmo antes do primeiro cadastro.
+**Mensagens, propostas e análise**
+- Gerador determinístico com 14 situações e variações, baseado nos dados reais da empresa; abre o WhatsApp com o texto, mas só registra o envio quando você confirma.
+- Propostas com versões, prévia, impressão/PDF, HTML independente, pagamentos parciais confirmados manualmente e pós-venda.
+- Laboratório de Vendas: indicadores com denominadores explícitos, funil, conversão por nicho/estratégia/faixa de preço, tempos médios, experimentos A/B com intervalo de confiança e regra de amostra mínima. Central financeira separa estimativa, negociado, recebido, pendente e custos.
 
-Os dados ficam apenas no `localStorage` do navegador. Exporte um backup antes de trocar de dispositivo. Lembretes não enviam notificações quando o site está fechado. O gerador usa modelos locais de texto, sem serviço de IA.
+**Estúdio de Sites 2.0** (os nove modelos e suas cenas 3D permanecem como estavam)
+- Editor visual com seleção de elementos na prévia, edição contextual, composição modular opcional (ordem, ocultar seções, variantes de cabeçalho, apresentação, serviços, FAQ e rodapé), tipografia, espaçamento, controle de animações e de efeitos 3D, desfazer/refazer, histórico, salvamento automático, versões, comparação de duas ou três demonstrações, prévia em sete larguras e restauração da configuração original.
+- Textos sugeridos a partir da ficha da empresa, sempre revisáveis, sem inventar preços, avaliações, garantias, registros ou experiência. Dados privados do CRM nunca entram no site.
+- Exportação ZIP com verificação (links, recursos, licenças, credenciais, noindex/canonical) e manifesto de integridade.
 
 ## Arquivos
 
-`index.html` e `estilos.css` definem a composição. `interface.js` cuida das interações, `dados.js` das etapas, modelos e estado inicial, `modelos.js` dos sites exportáveis e `utilitarios.js` dos formatos e downloads. `universo.js` contém o globo, reflexos, partículas, iluminação e órbitas Three.js. `icones.js` e `ativos/simbolo.svg` são vetores independentes.
+`index.html` e `estilos.css` definem a composição. `interface.js` cuida da navegação e dos painéis originais, `nucleo/` reúne a lógica sem DOM (esquema, armazenamento, migração, backup, duplicidades, pontuação, ações comerciais, mensagens, propostas, métricas, automações, ICS e lote), `modulos/` os painéis novos (empresa, trabalho, mensagens, propostas, laboratório, financeiro e dados) com `modulos/modulos.css`, `dados.js` as etapas e modelos clássicos, `modelos.js` os sites clássicos e `utilitarios.js` os formatos e downloads. `testes/` guarda as verificações executáveis. `universo.js` contém o globo, reflexos, partículas, iluminação e órbitas Three.js. `icones.js` e `ativos/simbolo.svg` são vetores independentes.
 
 A imagem ambiental não contém a interface, o globo, a base ou os controles. Esses elementos são implementados separadamente. A cena usa um único contexto WebGL, resolução ajustável, pausa em aba oculta e respeito a movimento reduzido. Sem WebGL, a composição de reserva preserva os controles HTML.
 
@@ -59,3 +62,17 @@ Os sites exportados não usam fotos, imagens remotas, fontes externas, framework
 A publicação é manual e não é executada pelo CRM. Em **Demonstrações salvas → Publicação e link**, siga as instruções para sua conta e registre o endereço publicado. Não há campos para tokens nem credenciais. Os links registrados são informados por você e não são verificados automaticamente.
 
 Consulte [estudio/LEIA-ME.md](estudio/LEIA-ME.md) para a organização e os limites do gerador.
+
+
+## Testes
+
+```sh
+node testes/oraculo.mjs          # os nove modelos geram saída idêntica à referência gravada (testes/oraculo-referencia.json)
+node testes/dados.mjs            # migração, backup, importação, mesclagem, lixeira e pontuação
+node testes/metricas.mjs         # indicadores, experimentos, radar e automações
+node testes/exportacao.mjs DIR   # gera 27 pacotes (9 modelos × padrão/modular/sem 3D) e verifica privacidade e validação
+NODE_PATH=$(npm root -g) node testes/isolamento.cjs DIR   # abre cada pacote em um servidor isolado (desktop, celular e sem WebGL)
+NODE_PATH=$(npm root -g) node testes/responsividade.cjs   # painéis nos oito tamanhos (precisa do servidor em :3111)
+```
+
+Os testes de navegador usam Playwright. Para publicar o Órbita em hospedagem estática, envie a raiz do repositório (sem build).

@@ -12,8 +12,8 @@ export function criarTrabalho(ctx){
  const linhaEmp=(e,extra='',acao='')=>`<div class="linha-item"><span><button class="nome-empresa" data-empresa="${t(e.id)}">${t(e.nome)}</button><small>${t(e.cidade)} · ${t(nomeEtapa(e.etapa))}${extra?' · '+extra:''}</small></span>${acao}</div>`;
  const bloco=(titulo,itens,vazio,render)=>`<section class="bloco-lista"><h3>${titulo} <span>${itens.length}</span></h3>${itens.length?itens.slice(0,8).map(render).join('')+(itens.length>8?`<p class="ajuda">+ ${itens.length-8} além destes. Use a busca ou o Radar.</p>`:''):`<p class="ajuda">${vazio}</p>`}</section>`;
  function abrirHoje(aba=abaHoje){
-  abaHoje=aba;const est=estado();const abas=[['hoje','Hoje'],['radar','Radar comercial'],['automacoes','Automações'],['lote','Cadastro em lote']];
-  const corpo=aba==='radar'?htmlRadar():aba==='automacoes'?htmlAutomacoes():aba==='lote'?htmlLote():htmlHoje();
+  abaHoje=aba;const est=estado();const abas=[['hoje','Hoje'],['radar','Radar comercial'],['listas','Listas de contato'],['automacoes','Automações'],['lote','Cadastro em lote']];
+  const corpo=aba==='radar'?htmlRadar():aba==='listas'?htmlListas():aba==='automacoes'?htmlAutomacoes():aba==='lote'?htmlLote():htmlHoje();
   abrirPainel('Seu dia, organizado',`<div class="abas" role="tablist">${abas.map(([k,n])=>`<button type="button" role="tab" aria-selected="${aba===k}" class="${aba===k?'ativa':''}" data-m="trabalho.aba" data-id="${k}">${n}</button>`).join('')}</div><div id="corpo-trabalho">${corpo}</div>`,'CENTRAL DE TRABALHO');
   if(aba==='radar')ligarRadar();if(aba==='automacoes')ligarAutomacoes();if(aba==='lote')ligarLote();
  }
@@ -31,6 +31,11 @@ export function criarTrabalho(ctx){
   const f=document.querySelector('#filtros-radar');f.addEventListener('submit',e=>{e.preventDefault();filtros=Object.fromEntries([...new FormData(f)].filter(([,v])=>v));abrirHoje('radar');});document.querySelector('#limpar-radar').addEventListener('click',()=>{filtros={};abrirHoje('radar');});
   document.querySelector('#pesos').addEventListener('submit',e=>{e.preventDefault();const d=dadosForm(e.currentTarget);for(const k of Object.keys(estado().config.pesos))estado().config.pesos[k]=Math.max(0,Math.min(100,Number(d['peso-'+k])||0));registrarAuditoria(estado(),'config',estado().config,'Pesos da pontuação alterados');salvar();avisar('Pesos salvos. A pontuação foi recalculada.');abrirHoje('radar');});
   document.querySelector('#pesos-padrao').addEventListener('click',()=>{estado().config.pesos={semSite:25,contatoDireto:20,resposta:15,interesse:20,demonstracao:20};salvar();abrirHoje('radar');});
+ }
+ function htmlListas(){
+  const est=estado(),contatadas=est.empresas.filter(e=>est.eventos.some(v=>v.empresaId===e.id&&v.tipo==='mensagem-enviada')),recusaram=est.empresas.filter(e=>e.situacao==='recusada'),naoContatar=est.empresas.filter(e=>e.situacao==='nao-contatar');
+  const linha=(e,acao)=>linhaEmp(e,'',acao);
+  return `<p>Estas listas evitam abordagens repetidas. Empresas recusadas ou marcadas como "não contatar" nunca entram no Radar, no dia de trabalho, nas automações ou nos envios.</p><div class="grade-blocos">${bloco('Já contatadas (envio confirmado)',contatadas,'Nenhuma ainda.',e=>linhaEmp(e,'último contato: '+t(dataCurta(e.ultimoContato))))}${bloco('Recusaram propostas',recusaram,'Nenhuma.',e=>linhaEmp(e,t(e.motivoPerda||''),`<button class="botao pequeno" data-m="empresa.reativar" data-id="${t(e.id)}">Reativar</button>`))}${bloco('Pediram para não receber mensagens',naoContatar,'Nenhuma.',e=>linhaEmp(e,'',`<button class="botao pequeno" data-m="empresa.reativar" data-id="${t(e.id)}">Reativar</button>`))}</div>`;
  }
  function htmlAutomacoes(){
   const est=estado(),cfg=est.config.automacoes,sug=gerarSugestoes(est);

@@ -24,6 +24,15 @@ python3 -m http.server 3000
 - `zip.js`: arquivo ZIP com UTF-8 e CRC32, gerado no navegador sem biblioteca ou servidor.
 - `painel.js` e `estudio.css`: galeria, editor, prévia por dispositivo, histórico e registro de publicação.
 
+## Estúdio 2.0 (módulos novos)
+
+- `composicao.js`: composição modular **opcional**. Sem a chave `ed` na configuração nada muda: a saída padrão dos nove modelos é idêntica (verificada por `testes/oraculo.mjs`). Define as seções, os contratos entre elas (hero e contato obrigatórios, pacotes só em automotivo), variantes de cabeçalho/apresentação/serviços/FAQ/rodapé, predefinições Tradicional, Premium e Imersiva, e gera o CSS isolado `css/editor.css`.
+- `ponte.js`: script injetado **somente na prévia** para selecionar elementos (comunicação por `postMessage` com a prévia isolada). Nunca vai para o ZIP.
+- `textos.js`: composição determinística de textos a partir da ficha (diferenciais, serviços, cidade). Usa apenas dados públicos informados.
+- `versoes.js`: hash de conteúdo, versões imutáveis, histórico de edições (desfazer/refazer) e comparação.
+- `editor.js`: editor, versões, comparação e central de demonstrações. `validacao-exportacao.js`: verificação do pacote antes do download.
+- Efeitos 3D desativados removem `js/motor.js`, `js/cena.js` e a licença do Three.js do ZIP e deixam a ilustração vetorial. "Reduzir animações" inclui `js/controle-animacao.js`, que apenas informa movimento reduzido às cenas existentes.
+
 ## Geração
 
 Cada ZIP tem `js/motor.js`, `js/cena.js`, `LICENCA-THREE.txt`, `css/fidelidade.css`, `index.html`, `css/estilos.css`, `css/responsividade.css`, `css/materiais.css`, `js/configuracao.js`, `js/interacoes.js`, `assets/icones/marca.svg`, `robots.txt`, `sitemap.xml`, `vercel.json`, `netlify.toml` e `LEIA-ME.md`.
