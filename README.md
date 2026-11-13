@@ -20,7 +20,8 @@ Acesse `http://localhost:3000`. Não há instalação, compilação, autenticaç
 - Indicadores calculados a partir das oportunidades locais.
 - Mensagens personalizáveis por empresa, intenção e tom; cópia, download e rascunhos. Nenhum envio automático.
 - Lembretes editáveis, conclusão de ações e notificações dentro da interface.
-- Três modelos responsivos com prévia, dados da empresa e download de HTML completo.
+- Estúdio de Sites com nove modelos comerciais, prévias reais, personalização ao vivo e ZIP independente.
+- Modelos clássicos preservados com download de HTML.
 - Relatórios, backup JSON e importação que preserva os registros atuais.
 - Nome da plataforma e perfil editáveis, pausa, qualidade visual e contraste reforçado.
 
@@ -39,3 +40,22 @@ A imagem ambiental não contém a interface, o globo, a base ou os controles. Es
 A biblioteca Three.js está em `bibliotecas/`, com sua licença MIT. A textura da Terra vem do exemplo público de Three Globe: https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg. O cenário ambiental foi gerado para este projeto e está otimizado em WebP.
 
 Criado por **renancodando**.
+
+
+## Estúdio de Sites
+
+Abra **Estúdio de Sites** na navegação ou **Criar demonstração** dentro do cadastro de uma empresa. O cadastro ganhou um campo de nicho, sem alterar os registros existentes.
+
+- Assistência: Precision Cell, Oficina Mobile e Pronto Tech.
+- Odontologia: Sorriso Prime, Odonto Clara e Essenza Odontologia.
+- Automotivo: Blue Wash, Impacto Car Care e Brisa Auto Spa.
+
+Na galeria, selecione a empresa e o modelo. Personalize identidade, SVG, paleta, contatos, localização, textos, serviços, preços, FAQ, garantia, informações profissionais e avaliações autorizadas. As prévias usam os sites reais em 1440, 768 e 390 px. O gerador foi preparado também para as larguras de 320, 375, 430, 1024 e 1920 px.
+
+**Salvar rascunho** guarda a demonstração localmente. **Gerar projeto** verifica os campos públicos e a autorização; **Exportar ZIP** baixa todos os arquivos independentes. Notas internas, contato comercial de prospecção, valores de negociação e histórico do CRM não entram na exportação. Somente os campos públicos selecionados são incluídos. O histórico do Estúdio integra o backup JSON do CRM.
+
+Os sites exportados não usam fotos, imagens remotas, fontes externas, frameworks, banco, IA ou arquivos do CRM. As ilustrações são SVG e CSS. Os pacotes incluem HTML, CSS, JavaScript, ícone vetorial, robots, sitemap, configuração Vercel, Netlify e instruções. Sem URL definitiva, a indexação fica desativada até uma nova exportação com a URL correta.
+
+A publicação é manual e não é executada pelo CRM. Em **Demonstrações salvas → Publicação e link**, siga as instruções para sua conta e registre o endereço publicado. Não há campos para tokens nem credenciais. Os links registrados são informados por você e não são verificados automaticamente.
+
+Consulte [estudio/LEIA-ME.md](estudio/LEIA-ME.md) para a organização e os limites do gerador.
