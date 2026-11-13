@@ -72,3 +72,22 @@
 .comparacao{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:14px}.coluna-comparacao{min-width:0;display:flex;flex-direction:column;gap:10px;padding:12px;border:1px solid #b4c8e544;border-radius:14px}.miniatura-comparacao{overflow:hidden;border-radius:10px;border:1px solid #a7bddb33;background:#fff}.coluna-comparacao h4{margin:0;font-size:15px;font-weight:500}
 @media (max-width:900px){.comparacao{grid-template-columns:1fr}}
 .estudio-dispositivos{flex-wrap:wrap}
+/* Órbita Quant e Órbita Connect */
+.grade-indicadores{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:12px;margin-bottom:14px}
+.cartao-indicador{display:flex;flex-direction:column;gap:5px;text-align:left;padding:14px;border:1px solid #b1c6e33d;border-radius:13px;background:#27425e26;color:inherit;transition:border-color .2s,translate .2s}
+.cartao-indicador:hover{border-color:#e3af7e99;translate:0 -2px}.cartao-indicador:focus-visible{outline:2px solid #f0c391;outline-offset:2px}
+.cartao-indicador small{font-size:10px;color:#aabbd2}.cartao-indicador strong{font-size:22px;font-weight:500;color:#e6d1b9;line-height:1.15}.cartao-indicador span{font-size:10px;color:#92a5bf}.cartao-indicador em{font-style:normal;font-size:10px;color:#8ce0b6}
+.cartao-indicador i{display:block;height:5px;border-radius:3px;background:linear-gradient(90deg,#c78b57,#7897c5);width:var(--p)}
+.cartao-indicador.estado-informação,.cartao-indicador.estado-não{opacity:.8;border-style:dashed}
+.analise-escrita{display:grid;gap:9px;padding-left:20px;font-size:12px;line-height:1.7}
+.detalhe-indicador h3{margin-top:22px}
+.grafico{max-width:100%}.grafico text{fill:#92a5bf;font-size:9px}.grafico-cascata text,.grafico-pareto text{font-size:9px}
+.linha-barra.clicavel{background:none;border:0;color:inherit;text-align:left;width:100%}
+.mapa-calor{display:grid;gap:3px;font-size:10px;overflow-x:auto}.mapa-calor>div{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(52px,1fr);gap:3px}.mapa-calor span[role=cell]{padding:6px;text-align:center;border-radius:5px;background:rgba(216,156,100,calc(var(--i)*.85 + .05))}.mapa-calor b{font-weight:400;color:#c4cddd;padding:6px}
+.histograma{display:flex;align-items:flex-end;gap:3px;height:110px}.histograma div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;font-size:8px;text-align:center;color:#92a5bf}.histograma i{display:block;background:#87add7aa;border-radius:3px 3px 0 0}
+.grafo-svg{width:100%;height:auto;min-height:320px;border:1px solid #a7bddb33;border-radius:12px;background:#0a142277;touch-action:none}.no-grafo{cursor:pointer}.no-grafo circle{stroke:#0b1018;stroke-width:1.5}.no-grafo.sel circle{stroke:#fff;stroke-width:2.5}.no-grafo:hover circle{stroke:#e8bf97}
+.lista-nos{max-height:340px;overflow:auto;border:1px solid #a7bddb26;border-radius:10px;padding:4px 10px}.lista-nos button{width:100%;text-align:left;color:inherit;background:none;border:0;border-bottom:1px solid #a7bddb1f}
+.json-op{white-space:pre-wrap;font-size:10px;max-height:150px;overflow:auto;padding:10px;border:1px solid #a7bddb26;border-radius:8px;background:#0a142266}
+.resposta-quant{font-size:15px;color:#f0d6bd}
+.relatorio-previa li small{display:block}
+.abas button b{margin-left:6px;padding:1px 7px;border-radius:9px;background:#e4a26944;font-weight:500}
