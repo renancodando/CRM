@@ -39,6 +39,15 @@ export function estadoInicial(){
  const base={versao:VERSAO_ESTADO,preferencias:{nome:'Renan',cargo:'Desenvolvedor',marca:'Órbita',movimento:!(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches),qualidade:'equilibrada',contraste:false},notificacoesLidas:true,config:configuracaoPadrao()};
  for(const c of colecoes)base[c]=[];return base;
 }
+const MIGRACAO_MENSAGENS='mensagens-unificadas-1';
+function migrarRascunhosUnificados(base){
+ const c=(base.conversao??={});c.migracoes=Array.isArray(c.migracoes)?c.migracoes:[];
+ for(const r of base.rascunhos){r.estadoMensagem??='rascunho';r.criadoEm??=r.quando||'';r.historicoEstados??=[{estado:r.estadoMensagem,quando:r.quando||''}];r.empresa??=r.empresaId||'';}
+ if(c.migracoes.includes(MIGRACAO_MENSAGENS))return;
+ const ids=new Set(base.rascunhos.map(r=>r.id));
+ for(const r of Array.isArray(c.rascunhos)?c.rascunhos:[]){if(!r||ids.has(r.id))continue;base.rascunhos.push({id:r.id,empresa:r.empresaId||r.empresa||'',texto:r.texto||'',quando:r.criadoEm||'',criadoEm:r.criadoEm||'',tipo:'',variante:0,estrategia:r.abordagem||'',origem:r.origem||'usuario',operacaoId:r.operacaoId||'',auditoria:r.auditoria||null,porque:r.porque||'',estadoMensagem:r.enviado?'envio-confirmado':'rascunho',historicoEstados:[{estado:r.enviado?'envio-confirmado':'rascunho',quando:r.criadoEm||''}],migradoDe:'conversao.rascunhos'});}
+ c.rascunhos=[];c.migracoes.push(MIGRACAO_MENSAGENS);
+}
 export function normalizarEstado(bruto){
  const base=estadoInicial(),origem=bruto&&typeof bruto==='object'?bruto:{};
  for(const c of colecoes)base[c]=Array.isArray(origem[c])?origem[c].filter(x=>x&&typeof x==='object'):[];
@@ -47,6 +56,8 @@ export function normalizarEstado(bruto){
  const cfg=origem.config||{};base.config={connect:{...base.config.connect,...cfg.connect,compartilhado:{...base.config.connect.compartilhado,...cfg.connect?.compartilhado}},quant:{...base.config.quant,...cfg.quant},pesos:{...base.config.pesos,...cfg.pesos},comercial:{...base.config.comercial,...cfg.comercial},publicacao:{...base.config.publicacao,...cfg.publicacao},automacoes:{...base.config.automacoes,...cfg.automacoes}};
  base.notificacoesLidas=origem.notificacoesLidas!==false?true:false;
  for(const [chave,valor] of Object.entries(origem))if(!(chave in base)&&chave!=='versao')base[chave]=valor;
+ if(base.conversao)base.conversao=structuredClone(base.conversao);
+ migrarRascunhosUnificados(base);
  return base;
 }
 export function validarIntegridade(estado){

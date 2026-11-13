@@ -109,3 +109,15 @@
 .detalhe-pub{margin-top:12px;padding-top:10px;border-top:1px solid #b4c8e533}
 .cartao-exp textarea,.cartao-exp select,.painel-contextual form textarea{width:100%}
 @media(max-width:640px){.plano-dia li{flex-direction:column;align-items:stretch}.plano-dia button{width:100%;min-height:48px}.acoes-linha button{flex:1 1 100%;min-height:46px}.abas{overflow-x:auto;flex-wrap:nowrap}.abas button{flex:0 0 auto}.area-tabela{overflow-x:auto}}
+
+/* Órbita Conversão unificado: Contexto · Estratégia · Compositor */
+.cv-ws{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);align-items:start}
+.cv-lado{display:grid;gap:12px;min-width:0}.cv-compositor{min-width:0;padding:16px;border:1px solid #e3af7e66;border-radius:16px;background:#0f1b2cb3}
+.cv-area{padding:12px 14px;border:1px solid #b4c8e544;border-radius:14px;background:#0f1b2c80}.cv-area>summary{cursor:pointer;list-style:none}.cv-area>summary h3,.cv-compositor>h3{margin:0;font-size:15px}.cv-area[open]>summary{margin-bottom:10px}
+.cv-campos{list-style:none;margin:6px 0;padding:0;display:grid;gap:4px;font-size:12px}.cv-campos li{word-break:break-word}
+.origem{display:inline-block;padding:1px 7px;border-radius:999px;border:1px solid #b4c8e544;font-size:10px;color:#b9c8dc}.origem.o-confirmada{border-color:#4cc9a799;color:#9be5cd}.origem.o-usuario{border-color:#8fb4e899}.origem.o-publica{border-color:#e3af7e99;color:#f0cfa9}.origem.o-desconhecida{border-style:dashed;opacity:.8}
+.cv-previa{margin:10px 0}.cv-previa .bolha{max-width:92%;margin-left:auto;padding:10px 12px;border-radius:14px 14px 4px 14px;background:#1f6f5c;color:#fff;font-size:14px;line-height:1.5;word-break:break-word}
+#cv-texto{min-height:130px;font-size:15px;line-height:1.5}
+.cv-compositor .abas{margin:10px 0}
+button.pequeno{min-height:32px;padding:4px 10px;font-size:11px;border:1px solid #b4c8e559;border-radius:8px;background:#20304788;color:#d8e4f5;cursor:pointer}
+@media(max-width:860px){.cv-ws{grid-template-columns:1fr}.cv-compositor{padding:12px}#cv-texto{min-height:150px}.cv-compositor .acoes-linha button{flex:1 1 100%;min-height:48px}}

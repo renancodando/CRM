@@ -51,6 +51,8 @@ O ChatGPT (ou outro assistente) lê e grava **arquivos JSON** em um repositório
 
 ## Órbita Conversão — da primeira mensagem ao fechamento, com método
 
+> **Ferramenta única:** Preparar Mensagem, Conversão e Negociação foram unificados em *Órbita Conversão → Conversa* (contexto, estratégia e compositor na mesma tela, com WhatsApp direto e confirmação de envio). Veja [docs/CONVERSAO-UNIFICADA.md](docs/CONVERSAO-UNIFICADA.md).
+
 Módulo de negociação baseado em evidências: fila de oportunidades com pontuação **explicável** (dado desconhecido reduz a confiança, não vale zero), seis abordagens de primeira mensagem (direta, consultiva, com demonstração, diagnóstico, baixo atrito, autonomia) com justificativa, técnica, evidência, pontos negativos e próxima mensagem; interpretação de respostas como **hipóteses**; catálogo de 21 objeções com respostas respeitosas (recusa e "pare" encerram o contato); proposta de valor limitada ao que o projeto entrega; follow-up com limites configuráveis; consentimento por canal e lista de não contatar; laboratório de experimentos controlados (sorteio estratificado, Wilson, Fisher, h de Cohen, correção por análises planejadas, sem vencedor em amostra pequena); diagnóstico do funil; memória comercial regularizada; treino com clientes fictícios isolados do CRM. Nada é enviado nem marcado como enviado sem a sua confirmação, e "venda fechada" nunca é inferida. Detalhes, limites científicos e primeiros experimentos: [docs/ORBITA-CONVERSAO.md](docs/ORBITA-CONVERSAO.md).
 
 ## Publicação, acompanhamento, negociação e diagnóstico

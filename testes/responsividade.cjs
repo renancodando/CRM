@@ -11,7 +11,7 @@ const larguras=(process.env.LARGURAS||'320,375,390,430,768,1024,1440,1920').spli
   const painel=async(nome,abrir)=>{await abrir();await p.waitForTimeout(450);const r=await p.evaluate(()=>{const d=document.querySelector('#painel');if(!d?.open)return {aberto:false};const el=d.querySelector('#conteudo-painel');const estouros=[...el.querySelectorAll('*')].filter(n=>{const r=n.getBoundingClientRect();return r.width>0&&r.right>d.getBoundingClientRect().right+2&&!n.closest('.area-tabela,.colunas-kanban,.estudio-tela,.estudio-dispositivos,.etapas-pipeline,iframe,.abas,.estudio-abas,.estudio-miniatura');}).slice(0,3).map(n=>n.tagName+'.'+(n.className||'').toString().slice(0,30));return {aberto:true,estouros,larguraPainel:d.getBoundingClientRect().width};});if(!r.aberto||r.estouros.length){falhas++;console.log('✘',l,nome,JSON.stringify(r));}await p.keyboard.press('Escape');await p.waitForTimeout(250);};
   if(!semH){falhas++;console.log('✘',l,'página principal com rolagem horizontal');}
   const abrirMenu=async()=>{if(await p.locator('.abrir-menu').isVisible()){await p.click('.abrir-menu');await p.waitForTimeout(250);}};
-  for(const sec of ['hoje','empresas','pipeline','mensagens','estudio','propostas','laboratorio','financeiro','dados','relatorios','quant','connect','conversao','negociacao','ofertas','diagnostico','publicacoes']){
+  for(const sec of ['hoje','empresas','pipeline','estudio','propostas','laboratorio','financeiro','dados','relatorios','quant','connect','conversao','ofertas','diagnostico','publicacoes']){
    await painel(sec,async()=>{await abrirMenu();await p.click(`[data-secao=${sec}]`);});
   }
   // nova empresa e central

@@ -10,8 +10,8 @@ export function gerarSugestoes(estado,agora=Date.now()){
  for(const e of estado.empresas){
   if(!contatoPermitido(e)||e.situacao!=='ativa'||e.etapa==='fechada')continue;
   const evs=eventosDaEmpresa(estado,e.id);
-  if(cfg.retornoDemo){const d=evs.filter(x=>x.tipo==='demonstracao-apresentada').at(-1);if(d&&!evs.some(x=>x.tipo==='resposta'&&x.quando>=d.quando)&&dias(d.quando,agora)>=cfg.diasRetornoDemo)add('retornoDemo',e,`Demonstração enviada há ${dias(d.quando,agora)} dias sem resposta. Prepare um retorno.`,{m:'mensagens.abrir',id:e.id,extra:'sem-resposta-demo'},3,d.id);}
-  if(cfg.negociacaoParada&&['negociacao','proposta'].includes(e.etapa)&&dias(e.etapaEm,agora)>=cfg.diasNegociacaoParada)add('negociacaoParada',e,`Sem movimentação há ${dias(e.etapaEm,agora)} dias em ${e.etapa==='proposta'?'proposta enviada':'negociação'}.`,{m:'mensagens.abrir',id:e.id,extra:'retomada'},3,e.etapaEm);
+  if(cfg.retornoDemo){const d=evs.filter(x=>x.tipo==='demonstracao-apresentada').at(-1);if(d&&!evs.some(x=>x.tipo==='resposta'&&x.quando>=d.quando)&&dias(d.quando,agora)>=cfg.diasRetornoDemo)add('retornoDemo',e,`Demonstração enviada há ${dias(d.quando,agora)} dias sem resposta. Prepare um retorno.`,{m:'conversao.abrir-conversa',id:e.id,extra:'sem-resposta-demo'},3,d.id);}
+  if(cfg.negociacaoParada&&['negociacao','proposta'].includes(e.etapa)&&dias(e.etapaEm,agora)>=cfg.diasNegociacaoParada)add('negociacaoParada',e,`Sem movimentação há ${dias(e.etapaEm,agora)} dias em ${e.etapa==='proposta'?'proposta enviada':'negociação'}.`,{m:'conversao.abrir-conversa',id:e.id,extra:'retomada'},3,e.etapaEm);
   if(cfg.proximaAcao&&!e.proximaAcao&&!e.retornoEm&&e.etapa!=='encontrada')add('proximaAcao',e,'Sem próxima ação definida. Agende um retorno.',{m:'empresa.retorno',id:e.id},1);
   if(cfg.cadastroIncompleto){const f=cadastroIncompleto(e);if(f.length>=2)add('cadastroIncompleto',e,'Cadastro incompleto: falta '+f.slice(0,3).join(', ')+'.',{m:'empresa.abrir',id:e.id},0);}
  }

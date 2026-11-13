@@ -2,7 +2,7 @@ const {chromium}=require('playwright');const fs=require('fs');
 const URL_=process.env.ORBITA_URL||'http://localhost:3111/';let falhas=0;const ok=(c,m)=>{console.log((c?'✔ ':'✘ ')+m);if(!c)falhas++;};
 (async()=>{
  const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
- const ctx=await b.newContext({viewport:{width:1440,height:900},acceptDownloads:true});const p=await ctx.newPage();
+ const ctx=await b.newContext({viewport:{width:1440,height:900},acceptDownloads:true});await ctx.route('https://wa.me/**',r=>r.fulfill({status:200,contentType:'text/html',body:'wa'}));const p=await ctx.newPage();
  const erros=[];p.on('pageerror',e=>erros.push('PAGE:'+e.message));p.on('console',m=>{if(m.type()==='error')erros.push('CONSOLE:'+m.text());});p.on('dialog',d=>d.accept('teste'));
  const esperar=ms=>p.waitForTimeout(ms),clicar=async s=>{await p.click(s);await esperar(300);},nav=async s=>{if(await p.evaluate(()=>document.querySelector('#painel').open)){await p.keyboard.press('Escape');await esperar(300);}await p.click(`[data-secao=${s}]`);await esperar(450);};
  const estado=()=>p.evaluate(()=>new Promise(res=>{const r=indexedDB.open('orbita-dados');r.onsuccess=()=>{const t=r.result.transaction('colecoes').objectStore('colecoes');const g=t.getAll(),k=t.getAllKeys();g.onsuccess=()=>{k.onsuccess=()=>{const o={};k.result.forEach((c,i)=>o[c]=g.result[i]);res(o);};};};}));
@@ -26,10 +26,11 @@ const URL_=process.env.ORBITA_URL||'http://localhost:3111/';let falhas=0;const o
  // experimento A/B + mensagem
  await nav('laboratorio');await clicar('[data-m="laboratorio.aba"][data-id=experimentos]');await p.fill('#f-exp [name=nome]','Abertura A/B');await clicar('#f-exp [type=submit]');
  ok(/Abertura A\/B/.test(await textoPainel()),'experimento criado');
- await nav('mensagens');await p.selectOption('#empresa-mensagem',{label:'Precision Cell'});await esperar(500);await p.selectOption('#exp-mensagem',{index:1});await esperar(500);
- const txt=await p.inputValue('#texto-mensagem');ok(txt.length>30&&/Precision Cell/.test(txt),'mensagem humanizada gerada com dados da empresa');
- await clicar('#salvar-rascunho');await nav('mensagens');await p.selectOption('#empresa-mensagem',{label:'Precision Cell'});await esperar(400);
- await p.selectOption('#exp-mensagem',{index:1});await esperar(500);await clicar('#confirmar-envio');await esperar(500);
+ const escolherEmpresa=async n=>{const v=await p.evaluate(n=>[...document.querySelectorAll('#cv-emp option')].find(o=>o.textContent.includes(n))?.value,n);await p.selectOption('#cv-emp',v);await esperar(500);};
+ await nav('conversao');await escolherEmpresa('Precision Cell');await p.selectOption('#cv-exp-leg',{index:1});await esperar(500);
+ const txt=await p.inputValue('#cv-texto');ok(txt.length>30&&/Precision Cell/.test(txt),'mensagem humanizada gerada com dados da empresa');
+ await clicar('[data-m="conversao.rascunho"]');await nav('conversao');await escolherEmpresa('Precision Cell');
+ await p.selectOption('#cv-exp-leg',{index:1});await esperar(500);await clicar('[data-m="conversao.whatsapp"]');await esperar(400);await clicar('[data-m="conversao.confirmar-envio"]');await esperar(500);
  e=await estado();const msg=e.eventos.find(x=>x.tipo==='mensagem-enviada');ok(!!msg&&msg.experimentoId&&msg.variante,'envio confirmado registra evento com experimento e variante');
  ok(e.empresas.find(x=>x.nome==='Precision Cell').etapa==='mensagem','pipeline avança para "Mensagem enviada" só após a confirmação');
  ok(e.lembretes.some(l=>/Retomar/.test(l.titulo)),'retorno em 3 dias agendado');
@@ -53,10 +54,10 @@ const URL_=process.env.ORBITA_URL||'http://localhost:3111/';let falhas=0;const o
  ok(await p.locator('.coluna-comparacao').count()===2,'comparação lado a lado de duas demonstrações');
  // apresentar → mensagem → confirmar → versão registrada
  await p.locator('[data-estudio=proj-apresentar]').first().click();await esperar(1200);
- ok(/Mensagem|conversa/i.test(await p.textContent('#titulo-painel')),'apresentar abre o gerador de mensagens');
- await p.selectOption('#tipo-mensagem','enviar-demo');await esperar(500);
- ok(await p.isChecked('#registrar-demo').catch(()=>false),'mensagem de envio de demo marca o registro da apresentação');
- await clicar('#confirmar-envio');await esperar(600);e=await estado();
+ ok(/Mensagem|conversa/i.test(await p.textContent('#titulo-painel')),'apresentar abre o Órbita Conversão unificado');
+ await p.selectOption('#cv-tipo','enviar-demo');await esperar(500);await clicar('[data-m="conversao.whatsapp"]');await esperar(400);
+ ok(await p.isChecked('#cv-reg-demo').catch(()=>false),'mensagem de envio de demo marca o registro da apresentação');
+ await clicar('[data-m="conversao.confirmar-envio"]');await esperar(600);e=await estado();
  const apresent=e.demonstracoes.flatMap(d=>d.apresentacoes||[]);ok(apresent.length===1&&apresent[0].versaoId,'apresentação registrada com a versão exata só após confirmar o envio');
  ok(e.empresas.find(x=>x.nome==='Precision Cell').etapa==='demonstracao','pipeline: Demonstração enviada');
  // proposta: criar, enviar, aceitar, pagar
