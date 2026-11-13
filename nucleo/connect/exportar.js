@@ -14,7 +14,7 @@ import {planoDoDia} from '../diagnostico/plano-dia.js';
 import {condicaoVigente} from '../ofertas/condicoes.js';
 const PAGINA=200,TAM_MAX=90000;
 const pick=(o,ks)=>Object.fromEntries(ks.filter(k=>o[k]!==undefined).map(k=>[k,o[k]]));
-const hash=t=>{let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16);};
+const hash=t=>{t=String(t).replace(/"geradoEm": "[^"]*"/g,'"geradoEm": ""');let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16);};
 export function exportarAutorizado(estado,agora=new Date()){
  const cfg=estado.config.connect,c=cfg.compartilhado,vd=versaoDados(estado),geradoEm=agora.toISOString(),arquivos={},indice=[];
  const escopo=Object.entries(c).filter(([,v])=>v).map(([k])=>k);
