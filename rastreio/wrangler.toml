@@ -1,6 +1,6 @@
 # Coletor de acompanhamento das demonstrações do Órbita.
 # Implantação: veja rastreio/LEIA-ME.md. Nunca coloque segredos neste arquivo.
-name = "orbita-rastreio"
+name = "crm"
 main = "worker.js"
 compatibility_date = "2025-01-01"
 
