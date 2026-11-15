@@ -22,7 +22,7 @@ export async function sincronizar(estado,transporte,{salvar=async()=>{},agora=()
   const [pend,conf,exportados]=await Promise.all([transporte.listar('entrada/pendentes'),transporte.listar('saida/confirmacoes'),transporte.listar('saida/exportacoes')]);
   const caminhosPendentes=new Set(pend.map(f=>f.caminho)),caminhosExportados=new Set(exportados.map(f=>f.caminho));
   const feitas=new Set(conf.map(x=>nomeId(x.nome))),novas=pend.filter(x=>x.nome.endsWith('.json')&&!feitas.has(nomeId(x.nome))).slice(0,LOTE);
-  for(const f of novas){rel.lidas++;let op,txt;try{txt=await transporte.ler(f.caminho);if(txt.length>70000)throw Error('arquivo grande demais');op=JSON.parse(txt);}catch(e){op={id:nomeId(f.nome),tipo:'?',_corrompida:e.message};}
+  for(const f of novas){rel.lidas++;let op,txt;try{txt=await transporte.ler(f.caminho);}catch(e){if(e.http===404)continue;throw e;}try{if(txt.length>70000)throw Error('arquivo grande demais');op=JSON.parse(txt);}catch(e){op={id:nomeId(f.nome),tipo:'?',_corrompida:e.message};}
    if(op&&op.id&&op.id!==nomeId(f.nome)&&!op._corrompida)op={...op,_idDiferenteDoArquivo:true};
    const c=processarOperacao(estado,op._corrompida?{__invalida:op._corrompida,id:op.id}:op,{recebidaEm:agora().toISOString()});
    const reg=estado.operacoes.find(o=>o.id===(op.id||nomeId(f.nome)));if(reg){reg.arquivo=f.caminho;}
