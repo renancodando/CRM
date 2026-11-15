@@ -1,4 +1,11 @@
 import {eventosDaEmpresa} from './esquema.js';
+// Pesquisa externa é uma avaliação de oportunidade, não uma resposta, consentimento ou intenção de compra.
+export function lerPontuacaoPesquisa(empresa){
+ const t=String(empresa.potencial||'');const p=t.match(/\bpotencial\s+(\d{1,3}(?:[.,]\d+)?)\s*\/\s*100/i),e=t.match(/\bevidência\s+(\d{1,3}(?:[.,]\d+)?)\s*\/\s*100/i),g=t.match(/\b(?:grupo|prioridade)\s+([ABC])\b/i);
+ if(!p||!e||!g)return null;
+ const potencial=Number(p[1].replace(',','.')),evidencia=Number(e[1].replace(',','.'));if(!Number.isFinite(potencial)||!Number.isFinite(evidencia)||potencial<0||potencial>100||evidencia<0||evidencia>100)return null;
+ return {grupo:g[1].toUpperCase(),potencial,evidencia,fonte:'Pesquisa de prospecção'};
+}
 const fracaoInteresse={alto:1,medio:.6,baixo:.25,nenhum:0};
 export function pontuarEmpresa(empresa,estado,pesos=estado.config.pesos){
  const criterios=[],verificar=[];
@@ -19,7 +26,11 @@ export function pontuarEmpresa(empresa,estado,pesos=estado.config.pesos){
  const pd=Number(pesos.demonstracao)||0;
  adicionar('demonstracao','Solicitação de demonstração',pd,empresa.solicitouDemo?pd:0,empresa.solicitouDemo,empresa.solicitouDemo?'A empresa pediu uma demonstração.':'Nenhum pedido registrado.');
  const maximo=criterios.reduce((s,c)=>s+c.maximo,0),total=criterios.reduce((s,c)=>s+c.pontos,0);
- return {total:Math.round(total*10)/10,maximo,percentual:maximo?Math.round(total/maximo*100):0,criterios,verificar,aviso:'Pontuação de prioridade por regras. Não é probabilidade de venda.'};
+ const pesquisa=lerPontuacaoPesquisa(empresa),comercial=Math.round(total*10)/10;
+ const priorPesquisa=pesquisa&&maximo>0?Math.round(pesquisa.potencial*maximo)/100:0;
+ const usaPesquisa=!!pesquisa&&priorPesquisa>comercial;
+ const prioridade=usaPesquisa?priorPesquisa:comercial;
+ return {total:prioridade,maximo,percentual:maximo?Math.round(prioridade/maximo*100):0,criterios,verificar,pesquisa,comercial,fontePrioridade:usaPesquisa?'pesquisa':'comercial',aviso:pesquisa?'Prioridade usa o maior entre potencial da pesquisa (ajustado à escala dos pesos) e sinais comerciais reais. São medidas diferentes; nenhuma é probabilidade de venda.':'Pontuação de prioridade por regras. Não é probabilidade de venda.'};
 }
 const dia=86400000,agora=()=>Date.now();
 const diasDesde=d=>d?Math.floor((agora()-new Date(d).getTime())/dia):null;
@@ -33,7 +44,7 @@ export function montarRadar(estado,filtros={}){
  for(const x of pontuadas){
   const e=x.empresa;if(!ativa(e)||!contatoPermitido(e))continue;
   const ultimoMsg=eventosDaEmpresa(estado,e.id,'mensagem-enviada').at(-1),ultimaResposta=eventosDaEmpresa(estado,e.id,'resposta').at(-1);
-  if(x.pontuacao.total>=50)grupos.prioritarias.push(x);
+  if(x.pontuacao.total>=50&&e.statusSite!=='possui'&&!/NÃO aprovado para nova abordagem|Já prospectada anteriormente|Já contatada segundo/i.test(e.notas||''))grupos.prioritarias.push(x);
   if(e.etapa==='mensagem'&&ultimoMsg&&!(ultimaResposta&&ultimaResposta.quando>=ultimoMsg.quando))grupos.aguardando.push({...x,dias:diasDesde(ultimoMsg.quando)});
   if(['medio','alto'].includes(e.interesse))grupos.interessadas.push(x);
   const demo=eventosDaEmpresa(estado,e.id,'demonstracao-apresentada').at(-1);
