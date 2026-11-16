@@ -16,7 +16,7 @@ let estado=arranque.estado,periodo='mes',anteriorFoco=null,fechamento,temporizad
 let grupoNavAberto='';
 const CHAVE_SESSAO='orbita-sessao-prospeccao-v1';
 function lerSessaoProspeccao(){try{const x=JSON.parse(localStorage.getItem(CHAVE_SESSAO)||'null');return x&&typeof x==='object'?x:null;}catch{return null;}}
-let sessaoProspeccao=lerSessaoProspeccao(),prospeccaoAtiva=false,empresaSessao='',ordemSessao=[],modoSessao='detalhes';
+let sessaoProspeccao=lerSessaoProspeccao(),prospeccaoAtiva=false,empresaSessao='',ordemSessao=[],modoSessao='detalhes',restaurandoHistorico=false;
 const contextoLista='CONEXÕES QUE PODEM VIRAR PROJETOS';
 function gravarSessaoProspeccao(rolagem=false){
  const anterior=sessaoProspeccao||{};
@@ -24,10 +24,12 @@ function gravarSessaoProspeccao(rolagem=false){
  try{localStorage.setItem(CHAVE_SESSAO,JSON.stringify(sessaoProspeccao));}catch{}
 }
 function marcarHistoricoProspeccao(tela,adicionar=false){
- const dados={...window.history.state,orbitaProspeccao:tela,empresa:empresaSessao,modo:modoSessao};
+ if(restaurandoHistorico)return;
+ const dados={...window.history.state,orbitaProspeccao:tela,empresa:empresaSessao,modo:modoSessao,ordem:ordemSessao};
  try{window.history[adicionar?'pushState':'replaceState'](dados,'');}catch{}
 }
 function sairDaLista(){
+ if(restaurandoHistorico)return;
  gravarSessaoProspeccao(true);ordemSessao=empresasOrdenadas().map(e=>e.id);
  prospeccaoAtiva=true;marcarHistoricoProspeccao('detalhe',true);
 }
@@ -49,17 +51,21 @@ function navegarEmpresaSessao(direcao){
  empresaSessao=id;marcarHistoricoProspeccao('detalhe');
  if(modoSessao==='conversa')abrirMensagens(id);else abrirDetalhes(id);
 }
-function restaurarListaProspeccao(){
- empresaSessao='';selecionarMenu('empresas');abrirEmpresas();
+function restaurarHistoricoProspeccao(h){
+ restaurandoHistorico=true;
+ try{
+  selecionarMenu('empresas');abrirEmpresas();
+  if(h.orbitaProspeccao==='detalhe'&&buscarEmpresa(h.empresa)){
+   empresaSessao=h.empresa;modoSessao=h.modo||'detalhes';if(Array.isArray(h.ordem))ordemSessao=h.ordem;
+   if(modoSessao==='conversa')abrirMensagens(empresaSessao);else abrirDetalhes(empresaSessao);
+  }
+ }finally{restaurandoHistorico=false;}
 }
 window.addEventListener('popstate',e=>{
- if(e.state?.orbitaProspeccao==='lista'){restaurarListaProspeccao();}
- else if(e.state?.orbitaProspeccao==='detalhe'&&sessaoProspeccao){
-  abrirEmpresas();empresaSessao=e.state.empresa||'';modoSessao=e.state.modo||'detalhes';
-  if(buscarEmpresa(empresaSessao)){if(modoSessao==='conversa')abrirMensagens(empresaSessao);else abrirDetalhes(empresaSessao);}
- }else if(prospeccaoAtiva){fecharPainel();}
+ if(e.state?.orbitaProspeccao&&sessaoProspeccao)restaurarHistoricoProspeccao(e.state);
+ else if(prospeccaoAtiva)fecharPainel();
 });
-window.addEventListener('pagehide',()=>{if(conteudo.querySelector('#lista-empresas'))gravarSessaoProspeccao(true);});
+window.addEventListener('pagehide',()=>{if(prospeccaoAtiva&&conteudo.querySelector('#lista-empresas'))gravarSessaoProspeccao(true);});
 
 aoFalhar(()=>avisar('Não foi possível gravar no navegador. Exporte um backup agora para não perder seus dados.'));
 function salvar(){salvarEstado(estado);atualizarVisao();}
@@ -89,7 +95,7 @@ function atualizarVisao(){
  const controle=document.querySelector('#controle-movimento');controle.setAttribute('aria-pressed',String(!estado.preferencias.movimento));controle.innerHTML=icone(estado.preferencias.movimento?'pausa':'play')+`<span>${estado.preferencias.movimento?'Pausar ambiente':'Animar ambiente'}</span>`;
 }
 function abrirPainel(titulo,html,contexto='SEU ESPAÇO DE TRABALHO'){
- const lista=contexto===contextoLista;if(!lista&&conteudo.querySelector('#lista-empresas'))sairDaLista();
+ const lista=contexto===contextoLista;if(!lista&&prospeccaoAtiva&&painel.open&&conteudo.querySelector('#lista-empresas'))sairDaLista();
  if(!lista&&prospeccaoAtiva){painelAtual='detalhes';if(contexto==='ÓRBITA CONVERSÃO')modoSessao='conversa';else if(contexto.startsWith('CENTRAL COMERCIAL'))modoSessao='detalhes';marcarHistoricoProspeccao('detalhe');html=barraProspeccao()+html;}
  painel.classList.remove('painel-estudio');
  clearTimeout(fechamento);painel.classList.remove('fechando');if(!painel.open)anteriorFoco=document.activeElement;
@@ -133,11 +139,11 @@ function abrirDetalhes(id,aba){if(prospeccaoAtiva){empresaSessao=id;modoSessao='
 function formularioEmpresa(id=''){painelAtual=id?'detalhes':'cadastro';if(id)modulos.m.empresa.abrir(id,'identificacao');else modulos.nova();}
 function abrirMensagens(id='',rascunhoId=''){if(prospeccaoAtiva&&id){empresaSessao=id;modoSessao='conversa';}painelAtual='conversao';modulos.m.conversao.abrirConversa(id,{rascunhoId});}
 function abrirPipeline(){painelAtual='pipeline';modulos.m.trabalho.abrirPipeline();}
-const contexto={obterEstado:()=>estado,salvar,avisar,abrirPainel,fecharPainel,icone,selo,nomeEtapa,empresasDoPeriodo,abrirDetalhes,abrirEmpresas:()=>abrirEmpresas(),formularioLembrete};
+const contexto={obterEstado:()=>estado,salvar,avisar,abrirPainel,fecharPainel,icone,selo,nomeEtapa,empresasDoPeriodo,abrirDetalhes,abrirEmpresas:voltarEmpresas,selecionarEmpresaSessao:(id,modo)=>{if(prospeccaoAtiva){empresaSessao=id;modoSessao=modo;}},formularioLembrete};
 const modulos=criarModulos(contexto,arranque);
 const estudio=criarEstudio({obterEstado:()=>estado,salvar,avisar,abrirPainel,abrirClassicos:abrirModelos,contexto});contexto.estudio=estudio;modulos.m.connect.iniciar();
 function alternarMenu(aberto){if(!aberto)fecharGrupoNav();document.querySelector('.lateral').classList.toggle('aberta',aberto);document.querySelector('.fundo-menu').hidden=!aberto;document.querySelector('.abrir-menu').setAttribute('aria-expanded',String(aberto));}
-const acoes={'voltar-prospeccao':voltarEmpresas,'anterior-prospeccao':()=>navegarEmpresaSessao('anterior'),'proxima-prospeccao':()=>navegarEmpresaSessao('proxima'),prospectar:()=>{selecionarMenu('empresas');const fila=montarVisaoGeral(estado).fila;abrirEmpresas('',fila.some(x=>x.p.pesquisa?.grupo==='A')?'A':'',true);},geral:()=>{fecharPainel();selecionarMenu('geral');window.scrollTo({top:0,behavior:estado.preferencias.movimento?'smooth':'instant'});},empresas:()=>abrirEmpresas(),pipeline:abrirPipeline,mensagens:()=>abrirMensagens(),hoje:()=>modulos.m.trabalho.abrirHoje('hoje'),propostas:()=>modulos.m.propostas.abrirLista(),laboratorio:()=>modulos.m.laboratorio.abrir('indicadores'),quant:()=>modulos.m.quant.abrir('visao'),conversao:()=>modulos.m.conversao.abrir('conversa'),ofertas:()=>modulos.m.ofertas.abrir(''),diagnostico:()=>modulos.m.diagnostico.abrir('hoje'),publicacoes:()=>modulos.m.publicacoes.abrir('publicacoes'),connect:()=>modulos.m.connect.abrir('visao'),financeiro:()=>modulos.m.financeiro.abrir(),dados:()=>modulos.m.dados.abrir(),estudio:()=>estudio.abrirGaleria(),modelos:abrirModelos,lembretes:abrirLembretes,relatorios:abrirRelatorios,configuracoes:()=>abrirConfiguracoes(),perfil:()=>abrirConfiguracoes(true),busca:abrirBusca,notificacoes:abrirNotificacoes,'nova-empresa':()=>formularioEmpresa(),'novo-lembrete':()=>formularioLembrete(),'exportar-csv':exportarCSV,backup:()=>modulos.despachar('dados.backup')};
+const acoes={'voltar-prospeccao':voltarEmpresas,'anterior-prospeccao':()=>navegarEmpresaSessao('anterior'),'proxima-prospeccao':()=>navegarEmpresaSessao('proxima'),prospectar:()=>{selecionarMenu('empresas');const fila=montarVisaoGeral(estado).fila;abrirEmpresas('',fila.some(x=>x.p.pesquisa?.grupo==='A')?'A':'',true);},geral:()=>{fecharPainel();selecionarMenu('geral');window.scrollTo({top:0,behavior:estado.preferencias.movimento?'smooth':'instant'});},empresas:voltarEmpresas,pipeline:abrirPipeline,mensagens:()=>abrirMensagens(),hoje:()=>modulos.m.trabalho.abrirHoje('hoje'),propostas:()=>modulos.m.propostas.abrirLista(),laboratorio:()=>modulos.m.laboratorio.abrir('indicadores'),quant:()=>modulos.m.quant.abrir('visao'),conversao:()=>modulos.m.conversao.abrir('conversa'),ofertas:()=>modulos.m.ofertas.abrir(''),diagnostico:()=>modulos.m.diagnostico.abrir('hoje'),publicacoes:()=>modulos.m.publicacoes.abrir('publicacoes'),connect:()=>modulos.m.connect.abrir('visao'),financeiro:()=>modulos.m.financeiro.abrir(),dados:()=>modulos.m.dados.abrir(),estudio:()=>estudio.abrirGaleria(),modelos:abrirModelos,lembretes:abrirLembretes,relatorios:abrirRelatorios,configuracoes:()=>abrirConfiguracoes(),perfil:()=>abrirConfiguracoes(true),busca:abrirBusca,notificacoes:abrirNotificacoes,'nova-empresa':()=>formularioEmpresa(),'novo-lembrete':()=>formularioLembrete(),'exportar-csv':exportarCSV,backup:()=>modulos.despachar('dados.backup')};
 renderizarNavegacao();
 document.querySelector('.abrir-menu').innerHTML=icone('menu');inserirIcones();atualizarVisao();
 function verificarLembretes(){const agora=Date.now(),vencidos=estado.lembretes.filter(l=>!l.concluido&&!l.avisadoEm&&new Date(l.quando).getTime()<=agora);if(!vencidos.length)return;for(const l of vencidos)l.avisadoEm=new Date().toISOString();estado.notificacoesLidas=false;salvar();avisar('Lembrete: '+vencidos[0].titulo+(vencidos.length>1?' (+'+(vencidos.length-1)+')':''));}
@@ -162,10 +168,10 @@ document.addEventListener('click',e=>{
  if(alvo.dataset.modelo)return abrirModelo(alvo.dataset.modelo);
  if(alvo.dataset.rascunho)return abrirMensagens('',alvo.dataset.rascunho);
 });
-document.addEventListener('change',e=>{if(prospeccaoAtiva&&e.target.id==='cv-emp'){empresaSessao=e.target.value;modoSessao='conversa';marcarHistoricoProspeccao('detalhe');}if(e.target.dataset.checkboxLembrete)concluirLembrete(e.target.dataset.checkboxLembrete);});
+document.addEventListener('change',e=>{if(e.target.dataset.checkboxLembrete)concluirLembrete(e.target.dataset.checkboxLembrete);});
 document.querySelector('#periodo').addEventListener('change',e=>{periodo=e.target.value;atualizarVisao();});document.querySelector('.fechar-painel').addEventListener('click',fecharPainel);painel.addEventListener('cancel',e=>{e.preventDefault();fecharPainel();});painel.addEventListener('click',e=>{if(e.target!==painel)return;const retangulo=painel.getBoundingClientRect();if(e.clientX<retangulo.left||e.clientX>retangulo.right||e.clientY<retangulo.top||e.clientY>retangulo.bottom)fecharPainel();});
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();abrirBusca();}if(e.key==='Escape')alternarMenu(false);});document.querySelector('#controle-movimento').addEventListener('click',()=>{estado.preferencias.movimento=!estado.preferencias.movimento;salvar();document.dispatchEvent(new CustomEvent('orbita:preferencias',{detail:estado.preferencias}));});
 document.querySelectorAll('.acao-orbital').forEach(alvo=>{alvo.addEventListener('pointerenter',()=>document.dispatchEvent(new CustomEvent('orbita:foco',{detail:alvo.classList.contains('prospectar')?'prospectar':alvo.classList.contains('negociar')?'negociar':'fechar'})));alvo.addEventListener('pointerleave',()=>document.dispatchEvent(new CustomEvent('orbita:foco',{detail:''})));alvo.addEventListener('focus',()=>document.dispatchEvent(new CustomEvent('orbita:foco',{detail:'prospectar'})));alvo.addEventListener('blur',()=>document.dispatchEvent(new CustomEvent('orbita:foco',{detail:''})));});
 if(window.location.hash==='#connect'){selecionarMenu('connect');modulos.m.connect.abrir('config');void modulos.m.connect.acoes.verificar();window.history.replaceState(null,'',window.location.pathname+window.location.search);}
-if(window.location.hash!=='#connect'&&window.history.state?.orbitaProspeccao&&sessaoProspeccao){const h=window.history.state;abrirEmpresas();if(h.orbitaProspeccao==='detalhe'&&buscarEmpresa(h.empresa)){empresaSessao=h.empresa;modoSessao=h.modo||'detalhes';if(modoSessao==='conversa')abrirMensagens(h.empresa);else abrirDetalhes(h.empresa);}}
+if(window.location.hash!=='#connect'&&window.history.state?.orbitaProspeccao&&sessaoProspeccao)restaurarHistoricoProspeccao(window.history.state);
 import('./universo.js').then(modulo=>modulo.iniciarUniverso(estado.preferencias)).catch(()=>document.body.classList.add('sem-webgl'));
