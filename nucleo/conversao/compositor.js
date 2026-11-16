@@ -13,7 +13,11 @@ import {contatosDaEmpresa} from '../contatos.js';
 import {condicaoVigente,precoAtual,condicaoPadrao} from '../ofertas/condicoes.js';
 const condDe=(estado,agora)=>condicaoVigente(estado,agora)?.dados||condicaoPadrao(estado.config.comercial);
 import {tecnicaPorId,estudoPorId,graus} from './evidencias.js';
+import {recomendar} from './motor.js';
+import {ETAPAS,OBJECOES} from './biblioteca.js';
 export {tiposMensagem};
+/* situações da biblioteca de conversas, para o seletor "Situação / tipo de mensagem" (valor "bib:<chave>") */
+export const situacoesBiblioteca={etapas:Object.entries(ETAPAS).map(([k,v])=>['bib:'+k,v.rotulo]),objecoes:Object.entries(OBJECOES).map(([k,v])=>['bib:objecao:'+k,v.rotulo])};
 const ORIGENS={confirmada:'Confirmada',usuario:'Fornecida por você',publica:'Pública, não verificada',inferida:'Inferida',desconhecida:'Desconhecida'};
 export const rotuloOrigem=o=>ORIGENS[o]||o;
 /* ---------- contexto com origem e confiabilidade de cada dado ---------- */
@@ -63,7 +67,7 @@ export function montarEstrategia(estado,empresa,agora=Date.now()){
 }
 /* ---------- alternativas de mensagem ---------- */
 const variacao=(texto,porque,rotulo,extra={})=>({rotulo,texto,porque,...extra});
-export function compor(estado,empresa,{tipo='auto',tamanho='media',formalidade='neutra',demoId='',experimento=null,varianteExperimento='',agora=Date.now(),opcaoNegociacao='manter',linkProposta='',validadeProposta='',objetivo=''}={}){
+export function compor(estado,empresa,{tipo='auto',tamanho='media',formalidade='neutra',demoId='',experimento=null,varianteExperimento='',agora=Date.now(),opcaoNegociacao='manter',linkProposta='',validadeProposta='',objetivo='',rodada=0,intencaoManual=''}={}){
  const perm=podeContatar(empresa,'whatsapp'),res=resumoNegociacao(estado,empresa,{agora}),pa=proximaMelhorAcao(estado,empresa,{agora});
  const demos=estado.demonstracoes.filter(d=>d.empresaId===empresa.id),demo=demos.find(d=>d.id===demoId)||demos.find(d=>d.urlPublica)||null,autor=estado.preferencias.nome||'Renan';
  const out={tipoUsado:tipo,bloqueado:!perm.ok,motivoBloqueio:perm.ok?'':perm.motivo,alternativas:[],aguardar:false,avisos:[]};
@@ -72,6 +76,21 @@ export function compor(estado,empresa,{tipo='auto',tamanho='media',formalidade='
  if(experimento&&varianteExperimento){const v=experimento.variantes.find(x=>x.id===varianteExperimento);if(v?.texto){const t=v.texto.replace(/\{nome\}/g,empresa.nome).replace(/\{pessoa\}/g,(empresa.contato||'').split(' ')[0]||'').replace(/\{cidade\}/g,empresa.cidade).replace(/\s+/g,' ').trim();out.alternativas.push(variacao(t,'Texto da variante "'+v.nome+'" do experimento "'+experimento.nome+'".','Variante do experimento',{estrategia:v.nome,variante:v.id,experimentoId:experimento.id}));out.tipoUsado='experimento';return out;}
   if(v&&v.motor!==undefined){const tipoE=tipo==='auto'?sugerirTipo(estado,empresa):tipo,g=gerarMensagem(empresa,{tipo:tipoE,variante:v.motor,demo,comercial:estado.config.comercial,ultimaResposta:ultResp?.texto,autor});out.alternativas.push(variacao(g.texto,'Variante "'+v.nome+'" do experimento "'+experimento.nome+'".','Variante do experimento',{estrategia:g.estrategia,variante:v.id,experimentoId:experimento.id,tipo:tipoE,faltando:g.faltando}));out.tipoUsado='experimento';return out;}}
  const C=(objetivo,tam)=>gerarMensagemContinuidade(estado,empresa,{objetivo,tamanho:tam,formalidade,opcaoNegociacao,agora,linkProposta,validadeProposta});
+ /* motor de conversas (biblioteca): modo automático e situações "bib:". O motor antigo de negociação continua valendo quando outra tela pede um objetivo explícito (proposta, ajuste de condição). */
+ const sorteio=estado.experimentos.filter(x=>x.conv&&x.ativo).map(x=>({x,a:x.atribuicoes.find(a=>a.empresaId===empresa.id&&!a.enviada)})).find(o=>o.a),vSort=sorteio?sorteio.x.variantes.find(v=>v.id===sorteio.a.varianteId):null;
+ const viaMotor=tipo.startsWith('bib:')||(tipo==='auto'&&!objetivo&&!linkProposta&&opcaoNegociacao==='manter');
+ if(viaMotor){
+  const m=recomendar(estado,empresa,{agora,rodada,intencaoManual,etapaManual:tipo.startsWith('bib:')?tipo.slice(4):'',experimentoSorteado:vSort?{abordagem:vSort.abordagem}:null});
+  out.motor={etapa:m.etapa,motivo:m.motivo,interpretacao:m.interpretacao,encerrar:m.encerrar,perfil:{rotulo:m.perfil.rotuloPerfil,fatos:m.perfil.fatos,desconhecidos:m.perfil.desconhecidos,hipoteses:m.perfil.hipoteses},avisoPerfil:m.avisoPerfil||''};
+  if(m.avisoPerfil)out.avisos.push(m.avisoPerfil);
+  if(vSort&&m.etapa?.chave==='primeiro-contato'&&m.alternativas.length&&!m.alternativas[0].preferida)out.avisos.push('Esta empresa foi sorteada no experimento "'+sorteio.x.nome+'" para a variante "'+vSort.nome+'", mas essa abordagem não se aplica aos dados dela (por exemplo, exige prévia publicada). Se enviar outra, registre o desvio no Laboratório.');
+  if(m.alternativas.length){
+   out.alternativas=m.alternativas.map((a,i)=>{const alvoSorteio=i===0&&vSort&&m.etapa?.chave==='primeiro-contato'&&a.preferida;return variacao(a.texto,alvoSorteio?'Abordagem sorteada no experimento "'+sorteio.x.nome+'": use esta para manter o experimento válido. '+a.porque:a.porque,alvoSorteio?'Sorteada no experimento':a.rotulo,{estrategia:a.estrategia,variante:alvoSorteio?vSort.id:a.variante,tipo:a.tipo,mensagemId:a.mensagemId,nome:a.nome,tecnicas:a.tecnicas,evidencias:a.evidencias,cuidado:a.cuidado,fatosUsados:a.fatosUsados,resultados:a.resultados,pontosNegativos:[],despedida:!!a.despedida,...(alvoSorteio?{experimentoId:sorteio.x.id,sorteado:true}:{})});});
+   out.tipoUsado=m.etapa?.chave||tipo;out.sugestaoTipo=sugerirTipo(estado,empresa);out.acao=pa.acao;return out;}
+  if(m.aguardar||m.encerrar){out.aguardar=true;out.motivoAguardar=m.motivo;out.sugestaoTipo=sugerirTipo(estado,empresa);out.acao=pa.acao;return out;}
+  if(tipo.startsWith('bib:')){out.avisos.push('Nenhuma mensagem desta situação se aplica a esta empresa agora: as que existem dependem de um dado que a ficha não tem (por exemplo, uma prévia publicada) ou já foram usadas nesta conversa. Escolha outra situação ou volte ao modo automático.');out.sugestaoTipo=sugerirTipo(estado,empresa);out.acao=pa.acao;return out;}
+  /* sem mensagem aplicável na biblioteca (todas já usadas ou sem dados): cai no gerador anterior */
+ }
  if(tipo==='auto'){
   if(!res.contagens.enviadas&&!res.contagens.recebidas){
    const rec=recomendarAbordagem(estado,empresa),ab=gerarAbordagens(estado,empresa,{demo,autor}).abordagens,pick=id=>ab.find(a=>a.id===id&&a.disponivel);
@@ -109,7 +128,7 @@ export function validarMensagem(estado,empresa,texto,{contatoId='',demoId='',ago
  const urls=[...t.matchAll(/https?:\/\/[^\s)]+/g)].map(m=>m[0].replace(/[.,;!?]+$/,''));
  const conhecidos=new Set([...estado.publicacoes.filter(p=>p.empresaId===empresa.id&&p.urlPublica).map(p=>p.urlPublica.replace(/\/$/,'')),...estado.demonstracoes.filter(d=>d.empresaId===empresa.id&&d.urlPublica).map(d=>d.urlPublica.replace(/\/$/,''))]);
  for(const u of urls){if(!conhecidos.has(u.replace(/\/$/,'')))ok('aviso','O link '+u+' não é uma demonstração publicada desta empresa no Órbita: confira.');}
- if(!urls.length&&/\b(link|abaixo|segue o site)\b/i.test(t)&&!/nao tem link/.test(normal(t)))ok('aviso','A mensagem fala de um link, mas não há link nela.');
+ if(!urls.length&&/\b(link|abaixo|segue o site)\b/i.test(t)&&!/nao tem link/.test(normal(t))&&!/\b(posso|quer que eu|prefere que eu|te mando|mandar|mando|enviar|envio)\b[^.?!]*\blink\b/.test(normal(t)))ok('aviso','A mensagem fala de um link, mas não há link nela.');
  const valores=valoresEmTexto(t);if(valores.length){const vig=cond?[cond.precoNormalCent,cond.precoPromocionalCent,cond.precoPixCent]:[];const ofertas=estado.ofertas.filter(o=>o.empresaId===empresa.id).map(o=>o.valorCent);for(const v of valores)if(!vig.includes(v)&&!ofertas.includes(v))ok('aviso','O valor R$ '+(v/100).toLocaleString('pt-BR')+' não coincide com as condições vigentes nem com ofertas registradas: confirme antes de enviar.');}
  if(valores.length&&!res_precoAutorizado(estado,empresa))ok('info','Esta empresa ainda não recebeu preço registrado: confirme que quer falar de valor agora.');
  const dem=[...t.matchAll(/(demonstra|prévia|previa)/gi)].length&&!estado.demonstracoes.some(d=>d.empresaId===empresa.id)&&/\b(preparei|montei|deixei pronta|já está pronta|segue)\b/i.test(t);if(dem)ok('aviso','A mensagem diz que há uma demonstração pronta, mas não existe demonstração desta empresa.');

@@ -4,24 +4,25 @@ import {registrarDemonstracaoApresentada,registrarPerda,marcarNaoContatar} from 
 import {conv,podeContatar} from '../nucleo/conversao/dominio.js';
 import {registrarDesvio,registrarRecomendacao,recomendarAbordagem} from '../nucleo/conversao/laboratorio.js';
 import {analisarResposta,contextoResposta,responderObjecao} from '../nucleo/conversao/linguagem.js';
-import {montarContexto,montarEstrategia,compor,validarMensagem,tiposMensagem,rotuloOrigem} from '../nucleo/conversao/compositor.js';
+import {montarContexto,montarEstrategia,compor,validarMensagem,tiposMensagem,rotuloOrigem,situacoesBiblioteca} from '../nucleo/conversao/compositor.js';
+import {recomendar,INTENCOES} from '../nucleo/conversao/motor.js';
 import * as F from '../nucleo/conversao/fluxo.js';
 import {PAPEIS,adicionarContato,contatosDaEmpresa} from '../nucleo/contatos.js';
 import {importarConversaWhatsApp,aplicarMapa,salvarConversa,consolidarConversa} from '../nucleo/negociacao/conversa.js';
 const nivelIcone={erro:'✖',aviso:'⚠',info:'ℹ'};
 export function criarConversa(ctx,reabrir){
  const {obterEstado,salvar,avisar}=ctx,estado=()=>obterEstado();
- const L={objetivo:'',registrarDemo:false,empId:'',tipo:'auto',alt:0,tamanho:'media',formalidade:'neutra',contatoId:'',demoId:'',expId:'',varExp:'',rascunhoId:'',texto:'',textoBase:'',opcaoNegociacao:'manter',resposta:'',analise:null,previa:null,gerado:null,secao:''};
+ const L={objetivo:'',registrarDemo:false,empId:'',tipo:'auto',alt:0,tamanho:'media',formalidade:'neutra',contatoId:'',demoId:'',expId:'',varExp:'',rascunhoId:'',texto:'',textoBase:'',opcaoNegociacao:'manter',resposta:'',analise:null,previa:null,gerado:null,secao:'',rodada:0,intencao:'',sugestoes:null};
  const emp=()=>estado().empresas.find(e=>e.id===L.empId)||null;
  const selo=(txt,cl='pausada')=>`<span class="selo-situacao ${cl}">${t(txt)}</span>`;
  function definirEmpresa(id,{tipo='',rascunhoId='',objetivo='',opcaoNegociacao=''}={}){
-  if(id&&id!==L.empId){Object.assign(L,{empId:id,tipo:'auto',alt:0,contatoId:'',demoId:'',expId:'',varExp:'',rascunhoId:'',texto:'',textoBase:'',resposta:'',analise:null,previa:null,gerado:null,objetivo:'',registrarDemo:false});}
+  if(id&&id!==L.empId){Object.assign(L,{empId:id,tipo:'auto',alt:0,contatoId:'',demoId:'',expId:'',varExp:'',rascunhoId:'',texto:'',textoBase:'',resposta:'',analise:null,previa:null,gerado:null,objetivo:'',registrarDemo:false,rodada:0,intencao:'',sugestoes:null});}
   if(tipo)L.tipo=tipo;if(opcaoNegociacao)L.opcaoNegociacao=opcaoNegociacao;if(objetivo)L.objetivo=objetivo;
   const e=emp();if(e&&!L.demoId&&ctx.demoPreferida){L.demoId=ctx.demoPreferida.demoId;L.registrarDemo=true;}
   if(rascunhoId){const r=estado().rascunhos.find(x=>x.id===rascunhoId);if(r){L.empId=r.empresa;L.rascunhoId=r.id;L.texto=r.texto;L.textoBase=r.textoSugerido||r.texto;L.tipo=r.tipo||'auto';L.contatoId=r.contatoId||'';}}
  }
  function gerar(){const e=emp();if(!e)return;const est=estado(),exp=est.experimentos.find(x=>x.id===L.expId)||null;
-  const c=compor(est,e,{tipo:L.tipo,tamanho:L.tamanho,formalidade:L.formalidade,demoId:L.demoId,experimento:exp,varianteExperimento:L.varExp,opcaoNegociacao:L.opcaoNegociacao,objetivo:L.objetivo});L.gerado=c;
+  const c=compor(est,e,{tipo:L.tipo,tamanho:L.tamanho,formalidade:L.formalidade,demoId:L.demoId,experimento:exp,varianteExperimento:L.varExp,opcaoNegociacao:L.opcaoNegociacao,objetivo:L.objetivo,rodada:L.rodada});L.gerado=c;
   if(!L.rascunhoId&&c.alternativas.length){const a=c.alternativas[Math.min(L.alt,c.alternativas.length-1)];L.texto=a.texto;L.textoBase=a.texto;}
  }
  const pendentes=()=>F.pendentesDeConfirmacao(estado(),L.empId);
@@ -51,11 +52,13 @@ export function criarConversa(ctx,reabrir){
  }
  /* ---------- estratégia ---------- */
  function htmlEstrategia(e){
-  const x=montarEstrategia(estado(),e);
+  const x=montarEstrategia(estado(),e),g=L.gerado,a=g?.motor&&g.alternativas?.[L.alt];
+  /* quando a mensagem vem da biblioteca, o painel mostra a estratégia dela (e não a regra do gerador anterior) */
+  if(a)x.abordagem={...x.abordagem,nome:a.nome,modoTxt:'biblioteca de conversas'+(g.motor.etapa?' · '+g.motor.etapa.rotulo:''),porque:(g.motor.motivo||'')+(g.motor.perfil?' Perfil da empresa: '+g.motor.perfil.rotulo+'.':''),tecnicas:a.tecnicas||[],evidencias:a.evidencias||[],pontosNegativos:a.cuidado?[a.cuidado]:[]};
   return `${x.bloqueio?`<div class="alerta-risco"><strong>Contato bloqueado:</strong> ${t(x.bloqueio)}</div>`:''}
   <p><b>Estágio:</b> ${t(x.estagio.rotulo)} · <b>Objetivo imediato:</b> ${t(x.objetivo)}</p>
   <p><b>Ação recomendada: ${t(x.acao.rotulo)}.</b> ${t(x.acao.porque)}</p>
-  <p><b>Estratégia de abordagem:</b> ${t(x.abordagem.nome||x.abordagem.id)} <small>(${x.abordagem.modo==='regra-fixa'?'regra fixa explicada':'estimativa dos seus resultados'})</small><br>${t(x.abordagem.porque)}</p>
+  <p><b>Estratégia de abordagem:</b> ${t(x.abordagem.nome||x.abordagem.id)} <small>(${t(x.abordagem.modoTxt||(x.abordagem.modo==='regra-fixa'?'regra fixa explicada':'estimativa dos seus resultados'))})</small><br>${t(x.abordagem.porque)}</p>
   ${x.proximoPasso?`<p><b>Próximo passo:</b> ${t(x.proximoPasso)}</p>`:''}
   ${x.acao.id==='negociar'?'<div class="acoes-linha"><button type="button" data-m="conversao.ofertas">Analisar o pedido de desconto (Ofertas)</button></div>':''}
   <details><summary>Evidências, limitações e alternativas</summary>
@@ -82,11 +85,12 @@ export function criarConversa(ctx,reabrir){
   const v=validarMensagem(est,e,L.texto,{contatoId:L.contatoId,demoId:L.demoId});
   const contatoSel=cs.length?`<label class="campo"><span>Enviar para</span><select id="cv-contato">${cs.map(k=>`<option value="${t(k.id)}" ${k.id===(L.contatoId||cs.find(x=>x.norm.estruturaValida)?.id)?'selected':''}>${t(k.rotulo)}${k.nome?' · '+t(k.nome):''} — ${t(k.norm.estruturaValida?k.norm.exibicao:k.numero+' (inválido)')}</option>`).join('')}</select></label>`:'<p class="ajuda">Cadastre um número para abrir o WhatsApp.</p>';
   return `${htmlConfirmacao(e)}${!perm.ok?`<div class="alerta-risco"><strong>Envio bloqueado:</strong> ${t(perm.motivo)}</div>`:''}
-  <div class="grade-formulario"><label class="campo"><span>Situação / tipo de mensagem</span><select id="cv-tipo"><option value="auto" ${L.tipo==='auto'?'selected':''}>Automático — pelo contexto da conversa</option>${tiposMensagem.map(([k,n])=>`<option value="${k}" ${L.tipo===k?'selected':''}>${t(n)}</option>`).join('')}</select></label>
+  <div class="grade-formulario"><label class="campo"><span>Situação / tipo de mensagem</span><select id="cv-tipo"><option value="auto" ${L.tipo==='auto'?'selected':''}>Automático — pelo contexto da conversa</option><optgroup label="Biblioteca · etapas da conversa">${situacoesBiblioteca.etapas.map(([k,n])=>`<option value="${k}" ${L.tipo===k?'selected':''}>${t(n)}</option>`).join('')}</optgroup><optgroup label="Biblioteca · objeções e dúvidas">${situacoesBiblioteca.objecoes.map(([k,n])=>`<option value="${k}" ${L.tipo===k?'selected':''}>${t(n)}</option>`).join('')}</optgroup><optgroup label="Modelos anteriores">${tiposMensagem.map(([k,n])=>`<option value="${k}" ${L.tipo===k?'selected':''}>${t(n)}</option>`).join('')}</optgroup></select></label>
   <label class="campo"><span>Tamanho</span><select id="cv-tam">${[['curta','Curta'],['media','Média'],['detalhada','Detalhada']].map(([k,n])=>`<option value="${k}" ${L.tamanho===k?'selected':''}>${n}</option>`).join('')}</select></label><label class="campo"><span>Tom</span><select id="cv-tom">${[['informal','Informal'],['neutra','Neutro'],['formal','Formal']].map(([k,n])=>`<option value="${k}" ${L.formalidade===k?'selected':''}>${n}</option>`).join('')}</select></label>
   ${exps.length?`<label class="campo"><span>Experimento (opcional)</span><select id="cv-exp-leg"><option value="">(nenhum)</option>${exps.map(x=>`<option value="${t(x.id)}" ${x.id===L.expId?'selected':''}>${t(x.nome)}</option>`).join('')}</select></label>`:''}</div>
+  ${(c?.avisos||[]).map(x=>`<div class="alerta-duplicidade" role="note">${t(x)}</div>`).join('')}
   ${c?.aguardar?`<div class="alerta-duplicidade" role="note"><b>Melhor ação agora: aguardar.</b> ${t(c.motivoAguardar||'')} Você ainda pode escolher uma situação acima para escrever mesmo assim.</div>`:''}
-  ${alt.length?`<div class="abas" role="tablist" aria-label="Alternativas de mensagem">${alt.map((a,i)=>`<button type="button" role="tab" aria-selected="${L.alt===i}" class="${L.alt===i?'ativa':''}" data-m="conversao.alternativa" data-id="${i}">${t(a.rotulo)}</button>`).join('')}</div>${alt[L.alt]?`<p class="ajuda">${t(alt[L.alt].porque||'')}</p>`:''}`:''}
+  ${alt.length?`<div class="abas" role="tablist" aria-label="Alternativas de mensagem">${alt.map((a,i)=>`<button type="button" role="tab" aria-selected="${L.alt===i}" class="${L.alt===i?'ativa':''}" data-m="conversao.alternativa" data-id="${i}">${t(a.rotulo)}</button>`).join('')}</div>${alt[L.alt]?`<p class="ajuda">${t(alt[L.alt].porque||'')}</p>${justificativaHtml(c,alt[L.alt])}`:''}`:''}
   <label class="campo largo"><span>Mensagem (edite à vontade)</span><textarea id="cv-texto" rows="6" maxlength="4000">${t(L.texto)}</textarea></label>
   <div id="cv-validacao">${validacaoHtml(v)}</div><div id="cv-previa">${bolha(L.texto)}</div>
   ${contatoSel}${demoSel(e,false)}
@@ -95,10 +99,27 @@ export function criarConversa(ctx,reabrir){
   ${rascunhosHtml(e)}${respostaHtml(e)}${resultadoHtml(e)}`;
  }
  function rascunhosHtml(e){const rs=estado().rascunhos.filter(r=>r.empresa===e.id&&!['envio-confirmado','resposta-registrada','encerrada'].includes(r.estadoMensagem));return rs.length?`<details><summary>Rascunhos desta empresa (${rs.length})</summary>${rs.map(r=>`<p><small>${t(F.rotuloEstadoMensagem(r.estadoMensagem))} · ${t(dataHora(r.quando))}</small><br>${t(r.texto.slice(0,160))}${r.texto.length>160?'…':''} <button type="button" class="pequeno" data-m="conversao.usar-rascunho" data-id="${t(r.id)}">Abrir</button> <button type="button" class="pequeno" data-m="conversao.excluir-rascunho" data-id="${t(r.id)}">Excluir</button></p>`).join('')}</details>`:'';}
+ function justificativaHtml(c,a){const m=c?.motor;if(!m&&!a.tecnicas?.length)return '';
+  return `<details class="cv-justificativa"><summary>Por que esta mensagem (estratégia, dados usados e evidências)</summary>
+  ${m?.etapa?`<p><b>Momento da conversa:</b> ${t(m.etapa.rotulo)}. ${t(m.etapa.objetivo)}</p>`:''}${m?.motivo?`<p>${t(m.motivo)}</p>`:''}
+  ${m?.interpretacao?`<p><b>Última resposta lida como:</b> ${t(m.interpretacao.rotulo)} <small>(confiança ${t(m.interpretacao.confianca)})</small>${m.interpretacao.incerta?' · <b>leitura incerta: confira antes de enviar</b>':''}</p>`:''}
+  ${m?.perfil?`<p><b>Perfil da empresa:</b> ${t(m.perfil.rotulo)}</p>${m.perfil.fatos.length?`<p><b>Fatos da ficha (com origem):</b></p><ul>${m.perfil.fatos.map(f=>`<li>${t(f.rotulo)}: ${t(f.valor)} <small>(${t(f.origem)})</small></li>`).join('')}</ul>`:''}${m.perfil.desconhecidos.length?`<p><b>Não sabemos:</b> ${m.perfil.desconhecidos.map(t).join(' · ')}</p>`:''}${m.perfil.hipoteses.length?`<p><b>Hipóteses (a mensagem não afirma nenhuma delas):</b></p><ul>${m.perfil.hipoteses.map(h=>`<li>${t(h)}</li>`).join('')}</ul>`:''}`:''}
+  ${a.fatosUsados?.length?`<p><b>Dados usados nesta mensagem:</b> ${a.fatosUsados.map(t).join(', ')}</p>`:''}
+  ${a.tecnicas?.length?`<p><b>Técnicas:</b> ${a.tecnicas.map(k=>t(k.nome)+' ('+t(k.grau)+')').join('; ')}</p>`:''}
+  ${a.evidencias?.length?`<ul>${a.evidencias.map(v=>`<li>${t(v.ref)} — <em>${t(v.grau)}</em>. Limitações: ${t(v.limitacoes)}</li>`).join('')}</ul>`:''}
+  ${a.cuidado?`<p><b>Atenção:</b> ${t(a.cuidado)}</p>`:''}${a.resultados?`<p><b>Seus resultados:</b> ${t(a.resultados)}</p>`:''}
+  <p class="ajuda">Os estudos apoiam o princípio usado; não garantem o resultado desta mensagem. O que vale como prova são os seus próprios envios, na aba Memória.</p></details>`;
+ }
+ function sugerirParaResposta(){const e=emp();L.sugestoes=e&&L.resposta.trim()?recomendar(estado(),e,{respostaPendente:L.resposta,intencaoManual:L.intencao}):null;}
  function respostaHtml(e){
-  const a=L.analise,r=a?.principal?responderObjecao(a,contextoResposta(estado(),e,{demo:estado().demonstracoes.find(d=>d.empresaId===e.id&&d.urlPublica)||null,autor:estado().preferencias.nome||'Renan'})):null;
+  const a=L.analise,sg=a?L.sugestoes:null,it=sg?.interpretacao,alts=sg?.alternativas||[];
+  const r=a?.principal&&!alts.length?responderObjecao(a,contextoResposta(estado(),e,{demo:estado().demonstracoes.find(d=>d.empresaId===e.id&&d.urlPublica)||null,autor:estado().preferencias.nome||'Renan'})):null;
   return `<h4>Quando o cliente responder</h4><form id="cv-resp"><label class="campo largo"><span>Cole a resposta recebida</span><textarea name="texto" rows="3" maxlength="2000">${t(L.resposta)}</textarea></label><button type="submit">Interpretar resposta</button></form>
-  ${a?`<article class="cartao-exp"><p class="ajuda">${t(a.aviso)}</p><p><b>Leitura:</b> ${a.principal?t(a.principal.rotulo):'sem objeção específica'} · interesse ${t(a.interesse)}${a.ambigua?' · <b>ambígua</b>':''}</p>${a.hipoteses.length?`<ul>${a.hipoteses.map(h=>`<li>${t(h.texto)} <small>(confiança ${t(h.confianca)})</small></li>`).join('')}</ul>`:''}${a.naoSabemos?.length?`<p><b>Não sabemos:</b> ${a.naoSabemos.map(t).join(' · ')}</p>`:''}${a.perguntasEsclarecedoras?.length?`<p><b>Pergunte:</b> ${a.perguntasEsclarecedoras.map(t).join(' / ')}</p>`:''}
+  ${a?`<article class="cartao-exp"><p class="ajuda">${t(a.aviso)}</p><p><b>Leitura:</b> ${a.principal?t(a.principal.rotulo):'sem objeção específica'} · interesse ${t(a.interesse)}${a.ambigua?' · <b>ambígua</b>':''}</p>
+   ${it?`<p><b>Intenção identificada:</b> ${t(it.rotulo)} <small>(confiança ${t(it.confianca)})</small>${it.incerta?' · <b>leitura incerta: confira e corrija se preciso</b>':''}</p><label class="campo"><span>Corrigir a interpretação (se a leitura estiver errada)</span><select id="cv-intencao"><option value="">Manter a leitura automática</option>${Object.entries(INTENCOES).filter(([k])=>k!=='indefinida').map(([k,n])=>`<option value="${k}" ${L.intencao===k?'selected':''}>${t(n)}</option>`).join('')}</select></label>${sg.etapa?`<p><b>Momento da conversa:</b> ${t(sg.etapa.rotulo)}</p>`:''}<p class="ajuda">${t(sg.motivo||'')}</p>`:''}
+   ${a.hipoteses.length?`<ul>${a.hipoteses.map(h=>`<li>${t(h.texto)} <small>(confiança ${t(h.confianca)})</small></li>`).join('')}</ul>`:''}${a.naoSabemos?.length?`<p><b>Não sabemos:</b> ${a.naoSabemos.map(t).join(' · ')}</p>`:''}${a.perguntasEsclarecedoras?.length&&!alts.length?`<p><b>Pergunte:</b> ${a.perguntasEsclarecedoras.map(t).join(' / ')}</p>`:''}
+   ${sg?.encerrar?`<div class="alerta-risco"><strong>Recusa:</strong> não insista. ${alts.length?'Se quiser se despedir, envie uma das despedidas abaixo <b>antes</b> de registrar a resposta; depois de registrada, o contato fica bloqueado.':'Registre a resposta; nenhuma mensagem é sugerida.'}</div>`:''}
+   ${alts.map((x,i)=>`<label class="campo largo"><span>Resposta ${x.despedida?(i===0?'de despedida':'de despedida '+(i+1)):(i===0?'recomendada':'opção '+(i+1))} · ${t(x.nome)}</span><textarea rows="3" readonly>${t(x.texto)}</textarea><small>✔ linguagem ok · ${t(x.porque)}</small><button type="button" class="pequeno" data-m="conversao.usar-resposta" data-id="${i}">Usar no compositor</button></label>`).join('')}
    ${r?(r.naoInsistir?`<div class="alerta-risco"><strong>Recusa:</strong> não insista. ${t(r.principal.texto)}</div>`:['principal','curta','direta'].map(k=>`<label class="campo largo"><span>Resposta ${k}</span><textarea rows="3" readonly>${t(r[k].texto)}</textarea><small>${r[k].auditoria.ok?'✔ linguagem ok':'⚠ '+t(r[k].auditoria.erros.join(' '))}</small><button type="button" class="pequeno" data-m="conversao.usar-resposta" data-id="${k}">Usar no compositor</button></label>`).join('')):''}
    <div class="acoes-linha"><button type="button" class="botao-principal" data-m="conversao.registrar-resposta">Registrar resposta no CRM</button><button type="button" data-m="conversao.proxima">Preparar a próxima mensagem</button></div></article>`:''}`;
  }
@@ -112,14 +133,15 @@ export function criarConversa(ctx,reabrir){
   return `<form id="cv-sel">${sel}</form><div class="cv-ws"><div class="cv-lado"><details class="cv-area" ${aberto?'open':''}><summary><h3>Contexto da empresa</h3></summary>${htmlContexto(e)}</details><details class="cv-area" open><summary><h3>Estratégia comercial</h3></summary>${htmlEstrategia(e)}</details></div><section class="cv-compositor" aria-label="Compositor de mensagens"><h3>Compositor de mensagens</h3>${htmlCompositor(e)}</section></div>`;
  }
  function ligar(q,f){
-  q('#cv-tipo')?.addEventListener('change',ev=>{L.tipo=ev.target.value;L.objetivo='';L.rascunhoId='';L.alt=0;L.gerado=null;L.texto='';reabrir();});
+  q('#cv-tipo')?.addEventListener('change',ev=>{L.tipo=ev.target.value;L.objetivo='';L.rascunhoId='';L.alt=0;L.rodada=0;L.gerado=null;L.texto='';reabrir();});
+  q('#cv-intencao')?.addEventListener('change',ev=>{L.intencao=ev.target.value;sugerirParaResposta();reabrir();});
   q('#cv-tam')?.addEventListener('change',ev=>{L.tamanho=ev.target.value;L.rascunhoId='';L.gerado=null;L.texto='';reabrir();});
   q('#cv-tom')?.addEventListener('change',ev=>{L.formalidade=ev.target.value;L.rascunhoId='';L.gerado=null;L.texto='';reabrir();});
   q('#cv-exp-leg')?.addEventListener('change',ev=>{L.expId=ev.target.value;const x=estado().experimentos.find(k=>k.id===L.expId);L.varExp=x?x.variantes.slice().sort((a,b)=>estado().eventos.filter(v=>v.experimentoId===x.id&&v.variante===a.id).length-estado().eventos.filter(v=>v.experimentoId===x.id&&v.variante===b.id).length)[0].id:'';L.rascunhoId='';L.gerado=null;L.texto='';reabrir();});
   q('#cv-demo')?.addEventListener('change',ev=>{L.demoId=ev.target.value;L.registrarDemo=!!ev.target.value;L.gerado=null;if(!L.rascunhoId)L.texto='';reabrir();});
   q('#cv-contato')?.addEventListener('change',ev=>{L.contatoId=ev.target.value;atualizarValidacao(q);});
   q('#cv-texto')?.addEventListener('input',ev=>{L.texto=ev.target.value;atualizarValidacao(q);});
-  f('#cv-resp',d=>{L.resposta=d.texto;L.analise=analisarResposta(d.texto);reabrir();});
+  f('#cv-resp',d=>{L.resposta=d.texto;L.intencao='';L.analise=analisarResposta(d.texto);sugerirParaResposta();reabrir();});
   f('#cv-imp',d=>{L.previa=importarConversaWhatsApp(d.texto,{meuNome:d.meu.trim()||(estado().preferencias.nome||''),nomeCliente:emp().contato||''});reabrir();});
   f('#cv-mapa',d=>{L.previa=aplicarMapa(L.previa,Object.fromEntries(Object.entries(d).filter(([,v])=>v)));reabrir();});
   f('#cv-novo-contato',d=>{adicionarContato(emp(),{papel:d.papel,nome:d.nome,numero:d.numero,origem:d.origem});salvar();avisar('Contato salvo.');reabrir();});
@@ -132,7 +154,7 @@ export function criarConversa(ctx,reabrir){
  const acoes={
   ofertas:()=>ctx.modulos.ofertas.abrir(emp().id,'negociar'),
   alternativa:i=>{L.alt=Number(i);const a=L.gerado.alternativas[L.alt];L.rascunhoId='';L.texto=a.texto;L.textoBase=a.texto;reabrir();},
-  regerar:()=>{L.rascunhoId='';L.texto='';L.gerado=null;L.alt=0;const x=estado().experimentos.find(k=>k.id===L.expId);if(x&&x.variantes.length>1){const i=x.variantes.findIndex(v=>v.id===L.varExp);L.varExp=x.variantes[(i+1)%x.variantes.length].id;}reabrir();},
+  regerar:()=>{L.rascunhoId='';L.texto='';L.gerado=null;L.alt=0;L.rodada++;const x=estado().experimentos.find(k=>k.id===L.expId);if(x&&x.variantes.length>1){const i=x.variantes.findIndex(v=>v.id===L.varExp);L.varExp=x.variantes[(i+1)%x.variantes.length].id;}reabrir();},
   copiar:async()=>{try{const r=rascunhoAtual();F.marcarEstadoMensagem(estado(),r.id,'copiada');salvar();await navigator.clipboard.writeText(L.texto);avisar('Copiado. Nada foi registrado como enviado.');}catch(x){avisar(x.message==='Escreva a mensagem antes de salvar.'?x.message:'Selecione o texto e copie manualmente.');}},
   rascunho:()=>{try{const r=rascunhoAtual();if(r.estadoMensagem==='rascunho')F.marcarEstadoMensagem(estado(),r.id,'preparada');F.voltarParaRascunho(estado(),r.id);salvar();avisar('Rascunho salvo (não enviado).');reabrir();}catch(x){avisar(x.message);}},
   whatsapp:()=>{try{const e=emp(),v=validarMensagem(estado(),e,textoAtual(),{contatoId:L.contatoId,demoId:L.demoId});if(v.problemas.some(p=>p.nivel==='erro')&&!confirmar('Há problemas na mensagem:\n- '+v.problemas.filter(p=>p.nivel==='erro').map(p=>p.texto).join('\n- ')+'\n\nAbrir o WhatsApp mesmo assim?'))return;
@@ -153,9 +175,9 @@ export function criarConversa(ctx,reabrir){
   'usar-rascunho':id=>{definirEmpresa('',{rascunhoId:id});L.gerado=null;L.alt=0;reabrir();},
   'excluir-rascunho':id=>{if(!confirmar('Excluir este rascunho? O histórico de mensagens enviadas não é afetado.'))return;const s=estado();s.rascunhos=s.rascunhos.filter(r=>r.id!==id);if(L.rascunhoId===id){L.rascunhoId='';L.texto='';}salvar();reabrir();},
   'corrigir-texto':id=>{const ev=estado().eventos.find(x=>x.id===id);const novo=window.prompt('Texto exatamente como foi enviado no WhatsApp:',ev?.texto||'');if(novo==null)return;try{F.corrigirTextoEnviado(estado(),id,novo);salvar();avisar('Texto corrigido; o anterior ficou guardado no histórico.');reabrir();}catch(x){avisar(x.message);}},
-  'registrar-resposta':()=>{const e=emp(),a=L.analise;if(!a)return;const cont=contatosDaEmpresa(e).find(c=>c.id===L.contatoId)||contatosDaEmpresa(e).find(c=>c.norm.estruturaValida);if(a.pediuParar&&!confirmar('Esta resposta pede para parar. O contato será bloqueado. Continuar?'))return;F.registrarRespostaDaConversa(estado(),e,{texto:a.texto,interesse:a.interesse,pediuDemo:!!a.pediuDemo,naoReceber:!!a.pediuParar,recusou:!!a.recusaClara,numero:cont?.norm.e164||''});salvar();L.analise=null;L.resposta='';L.gerado=null;L.rascunhoId='';L.texto='';avisar(a.pediuParar?'Resposta registrada e contato bloqueado.':'Resposta registrada. O estágio da conversa foi atualizado.');reabrir();},
-  proxima:()=>{L.analise=null;L.gerado=null;L.rascunhoId='';L.texto='';L.tipo='auto';L.alt=0;reabrir();document.querySelector('.cv-compositor')?.scrollIntoView({behavior:'smooth',block:'start'});},
-  'usar-resposta':k=>{const e=emp();const r=responderObjecao(L.analise,contextoResposta(estado(),e,{autor:estado().preferencias.nome||'Renan'}));if(r&&r[k]){L.rascunhoId='';L.texto=r[k].texto;L.textoBase=r[k].texto;reabrir();}},
+  'registrar-resposta':()=>{const e=emp(),a=L.analise;if(!a)return;const cont=contatosDaEmpresa(e).find(c=>c.id===L.contatoId)||contatosDaEmpresa(e).find(c=>c.norm.estruturaValida);if(a.pediuParar&&!confirmar('Esta resposta pede para parar. O contato será bloqueado. Continuar?'))return;const evR=F.registrarRespostaDaConversa(estado(),e,{texto:a.texto,interesse:a.interesse,pediuDemo:!!a.pediuDemo,naoReceber:!!a.pediuParar,recusou:!!a.recusaClara,numero:cont?.norm.e164||''});if(evR){const it=L.sugestoes?.interpretacao;if(L.intencao)evR.intencaoInformada=L.intencao;if(it)evR.intencaoLida=it.intencao;}salvar();L.analise=null;L.resposta='';L.intencao='';L.sugestoes=null;L.rodada=0;L.tipo='auto';L.gerado=null;L.rascunhoId='';L.texto='';avisar(a.pediuParar?'Resposta registrada e contato bloqueado.':'Resposta registrada. O estágio da conversa foi atualizado.');reabrir();},
+  proxima:()=>{L.analise=null;L.sugestoes=null;L.intencao='';L.rodada=0;L.gerado=null;L.rascunhoId='';L.texto='';L.tipo='auto';L.alt=0;reabrir();document.querySelector('.cv-compositor')?.scrollIntoView({behavior:'smooth',block:'start'});},
+  'usar-resposta':k=>{const e=emp(),sg=L.sugestoes;if(sg?.alternativas?.[Number(k)]){const i=Number(k);L.gerado={tipoUsado:sg.etapa?.chave||'auto',bloqueado:false,motivoBloqueio:'',alternativas:sg.alternativas,aguardar:false,avisos:[],motor:{etapa:sg.etapa,motivo:sg.motivo,interpretacao:sg.interpretacao,encerrar:sg.encerrar,perfil:{rotulo:sg.perfil.rotuloPerfil,fatos:sg.perfil.fatos,desconhecidos:sg.perfil.desconhecidos,hipoteses:sg.perfil.hipoteses}}};L.alt=i;L.rascunhoId='';L.texto=sg.alternativas[i].texto;L.textoBase=L.texto;reabrir();document.querySelector('.cv-compositor')?.scrollIntoView({behavior:'smooth',block:'start'});return;}const r=responderObjecao(L.analise,contextoResposta(estado(),e,{autor:estado().preferencias.nome||'Renan'}));if(r&&r[k]){L.rascunhoId='';L.texto=r[k].texto;L.textoBase=r[k].texto;reabrir();}},
   resultado:k=>{const e=emp();if(k==='proposta')return ctx.modulos.ofertas.abrir(e.id,'proposta');if(k==='perdida'){const m=window.prompt('Motivo declarado (ou "desconhecido"):','');if(m==null)return;registrarPerda(estado(),e,{motivo:m||'desconhecido',situacao:'perdida'});salvar();avisar('Registrada como perdida.');return reabrir();}if(k==='nao-contatar'){if(!confirmar('Marcar "'+e.nome+'" como não contatar? O envio será bloqueado.'))return;marcarNaoContatar(estado(),e,'Marcado na conversa.');salvar();return reabrir();}if(k==='encerrar'){F.encerrarConversa(estado(),e.id);salvar();avisar('Conversa encerrada; o histórico foi mantido.');reabrir();}},
   'salvar-conversa':()=>{if(!document.querySelector('#cv-conf-imp')?.checked)return avisar('Marque a confirmação.');try{salvarConversa(estado(),emp(),L.previa,{confirmado:true});salvar();L.previa=null;avisar('Conversa salva. Para contar nas métricas, use "Consolidar".');reabrir();}catch(x){avisar(x.message);}},
   consolidar:id=>{const c=estado().conversas.find(x=>x.id===id);if(!confirmar('Criar eventos de envio/resposta a partir desta conversa? Faça apenas se as mensagens realmente aconteceram.'))return;try{const r=consolidarConversa(estado(),emp(),c,{confirmado:true});salvar();avisar(`${r.criados} evento(s) criados, ${r.duplicados} duplicado(s) ignorado(s).`);}catch(x){avisar(x.message);}reabrir();}

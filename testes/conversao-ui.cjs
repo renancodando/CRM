@@ -33,7 +33,7 @@ const seed={versao:2,preferencias:{nome:'Teste',cargo:'Dev',marca:'Órbita',movi
  ok((e.eventos||[]).filter(x=>x.tipo==='mensagem-enviada').length===1,'o envio só entra no CRM após "Sim, enviei"');
  await p.fill('#cv-resp [name=texto]','achei caro');await clicar('#cv-resp [type=submit]');t=await txt();
  ok(/Está caro/.test(t)&&/hipótese/i.test(t),'resposta interpretada como hipótese (objeção: caro)');
- ok(/Resposta principal|Resposta curta|Resposta direta/.test(t),'respostas sugeridas auditadas');
+ ok(/Resposta recomendada/.test(t)&&/Resposta opção 2/.test(t)&&/Intenção identificada: Achou caro/.test(t),'respostas sugeridas pela biblioteca, com intenção identificada');
  await p.fill('#cv-resp [name=texto]','não tenho interesse');await clicar('#cv-resp [type=submit]');t=await txt();ok(/não insista/i.test(t),'recusa: não insistir, sem resposta de contorno');
  await clicar('[data-m="conversao.registrar-resposta"]');t=await txt();ok(/bloqueado/i.test(t)||/recus/i.test(t),'recusa registrada bloqueia/encerra o contato');
  await clicar('[data-m="conversao.aba"][data-id="objecoes"]');t=await txt();ok(/Está caro/.test(t)&&/Pediu para parar/.test(t)&&/Sem resposta de contorno|não há resposta de "contorno"/i.test(t),'catálogo de objeções');
