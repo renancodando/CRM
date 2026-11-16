@@ -24,6 +24,7 @@ const seed={versao:2,preferencias:{nome:'Renan',cargo:'Dev',marca:'Órbita',movi
  assert.equal(await p.inputValue('#cv-emp'),first);
  await click('[data-m="conversao.whatsapp"]');
  await p.waitForSelector('#cv-texto-enviado');
+ await p.waitForFunction(()=>new Promise(resolve=>{const r=indexedDB.open('orbita-dados');r.onerror=()=>resolve(false);r.onsuccess=()=>{const db=r.result;const q=db.transaction('colecoes').objectStore('colecoes').get('rascunhos');q.onsuccess=()=>{db.close();resolve((q.result||[]).some(x=>x.estadoMensagem==='whatsapp-aberto'));};q.onerror=()=>{db.close();resolve(false);};};}));
  await p.reload();await p.waitForSelector('#cv-texto-enviado');
  assert.equal(await p.inputValue('#cv-emp'),first);
  await click('[data-m="conversao.confirmar-envio"]');
