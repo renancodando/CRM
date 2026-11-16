@@ -53,7 +53,7 @@ ok('nada inventado: mensagem só cita avaliação, Instagram, serviço, diferenc
 ok('site: sem verificação a mensagem diz "não achei", nunca afirma que a empresa não tem site',()=>{
  for(const p of [RICO,POBRE])for(const m of aplicaveis(p)){const t=render(m,p);assert.ok(!/voc[eê]s n[aã]o t[eê]m (um )?site|a loja n[aã]o tem site|sem site nenhum/i.test(t),m.id+' → '+t);}});
 ok('personalização: o perfil muda a abertura, o argumento e o benefício; nome da loja limpo',()=>{
- assert.equal(nomeCurto('ZAP CELL - Assistência Técnica de Celulares'),'Zap Cell');assert.equal(RICO.principal,'reputacao-forte');assert.equal(POBRE.principal,'dados-escassos');assert.notEqual(RICO.argumento.beneficio,POBRE.argumento.beneficio);
+ assert.equal(nomeCurto('ZAP CELL - Assistência Técnica de Celulares'),'Zap Cell');assert.equal(nomeCurto('GUERRA SMART CELL Assistência Técnica de Celulares e Acessórios'),'Guerra Smart Cell');assert.equal(nomeCurto('UP! CASE JF'),'UP! Case JF');assert.equal(nomeCurto('Loja de Acessórios e Assistência Técnica em Celulares | Ourocell'),'Ourocell');assert.equal(RICO.principal,'reputacao-forte');assert.equal(POBRE.principal,'dados-escassos');assert.notEqual(RICO.argumento.beneficio,POBRE.argumento.beneficio);
  const insta=perfilDe({statusSite:'so-redes',instagram:'@loja',servicosOferecidos:['troca de tela']});assert.ok(insta.perfis.includes('instagram-ativo'));assert.ok(Object.keys(PERFIS).length>=8);
  const usaPerfil=MENSAGENS['primeiro-contato'].filter(m=>!m.perfis.includes('*'));assert.ok(usaPerfil.length>=6,'mensagens de primeiro contato específicas de perfil');});
 ok('ciência: cada mensagem aponta técnicas cadastradas; cada técnica tem grau e estudo; psicologia reversa aparece só como retirada honesta e marcada como hipótese',()=>{
