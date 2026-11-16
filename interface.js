@@ -68,7 +68,7 @@ window.addEventListener('popstate',e=>{
 window.addEventListener('pagehide',()=>{if(prospeccaoAtiva&&conteudo.querySelector('#lista-empresas'))gravarSessaoProspeccao(true);});
 
 aoFalhar(()=>avisar('Não foi possível gravar no navegador. Exporte um backup agora para não perder seus dados.'));
-function salvar(){salvarEstado(estado);atualizarVisao();}
+function salvar(opcoes){const gravacao=salvarEstado(estado,opcoes);atualizarVisao();return gravacao;}
 function avisar(texto){const aviso=document.querySelector('#aviso');clearTimeout(temporizadorAviso);aviso.textContent=texto;aviso.hidden=false;temporizadorAviso=setTimeout(()=>aviso.hidden=true,4300);}
 function inserirIcones(raiz=document){raiz.querySelectorAll('[data-icone]').forEach(no=>{no.innerHTML=icone(no.dataset.icone);});}
 function buscarEmpresa(id){return estado.empresas.find(empresa=>empresa.id===id);}
