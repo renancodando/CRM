@@ -92,7 +92,7 @@ export function criarConversao(ctx){
   aba=a;if(id)conversa.definirEmpresa(id);
   abrirPainel('Da primeira mensagem ao fechamento, com método',`<div class="abas" role="tablist">${abas.map(([k,n])=>`<button type="button" role="tab" aria-selected="${aba===k}" class="${aba===k?'ativa':''}" data-m="conversao.aba" data-id="${k}">${n}</button>`).join('')}</div>${tabs[aba]()}`,'ÓRBITA CONVERSÃO');
   const q=s=>document.querySelector(s),f=(s,fn)=>q(s)?.addEventListener('submit',ev=>{ev.preventDefault();try{fn(dadosForm(ev.currentTarget),ev.currentTarget);}catch(x){avisar(x.message);}});
-  q('#cv-emp')?.addEventListener('change',ev=>{conversa.definirEmpresa(ev.target.value);abrir(aba);});
+  q('#cv-emp')?.addEventListener('change',ev=>{ctx.selecionarEmpresaSessao?.(ev.target.value,'conversa');conversa.definirEmpresa(ev.target.value);abrir(aba);});
   if(aba==='conversa')conversa.ligar(q,f);
   q('#cv-cen')?.addEventListener('change',ev=>{cenSel=ev.target.value;avalTreino=null;respTreino='';abrir('treino');});
   f('#cv-fb',d=>{const s=sugestoesDeFeedback(d.texto);q('#cv-fb-out').innerHTML=Array.isArray(s)?`<ul>${s.map(x=>`<li>${t(typeof x==='string'?x:x.texto||x.ajuste||JSON.stringify(x))}</li>`).join('')}</ul>`:`<p>${t(s.aviso||s.texto||'Sem ajustes concretos: o feedback é vago. Pergunte o que mais chamou atenção.')}</p>${(s.sugestoes||s.ajustes||[]).map(x=>`<p>• ${t(typeof x==='string'?x:x.texto||x.ajuste)}</p>`).join('')}`;});
@@ -111,6 +111,6 @@ export function criarConversao(ctx){
   desvio:id=>{const m=window.prompt('Descreva o desvio do protocolo:','');if(!m)return;registrarDesvio(estado(),estado().experimentos.find(y=>y.id===id),m);salvar();abrir('lab');},
   'encerrar-exp':id=>{const x=estado().experimentos.find(y=>y.id===id);if(!confirmar('Encerrar este experimento? Os resultados ficam guardados.'))return;x.ativo=false;x.fim=new Date().toISOString();salvar();abrir('lab');}
  };
- function abrirConversa(id,opts={}){conversa.definirEmpresa(id,opts);abrir('conversa');}
+ function abrirConversa(id,opts={}){ctx.selecionarEmpresaSessao?.(id,'conversa');conversa.definirEmpresa(id,opts);abrir('conversa');}
  return {abrir,abrirConversa,acoes};
 }
