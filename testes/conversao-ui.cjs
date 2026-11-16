@@ -1,3 +1,4 @@
+const {navClick}=require('./nav-helper.cjs');
 const {chromium}=require('playwright');
 const URL_=process.env.ORBITA_URL||'http://localhost:3111/';let falhas=0;const ok=(c,m)=>{console.log((c?'✔ ':'✘ ')+m);if(!c)falhas++;};
 const agora=Date.now(),d=n=>new Date(agora-n*864e5).toISOString();
@@ -11,7 +12,7 @@ const seed={versao:2,preferencias:{nome:'Teste',cargo:'Dev',marca:'Órbita',movi
  await ctx.route('https://wa.me/**',r=>r.fulfill({status:200,contentType:'text/html',body:'wa'}));const p=await ctx.newPage();p.setDefaultTimeout(8000);const erros=[];p.on('pageerror',e=>erros.push('PAGE:'+e.message));p.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))erros.push('CONSOLE:'+m.text());});p.on('dialog',x=>x.accept('motivo'));
  const esp=ms=>p.waitForTimeout(ms),clicar=async s=>{await p.click(s);await esp(350);},txt=()=>p.textContent('#conteudo-painel'),est=()=>p.evaluate(async()=>{const m=await import('/nucleo/armazenamento.js');return null;}).catch(()=>null);
  await p.goto(URL_);await esp(2200);
- await p.click('[data-secao=conversao]');await esp(600);await clicar('[data-m="conversao.aba"][data-id=fila]');let t=await txt();
+ await navClick(p,'[data-secao=conversao]');await esp(600);await clicar('[data-m="conversao.aba"][data-id=fila]');let t=await txt();
  ok(/Empresa 1/.test(t)&&/Empresa 3/.test(t),'fila lista empresas elegíveis');
  ok(!/Empresa 2/.test(t)&&!/Empresa 4/.test(t),'fila exclui "não contatar" e recusadas');
  ok(/desconhecido/.test(t),'fatores sem informação aparecem como desconhecidos');
@@ -47,7 +48,7 @@ const seed={versao:2,preferencias:{nome:'Teste',cargo:'Dev',marca:'Órbita',movi
  await clicar('[data-m="conversao.aba"][data-id="config"]');await p.selectOption('#cv-emp','e3');await esp(300);await p.fill('#cv-cons [name=origem]','');await p.selectOption('#cv-cons [name=estado]','autorizado');await clicar('#cv-cons [type=submit]');
  const dados=await p.evaluate(()=>new Promise(r=>{const q=indexedDB.open('orbita');q.onsuccess=()=>r('ok');q.onerror=()=>r('erro');}));
  t=await txt();ok(/Lista de não contatar/.test(t),'consentimento e lista de bloqueio visíveis');
- await p.reload();await esp(2200);await p.click('[data-secao=conversao]');await esp(500);await clicar('[data-m="conversao.aba"][data-id="lab"]');t=await txt();ok(/Direta vs consultiva/.test(t),'experimento persiste após recarregar');
+ await p.reload();await esp(2200);await navClick(p,'[data-secao=conversao]');await esp(500);await clicar('[data-m="conversao.aba"][data-id="lab"]');t=await txt();ok(/Direta vs consultiva/.test(t),'experimento persiste após recarregar');
  await p.setViewportSize({width:375,height:760});await esp(300);const largura=await p.evaluate(()=>document.documentElement.scrollWidth);ok(largura<=376,'mobile 375px sem rolagem horizontal ('+largura+')');
  ok(!erros.length,'sem erros de JavaScript'+(erros.length?': '+erros.slice(0,3).join(' | '):''));
  await b.close();console.log(falhas?falhas+' falhas':'todas aprovadas');process.exit(falhas?1:0);

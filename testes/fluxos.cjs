@@ -1,10 +1,11 @@
+const {navClick}=require('./nav-helper.cjs');
 const {chromium}=require('playwright');const fs=require('fs');
 const URL_=process.env.ORBITA_URL||'http://localhost:3111/';let falhas=0;const ok=(c,m)=>{console.log((c?'✔ ':'✘ ')+m);if(!c)falhas++;};
 (async()=>{
  const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
  const ctx=await b.newContext({viewport:{width:1440,height:900},acceptDownloads:true});await ctx.route('https://wa.me/**',r=>r.fulfill({status:200,contentType:'text/html',body:'wa'}));const p=await ctx.newPage();
  const erros=[];p.on('pageerror',e=>erros.push('PAGE:'+e.message));p.on('console',m=>{if(m.type()==='error')erros.push('CONSOLE:'+m.text());});p.on('dialog',d=>d.accept('teste'));
- const esperar=ms=>p.waitForTimeout(ms),clicar=async s=>{await p.click(s);await esperar(300);},nav=async s=>{if(await p.evaluate(()=>document.querySelector('#painel').open)){await p.keyboard.press('Escape');await esperar(300);}await p.click(`[data-secao=${s}]`);await esperar(450);};
+ const esperar=ms=>p.waitForTimeout(ms),clicar=async s=>{await p.click(s);await esperar(300);},nav=async s=>{if(await p.evaluate(()=>document.querySelector('#painel').open)){await p.keyboard.press('Escape');await esperar(300);}await navClick(p,`[data-secao=${s}]`);await esperar(450);};
  const estado=()=>p.evaluate(()=>new Promise(res=>{const r=indexedDB.open('orbita-dados');r.onsuccess=()=>{const t=r.result.transaction('colecoes').objectStore('colecoes');const g=t.getAll(),k=t.getAllKeys();g.onsuccess=()=>{k.onsuccess=()=>{const o={};k.result.forEach((c,i)=>o[c]=g.result[i]);res(o);};};};}));
  const textoPainel=()=>p.textContent('#conteudo-painel');
  await p.goto(URL_);await esperar(2000);

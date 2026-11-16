@@ -1,3 +1,4 @@
+const {navClick}=require('./nav-helper.cjs');
 /* Órbita Conversão unificado (Preparar Mensagem + Conversão + Negociação): fluxo completo na mesma interface. O WhatsApp é interceptado: nenhuma mensagem real é enviada. */
 const {chromium}=require('playwright');
 const URL_=process.env.ORBITA_URL||'http://localhost:3111/';let falhas=0;const ok=(c,m)=>{console.log((c?'✔ ':'✘ ')+m);if(!c)falhas++;};
@@ -20,7 +21,7 @@ const seed={versao:2,preferencias:{nome:'Renan',cargo:'Dev',marca:'Órbita',movi
  let e=await estado();ok((e.rascunhos||[]).some(r=>r.id==='rleg')&&(e.rascunhos||[]).some(r=>r.id==='rcv'&&r.estadoMensagem==='rascunho'&&r.empresa==='e1'),'migração: rascunhos antigos das duas ferramentas estão no repositório único e preservados');
  ok(!((e.raiz?.conversao?.rascunhos)||[]).length&&(e.raiz?.conversao?.migracoes||[]).includes('mensagens-unificadas-1'),'migração versionada e idempotente registrada');
  /* ponto de entrada contextual: Empresas */
- await p.click('[data-secao=empresas]');await esp(600);await p.click('[data-m="conversao.abrir-conversa"][aria-label*="Smart Tech"]');await esp(700);let t=await txt();
+ await navClick(p,'[data-secao=empresas]');await esp(600);await p.click('[data-m="conversao.abrir-conversa"][aria-label*="Smart Tech"]');await esp(700);let t=await txt();
  ok(/Contexto da empresa/.test(t)&&/Estratégia comercial/.test(t)&&/Compositor de mensagens/.test(t),'"Conversar e converter" na lista de empresas abre Conversão com a empresa carregada');
  ok(await p.inputValue('#cv-emp')==='e1','empresa já selecionada');
  ok(/Smart Tech Lavras/.test(t)&&/Fornecida por você|Confirmada/.test(t)&&/Desconhecida/.test(t)&&/WhatsApp não confirmado/.test(t)&&/estrutura válida/.test(t),'contexto com origem de cada dado, contato e WhatsApp NÃO confirmado');
@@ -41,7 +42,7 @@ const seed={versao:2,preferencias:{nome:'Renan',cargo:'Dev',marca:'Órbita',movi
  e=await estado();ok((e.eventos||[]).filter(x=>x.tipo==='mensagem-enviada').length===0,'abrir o WhatsApp NÃO registra envio');ok((e.rascunhos||[]).some(r=>r.estadoMensagem==='whatsapp-aberto'&&r.numero==='5535999991001'),'estado "WhatsApp aberto" com o número usado');
  t=await txt();ok(/Você enviou a mensagem\?/.test(t)&&/Sim, enviei/.test(t)&&/Não enviei/.test(t)&&/Decidir depois/.test(t),'pergunta de confirmação com confirmar, cancelar e manter pendente');
  /* pendência persiste após recarregar */
- await p.reload();await esp(2200);await p.click('[data-secao=conversao]');await esp(700);await escolher('Smart Tech');ok(/Você enviou a mensagem\?/.test(await txt()),'a confirmação pendente sobrevive ao recarregamento');
+ await p.reload();await esp(2200);await navClick(p,'[data-secao=conversao]');await esp(700);await escolher('Smart Tech');ok(/Você enviou a mensagem\?/.test(await txt()),'a confirmação pendente sobrevive ao recarregamento');
  /* editar o texto enviado e confirmar */
  await p.fill('#cv-texto-enviado','Oi, Carlos! Mudei uma frase no WhatsApp antes de enviar.');await clicar('[data-m="conversao.confirmar-envio"]');e=await estado();
  const msg=(e.eventos||[]).find(x=>x.tipo==='mensagem-enviada');ok(msg&&msg.texto==='Oi, Carlos! Mudei uma frase no WhatsApp antes de enviar.'&&msg.editadoNoEnvio===true&&msg.textoSugerido&&msg.textoSugerido!==msg.texto,'envio confirmado registra o texto EXATO enviado e guarda o sugerido');

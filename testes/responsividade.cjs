@@ -1,3 +1,4 @@
+const {navClick}=require('./nav-helper.cjs');
 const {chromium}=require('playwright');
 const larguras=(process.env.LARGURAS||'320,375,390,430,768,1024,1440,1920').split(',').map(Number);
 (async()=>{
@@ -12,10 +13,10 @@ const larguras=(process.env.LARGURAS||'320,375,390,430,768,1024,1440,1920').spli
   if(!semH){falhas++;console.log('✘',l,'página principal com rolagem horizontal');}
   const abrirMenu=async()=>{if(await p.locator('.abrir-menu').isVisible()){await p.click('.abrir-menu');await p.waitForTimeout(250);}};
   for(const sec of ['hoje','empresas','pipeline','estudio','propostas','laboratorio','financeiro','dados','relatorios','quant','connect','conversao','ofertas','diagnostico','publicacoes']){
-   await painel(sec,async()=>{await abrirMenu();await p.click(`[data-secao=${sec}]`);});
+   await painel(sec,async()=>{await abrirMenu();await navClick(p,`[data-secao=${sec}]`);});
   }
   // nova empresa e central
-  await painel('nova-empresa',async()=>{await p.evaluate(()=>document.querySelector('.acao-orbital.prospectar').click());});
+  await painel('nova-empresa',async()=>{await navClick(p,'[data-secao=empresas]');await p.click('#conteudo-painel [data-acao=nova-empresa]');});
   console.log('· largura',l,'verificada');await p.close();
  }
  console.log(erros.length?'erros JS: '+JSON.stringify(erros.slice(0,3)):'sem erros JS');console.log(falhas?falhas+' falhas':'responsividade: nenhuma tela estoura a largura');await b.close();process.exit(falhas?1:0);

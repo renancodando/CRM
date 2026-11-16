@@ -1,3 +1,4 @@
+const {navClick}=require('./nav-helper.cjs');
 /* Teste de navegador das novas telas. A ponte (/api/connect) é SIMULADA por interceptação de rede: nenhuma publicação real na Cloudflare é feita ou validada aqui. */
 const {chromium}=require('playwright');const zlib=require('zlib');
 const URL_=process.env.ORBITA_URL||'http://localhost:3111/';let falhas=0;const ok=(c,m)=>{console.log((c?'✔ ':'✘ ')+m);if(!c)falhas++;};
@@ -25,7 +26,7 @@ const hex=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h.toS
   if(a==='publicar-verificar')return j({status:200,disponivel:true,noindex:true,titulo:'Precision',verificadoEm:new Date().toISOString()});
   return route.fulfill({status:404,contentType:'application/json',body:JSON.stringify({erro:'MOCK sem rota '+a})});});
  await ctx.route('https://wa.me/**',r=>r.fulfill({status:200,contentType:'text/html',body:'wa'}));const p=await ctx.newPage();p.setDefaultTimeout(9000);const erros=[];p.on('pageerror',e=>{if(!/sandboxed/.test(e.message))erros.push('PAGE:'+e.message);});p.on('console',m=>{if(m.type()==='error'&&!/404|MOCK|sandboxed/.test(m.text()))erros.push('CONSOLE:'+m.text());});p.on('dialog',x=>x.accept('ok'));
- const esp=ms=>p.waitForTimeout(ms),clicar=async s=>{await p.click(s);await esp(350);},txt=()=>p.textContent('#conteudo-painel'),nav=async s=>{if(await p.evaluate(()=>document.querySelector('#painel').open)){await p.keyboard.press('Escape');await esp(300);}await p.click(`[data-secao=${s}]`);await esp(500);};
+ const esp=ms=>p.waitForTimeout(ms),clicar=async s=>{await p.click(s);await esp(350);},txt=()=>p.textContent('#conteudo-painel'),nav=async s=>{if(await p.evaluate(()=>document.querySelector('#painel').open)){await p.keyboard.press('Escape');await esp(300);}await navClick(p,`[data-secao=${s}]`);await esp(500);};
  const estado=()=>p.evaluate(()=>new Promise(res=>{const r=indexedDB.open('orbita-dados');r.onsuccess=()=>{const t=r.result.transaction('colecoes').objectStore('colecoes');const g=t.getAll(),k=t.getAllKeys();g.onsuccess=()=>{k.onsuccess=()=>{const o={};k.result.forEach((c,i)=>o[c]=g.result[i]);res(o);};};};}));
  await p.goto(URL_);await esp(2200);
  /* plano do dia */
@@ -81,7 +82,7 @@ const hex=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h.toS
  /* dados internos fora do export Connect por padrão */
  const x=await p.evaluate(()=>JSON.stringify(JSON.parse(localStorage.getItem('orbita-prospeccao-v2')||'{}')).length);
  /* celular */
- await p.setViewportSize({width:375,height:780});await esp(300);for(const [sec,rot] of [['diagnostico','Plano do dia'],['ofertas','Ofertas'],['publicacoes','Publicações']]){if(await p.evaluate(()=>document.querySelector('#painel').open)){await p.keyboard.press('Escape');await esp(250);}if(await p.locator('.abrir-menu').isVisible())await p.click('.abrir-menu').catch(()=>{});await esp(250);await p.click(`[data-secao=${sec}]`).catch(async()=>{await p.evaluate(s=>document.querySelector(`[data-secao=${s}]`)?.click(),sec);});await esp(500);const w=await p.evaluate(()=>[document.documentElement.scrollWidth,document.querySelector('#painel')?.scrollWidth||0]);ok(w[0]<=376,`celular 375px: ${sec} sem rolagem horizontal da página (${w[0]})`);}
+ await p.setViewportSize({width:375,height:780});await esp(300);for(const [sec,rot] of [['diagnostico','Plano do dia'],['ofertas','Ofertas'],['publicacoes','Publicações']]){if(await p.evaluate(()=>document.querySelector('#painel').open)){await p.keyboard.press('Escape');await esp(250);}if(await p.locator('.abrir-menu').isVisible())await p.click('.abrir-menu').catch(()=>{});await esp(250);await navClick(p,`[data-secao=${sec}]`).catch(async()=>{await p.evaluate(s=>document.querySelector(`[data-secao=${s}]`)?.click(),sec);});await esp(500);const w=await p.evaluate(()=>[document.documentElement.scrollWidth,document.querySelector('#painel')?.scrollWidth||0]);ok(w[0]<=376,`celular 375px: ${sec} sem rolagem horizontal da página (${w[0]})`);}
  ok(!erros.length,'sem erros de JavaScript'+(erros.length?': '+erros.slice(0,3).join(' | '):''));
  await b.close();console.log(falhas?falhas+' falhas':'todas aprovadas');process.exit(falhas?1:0);
 })().catch(e=>{console.error(e);process.exit(1);});

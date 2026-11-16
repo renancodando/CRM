@@ -1,3 +1,4 @@
+const {navClick}=require('./nav-helper.cjs');
 const {chromium}=require('playwright');const fs=require('fs');
 const URL_=process.env.ORBITA_URL||'http://localhost:3111/';let falhas=0;const ok=(c,m)=>{console.log((c?'✔ ':'✘ ')+m);if(!c)falhas++;};
 const agora=Date.now(),d=n=>new Date(agora-n*864e5).toISOString();
@@ -18,7 +19,7 @@ const seed={versao:2,preferencias:{nome:'Teste',cargo:'Dev',marca:'Órbita',movi
  const p=await ctx.newPage();p.setDefaultTimeout(8000);const erros=[];p.on('pageerror',e=>erros.push('PAGE:'+e.message));p.on('console',m=>{if(m.type()==='error')erros.push('CONSOLE:'+m.text());});p.on('dialog',x=>x.accept('motivo'));
  const esp=ms=>p.waitForTimeout(ms),clicar=async s=>{await p.click(s);await esp(350);},txt=()=>p.textContent('#conteudo-painel');
  await p.goto(URL_);await esp(2200);
- await p.click('[data-secao=quant]');await esp(600);ok(await p.textContent('#titulo-painel')==='O cérebro do seu negócio','Quant abre');
+ await navClick(p,'[data-secao=quant]');await esp(600);ok(await p.textContent('#titulo-painel')==='O cérebro do seu negócio','Quant abre');
  let t=await txt();ok(/Empresas contatadas/.test(t)&&/Valor recebido/.test(t),'visão geral mostra indicadores');
  await p.selectOption('#q-controles [name=pt]','todo');await clicar('#q-controles [type=submit]');t=await txt();
  await clicar('[data-m="quant.detalhe"][data-id="taxa_resposta"]');t=await txt();ok(/Fórmula/.test(t)&&/Substituição/.test(t)&&/Wilson/.test(t)&&/Registros que compõem/.test(t),'indicador: análise escrita completa + rastreabilidade');
