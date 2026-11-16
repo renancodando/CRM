@@ -21,11 +21,13 @@ export function nomeCurto(nome){
  const GEN=/^(ass?is?t[eê]ncia|conserto|consertos|loja|manuten[cç][aã]o)\b/i,DESC=/\s+(ass?is?t[eê]ncia|assitencia|conserto|consertos|manuten[cç][aã]o)\b.*$/i;
  /* "Descrição genérica | Nome" → fica o nome; "Nome - descrição" → fica o nome */
  const partes=n.split(/\s[|–—]\s|\s-\s|\s-(?=\S)|(?<=\S)-\s|\s\(|\s\/\s/).map(x=>x.trim()).filter(Boolean);
- n=(GEN.test(partes[0])&&/\s(de|em|e|para)\s/i.test(partes[0])&&partes[1]&&!GEN.test(partes[1]))?partes[1]:partes[0]||n;
+ const nomeReal=t=>t&&t.replace(/[^A-Za-zÀ-ü]/g,'').length>=4&&!/^[A-Z]{2}$/.test(t)&&!GEN.test(t);
+ n=(GEN.test(partes[0])&&nomeReal(partes[1]))?partes[1]:partes[0]||n;
  const titulo=t=>(t===t.toUpperCase()&&/[A-ZÀ-Ü]{3}/.test(t))?t.toLowerCase().split(' ').map((p,i)=>MINUSC.has(p)&&i?p:(p.replace(/[^a-zà-ü]/g,'').length<=2||!/[aeiouà-ü]/.test(p))?p.toUpperCase():p.charAt(0).toUpperCase()+p.slice(1)).join(' '):t;
  n=titulo(n);
+ const FRACO=/^(casa|ponto|mundo|central|oficina|cl[ií]nica|espa[cç]o|loja|centro|posto|rei|reino|lar|sos|uti)$/i;
  const cortado=n.replace(DESC,'').trim();
- if(cortado.length>=3&&!GEN.test(cortado)&&cortado!==n){const m=n.slice(cortado.length).match(/^\s+(ass?is?t[eê]ncia\s+t[eé]cnica|assitencia\s+tecnica)/i);n=(cortado.split(' ').length===1&&m)?cortado+' Assistência Técnica':cortado;}
+ if(cortado.length>=3&&!GEN.test(cortado)&&cortado!==n){const m=n.slice(cortado.length).match(/^\s+(ass?is?t[eê]ncia\s+t[eé]cnica|assitencia\s+tecnica)/i);const base=cortado.split(' ').filter(x=>!/^(e|&|de|do|da|em|para)$/i.test(x));if(!(base.length===1&&FRACO.test(base[0])))n=(cortado.split(' ').length===1&&m)?cortado+' Assistência Técnica':cortado;}
  n=titulo(n); /* nome em maiúsculas seguido de descrição em minúsculas ("GUERRA SMART CELL Assistência...") */
  let palavras=n.split(' ');if(palavras.length>5)palavras=palavras.slice(0,4);
  while(palavras.length>1&&/^(e|&|de|do|da|em|para|ltda\.?|me|conserto|consertos)$/i.test(palavras.at(-1)))palavras.pop();
