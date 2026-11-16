@@ -160,7 +160,7 @@ export function criarConversa(ctx,reabrir){
   whatsapp:()=>{try{const e=emp(),v=validarMensagem(estado(),e,textoAtual(),{contatoId:L.contatoId,demoId:L.demoId});if(v.problemas.some(p=>p.nivel==='erro')&&!confirmar('Há problemas na mensagem:\n- '+v.problemas.filter(p=>p.nivel==='erro').map(p=>p.texto).join('\n- ')+'\n\nAbrir o WhatsApp mesmo assim?'))return;
    const r=rascunhoAtual(),cid=document.querySelector('#cv-contato')?.value||L.contatoId;if(r.estadoMensagem==='rascunho')F.marcarEstadoMensagem(estado(),r.id,'preparada');const p=F.prepararParaWhatsApp(estado(),e,r,{contatoId:cid});if(!p.ok)return avisar(p.motivo);
    if(p.avisosNumero?.length&&!confirmar(p.avisosNumero.join('\n')+'\n\nAbrir mesmo assim?'))return;
-   F.registrarAberturaWhatsApp(estado(),r.id,{contato:p.contato,numero:p.numero});salvar();abrirExterno(p.url);avisar('WhatsApp aberto com o texto. Nada foi registrado: confirme abaixo se enviou.'+(p.aviso?' '+p.aviso:''));reabrir();}catch(x){avisar(x.message);}},
+   F.registrarAberturaWhatsApp(estado(),r.id,{contato:p.contato,numero:p.numero});salvar({imediato:true});abrirExterno(p.url);avisar('WhatsApp aberto com o texto. Nada foi registrado: confirme abaixo se enviou.'+(p.aviso?' '+p.aviso:''));reabrir();}catch(x){avisar(x.message);}},
   'confirmar-envio':id=>{try{const e=emp(),texto=document.querySelector('#cv-texto-enviado')?.value,dias=document.querySelector('#cv-agendar')?.checked?conv(estado()).config.follow.intervalosDias[0]:null;const r=estado().rascunhos.find(x=>x.id===id);
    const demoSel=document.querySelector('#cv-demo')?.value||L.demoId,reg=document.querySelector('#cv-reg-demo')?.checked&&demoSel;
    const sort=estado().experimentos.filter(x=>x.conv&&x.ativo).map(x=>({x,a:x.atribuicoes.find(a=>a.empresaId===e.id&&!a.enviada)})).find(o=>o.a);
@@ -169,7 +169,7 @@ export function criarConversa(ctx,reabrir){
    const primeira=!estado().eventos.some(v=>v.empresaId===e.id&&v.tipo==='mensagem-enviada');
    const ev=F.confirmarEnvioDoRascunho(estado(),e,id,{texto,retornoDias:dias});if(primeira)registrarRecomendacao(estado(),recomendarAbordagem(estado(),e));
    if(reg){const d=estado().demonstracoes.find(x=>x.id===demoSel);if(d){registrarDemonstracaoApresentada(estado(),e,d,{versaoId:d.versoes?.at(-1)?.id||'',link:d.urlPublica||''});ctx.demoPreferida=null;L.registrarDemo=false;}}
-   Object.assign(L,{rascunhoId:'',texto:'',textoBase:'',gerado:null,alt:0});salvar();avisar('Envio registrado (confirmado por você). Pipeline e histórico atualizados.');reabrir();}catch(x){avisar(x.message);}},
+   Object.assign(L,{rascunhoId:'',texto:'',textoBase:'',gerado:null,alt:0});salvar({imediato:true});avisar('Envio registrado (confirmado por você). Pipeline e histórico atualizados.');reabrir();}catch(x){avisar(x.message);}},
   'cancelar-envio':id=>{try{F.cancelarEnvio(estado(),id,{nota:'Usuário informou que não enviou.'});salvar();avisar('Envio cancelado. O rascunho foi mantido.');reabrir();}catch(x){avisar(x.message);}},
   'manter-pendente':()=>{avisar('Mantida pendente: a confirmação continuará aparecendo nesta empresa.');},
   'usar-rascunho':id=>{definirEmpresa('',{rascunhoId:id});L.gerado=null;L.alt=0;reabrir();},

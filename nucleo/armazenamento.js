@@ -2,7 +2,7 @@ import {estadoInicial,normalizarEstado,colecoes,validarIntegridade} from './esqu
 import {migrarDeLegado,compararContagens} from './migracao.js';
 import {montarBackup,resumoSha} from './backup.js';
 const NOME='orbita-dados',CHAVE_V2='orbita-prospeccao-v2',CHAVE_V1='orbita-prospeccao-v1',CHAVE_RESERVA='orbita-prospeccao-v3-reserva';
-let banco=null,modo='memoria',fila=null,pendente=false,ultimoErro=null,aoErro=()=>{};
+let banco=null,modo='memoria',fila=null,pendente=false,ultimoErro=null,aoErro=()=>{},acordarFila=null;
 const promessa=req=>new Promise((ok,erro)=>{req.onsuccess=()=>ok(req.result);req.onerror=()=>erro(req.error);});
 function abrir(){return new Promise((ok,erro)=>{if(!globalThis.indexedDB)return erro(Error('IndexedDB indisponível'));const r=indexedDB.open(NOME,1);r.onupgradeneeded=()=>{const d=r.result;for(const s of ['colecoes','meta','legado'])d.createObjectStore(s);d.createObjectStore('backups',{keyPath:'id'});};r.onsuccess=()=>ok(r.result);r.onerror=()=>erro(r.error);r.onblocked=()=>erro(Error('Banco bloqueado por outra aba.'));});}
 const tx=(lojas,tipo='readonly')=>banco.transaction(lojas,tipo);
@@ -52,10 +52,10 @@ export async function carregarEstado(){
  return {estado,avisos,modo,migracao};
 }
 export function aoFalhar(fn){aoErro=fn;}
-export function salvarEstado(estado){
+export function salvarEstado(estado,{imediato=false}={}){
  if(modo==='memoria')return Promise.resolve();
- pendente=true;if(fila)return fila;
- fila=(async()=>{await new Promise(r=>setTimeout(r,120));
+ pendente=true;if(fila){if(imediato)acordarFila?.();return fila;}
+ fila=(async()=>{await new Promise(r=>{if(imediato)return r();const timer=setTimeout(()=>{acordarFila=null;r();},120);acordarFila=()=>{clearTimeout(timer);acordarFila=null;r();};});
   while(pendente){pendente=false;try{if(modo==='idb')await gravarTudo(estado);else localStorage.setItem(CHAVE_RESERVA,JSON.stringify(estado));ultimoErro=null;}catch(erro){ultimoErro=erro;aoErro(erro);}}
   fila=null;})();
  return fila;
