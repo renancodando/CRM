@@ -2,7 +2,9 @@ import {eventosDaEmpresa} from './esquema.js';
 // Pesquisa externa é uma avaliação de oportunidade, não uma resposta, consentimento ou intenção de compra.
 export function lerPontuacaoPesquisa(empresa){
  const t=String(empresa.potencial||'');const p=t.match(/\bpotencial\s+(\d{1,3}(?:[.,]\d+)?)\s*\/\s*100/i),e=t.match(/\bevidência\s+(\d{1,3}(?:[.,]\d+)?)\s*\/\s*100/i),g=t.match(/\b(?:grupo|prioridade)\s+([ABC])\b/i);
- if(!p||!e||!g)return null;
+ if(!g)return null;
+ // Classificações de grupo sem avaliação numérica preservam o grupo sem inventar notas.
+ if(!p||!e)return {grupo:g[1].toUpperCase(),potencial:null,evidencia:null,fonte:'Grupo informado sem escores'};
  const potencial=Number(p[1].replace(',','.')),evidencia=Number(e[1].replace(',','.'));if(!Number.isFinite(potencial)||!Number.isFinite(evidencia)||potencial<0||potencial>100||evidencia<0||evidencia>100)return null;
  return {grupo:g[1].toUpperCase(),potencial,evidencia,fonte:'Pesquisa de prospecção'};
 }
