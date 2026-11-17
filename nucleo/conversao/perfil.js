@@ -101,7 +101,7 @@ export function analisarEmpresa(estado,empresa,{agora=Date.now()}={}){
  fato('Nome usado na conversa',loja,'ficha');fato('Cidade',cidade,'ficha');fato('Serviços',servicos.join(', '),'ficha');fato('Diferenciais',diferenciais.join('; '),'ficha');
  fato('Avaliações públicas',avaliacoes?`${avaliacoes.qtd} avaliações${notaTxt?', nota '+notaTxt:''}`:'',avaliacoes?.origem);fato('Instagram',ig?'@'+ig:'','ficha (perfil público, não verificado agora)');
  fato('Situação do site',site.id==='desconhecido'?'':site.rotulo,site.origem);fato('Responsável',empresa.contatoDireto==='sim'?(empresa.contato||'contato direto confirmado'):'',empresa.contato?'ficha':'');
- if(pesquisa)fatos.push({rotulo:'Pesquisa de prospecção',valor:`grupo ${pesquisa.grupo} · potencial ${pesquisa.potencial}/100 · evidência ${pesquisa.evidencia}/100`,origem:'pesquisa (não é probabilidade de compra)'});
+ if(pesquisa)fatos.push({rotulo:'Pesquisa de prospecção',valor:pesquisa.potencial==null||pesquisa.evidencia==null?`grupo ${pesquisa.grupo} · escores não informados`:`grupo ${pesquisa.grupo} · potencial ${pesquisa.potencial}/100 · evidência ${pesquisa.evidencia}/100`,origem:'pesquisa (não é probabilidade de compra)'});
  const hipoteses=[];
  if(site.id==='sem-site'||site.id==='so-redes')hipoteses.push('Pode existir um site que não foi encontrado: por isso as mensagens dizem "não achei", nunca "vocês não têm".');
  if(ig&&!f.instagramAtivo)hipoteses.push('O perfil do Instagram consta na ficha, mas a atividade recente não foi verificada.');
