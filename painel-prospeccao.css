@@ -1,0 +1,129 @@
+/* Somente o novo painel da Visão Geral; demais componentes do Órbita intocados. */
+#painel-prospeccao{--pr-borda:#a2c3df46;--pr-texto:#eff5fc;--pr-suave:#aebfd3;position:relative;isolation:isolate;padding:24px;border:1px solid #8cb6d56b;border-radius:26px;background:linear-gradient(139deg,#111d2bec,#07131fec 47%,#111e2de9);box-shadow:inset 0 1px 0 #e2f6ff36,0 18px 45px #0007,0 0 38px #3a8ead0c;color:var(--pr-texto);margin:0 0 16px;min-width:0;overflow:hidden}
+#painel-prospeccao *{box-sizing:border-box}
+#painel-prospeccao:before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,#f0b27c,#61c8cc 55%,#81b7ef);opacity:.85;z-index:-1}
+#painel-prospeccao:after{content:"";position:absolute;z-index:-1;width:280px;height:230px;right:-155px;top:-130px;border-radius:50%;background:#cc864b18;filter:blur(38px);pointer-events:none}
+#painel-prospeccao .pr-cabecalho,#painel-prospeccao .pr-titulo{display:flex;align-items:center;gap:13px;min-width:0}
+#painel-prospeccao .pr-cabecalho{justify-content:space-between;margin-bottom:20px}
+#painel-prospeccao .pr-titulo h2{font-size:clamp(18px,1.65vw,25px);font-weight:650;line-height:1.2;letter-spacing:-.35px;margin:0}
+#painel-prospeccao .pr-titulo p{font-size:12px;color:var(--pr-suave);margin:5px 0 0}
+#painel-prospeccao .pr-icone{display:grid;place-items:center;width:45px;height:45px;flex-shrink:0;border-radius:13px;border:1px solid #e6a66b80;background:linear-gradient(140deg,#bd87533a,#1e2b3b72);box-shadow:inset 0 1px 0 #fff4,0 0 16px #eea76b23;color:#f5b97d}
+#painel-prospeccao .pr-icone>.icone{width:24px;height:24px}
+#painel-prospeccao .pr-ver{display:inline-flex;gap:9px;align-items:center;justify-content:center;color:#b9d9ef;border:1px solid #8cb7dc77;border-radius:11px;background:#7299c012;min-height:38px;padding:8px 12px;white-space:nowrap;font-size:11px}
+#painel-prospeccao .pr-ver:hover,#painel-prospeccao .pr-link:hover{color:#f8b881;border-color:#f8b8817c}
+#painel-prospeccao .pr-ver .icone{width:15px;height:15px}
+#painel-prospeccao .pr-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:15px}
+#painel-prospeccao .pr-kpi{min-width:0;min-height:127px;display:flex;flex-direction:column;gap:7px;padding:17px;border:1px solid #8db4da6b;border-radius:16px;background:linear-gradient(139deg,#253a4d80,#111b2bd9 70%);box-shadow:inset 0 1px 0 #f1faff12,0 10px 19px #0002;overflow:hidden;position:relative}
+#painel-prospeccao .pr-kpi:after{content:"";position:absolute;inset:auto 0 0;height:2px;background:var(--pr-acento);opacity:.65;box-shadow:0 0 11px var(--pr-acento)}
+#painel-prospeccao .pr-kpi.pr-cobre{--pr-acento:#f2aa6d;border-color:#d9a06d77}
+#painel-prospeccao .pr-kpi.pr-turquesa{--pr-acento:#50d5c3;border-color:#57bcb37c}
+#painel-prospeccao .pr-kpi.pr-azul{--pr-acento:#7abfff;border-color:#609dd188}
+#painel-prospeccao .pr-kpi.pr-neutro{--pr-acento:#cadbf2;border-color:#8cb7d188}
+#painel-prospeccao .pr-kpi-titulo{display:flex;gap:8px;align-items:center;color:#d3e1ef;font-size:12px;white-space:normal}
+#painel-prospeccao .pr-kpi-titulo .icone{width:19px;height:19px;flex-shrink:0;color:var(--pr-acento)}
+#painel-prospeccao .pr-kpi>strong{font-size:clamp(24px,3vw,33px);line-height:1.1;font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:-.6px}
+#painel-prospeccao .pr-kpi-variacao{display:block;font-size:10px;color:#b2c7d7;line-height:1.5}
+#painel-prospeccao .pr-kpi-variacao.pr-alta{color:#80e8b2}
+#painel-prospeccao .pr-kpi-variacao.pr-queda{color:#f0ad91}
+#painel-prospeccao .pr-meta{display:grid;grid-template-columns:100px minmax(0,1fr) minmax(170px,.57fr);align-items:center;gap:23px;border:1px solid #7598b077;border-radius:17px;background:linear-gradient(120deg,#20314080,#0a1d2b8c,#26303d83);padding:19px;margin-bottom:16px}
+#painel-prospeccao .pr-anel{width:97px;aspect-ratio:1;border-radius:50%;padding:9px;background:conic-gradient(#58d2c1 0%,#ecad70 var(--pr-porcentagem),#2a4454 var(--pr-porcentagem),#2a4454 100%);box-shadow:0 0 22px #eaa76b18;display:grid;place-items:center}
+#painel-prospeccao .pr-anel>span{display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%;height:100%;border-radius:50%;background:#0e1e2b;text-align:center}
+#painel-prospeccao .pr-anel strong{font-size:22px;letter-spacing:-.7px}
+#painel-prospeccao .pr-anel small{font-size:9px;color:var(--pr-suave)}
+#painel-prospeccao .pr-meta-corpo{min-width:0}
+#painel-prospeccao .pr-meta-corpo h3{font-size:17px;margin:0 0 5px;font-weight:650}
+#painel-prospeccao .pr-meta-label{display:block;font-size:11px;color:var(--pr-suave);margin-bottom:5px}
+#painel-prospeccao .pr-meta-ajuste{display:flex;align-items:center;gap:8px}
+#painel-prospeccao .pr-meta-ajuste input{width:88px;max-width:100%;padding:6px 8px;min-height:34px;color:var(--pr-texto);border-radius:9px;background:#081b2a96;border:1px solid #76b6cb73;font-size:14px;font-variant-numeric:tabular-nums}
+#painel-prospeccao .pr-meta-ajuste span{font-size:11px;color:var(--pr-suave)}
+#painel-prospeccao .pr-progresso{height:8px;border-radius:20px;background:#0b2538;overflow:hidden;border:1px solid #82aec039;margin-top:10px}
+#painel-prospeccao .pr-progresso>span{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#45c6b7,#8de6db);box-shadow:0 0 12px #4fe0ce7d;transition:width .3s}
+#painel-prospeccao .pr-meta-corpo>p{font-size:10px;color:#c1d3df;margin-top:7px}
+#painel-prospeccao .pr-taxa{border-left:1px solid #8cbad046;padding:10px 0 10px 18px;min-width:0}
+#painel-prospeccao .pr-taxa>span{display:flex;align-items:center;gap:7px;font-size:12px;color:#d0dfeb}
+#painel-prospeccao .pr-taxa .icone{width:20px;height:20px;color:#f4b37c}
+#painel-prospeccao .pr-taxa>strong{display:block;font-size:28px;font-weight:700;margin:6px 0}
+#painel-prospeccao .pr-taxa>small{font-size:10px;line-height:1.5;color:var(--pr-suave);display:block}
+#painel-prospeccao .pr-grade{display:grid;grid-template-columns:minmax(250px,.96fr) minmax(0,1.04fr);gap:15px;margin-bottom:15px}
+#painel-prospeccao .pr-card{min-width:0;border:1px solid #83a6c072;border-radius:17px;background:linear-gradient(135deg,#172a3aab,#0c1b29e0);padding:17px;box-shadow:inset 0 1px 0 #d5e5fa16}
+#painel-prospeccao .pr-card>header{display:flex;align-items:center;gap:9px;min-width:0;margin-bottom:12px}
+#painel-prospeccao .pr-card>header>.icone{width:24px;height:24px;flex-shrink:0;color:#eeb17c}
+#painel-prospeccao .pr-card>header>span{min-width:0;flex:1}
+#painel-prospeccao .pr-card h3{font-size:16px;font-weight:630;line-height:1.2;margin:0 0 3px}
+#painel-prospeccao .pr-card header p{font-size:10px;color:var(--pr-suave);line-height:1.4}
+#painel-prospeccao .pr-coluna{display:grid;gap:14px;min-width:0;align-content:start}
+#painel-prospeccao .pr-link{display:inline-flex;align-items:center;justify-content:flex-end;gap:5px;font-size:10px;color:#a9cdea;background:transparent;white-space:nowrap;min-height:35px;padding:4px}
+#painel-prospeccao .pr-link>.icone{width:13px;height:13px}
+#painel-prospeccao .pr-funil-etapas{display:flex;flex-direction:column;gap:4px;align-items:center;margin-top:13px}
+#painel-prospeccao .pr-funil-etapa{width:var(--pr-largura);display:flex;align-items:center;gap:8px;min-height:37px;padding:8px 15px;color:#e4f1fd;text-align:left;clip-path:polygon(0 0,100% 0,96% 100%,4% 100%);background:linear-gradient(100deg,#155c64bf,#124450ba 60%,#176b74ad);border:1px solid #75d4d399;transition:filter .2s,transform .2s}
+#painel-prospeccao .pr-funil-etapa:hover{filter:brightness(1.25);transform:translateY(-1px)}
+#painel-prospeccao .pr-funil-etapa .icone{width:15px;height:15px;flex-shrink:0}
+#painel-prospeccao .pr-funil-etapa span{min-width:0;flex:1;font-size:11px;overflow-wrap:anywhere}
+#painel-prospeccao .pr-funil-etapa strong{font-size:13px;flex-shrink:0;font-variant-numeric:tabular-nums}
+#painel-prospeccao .pr-funil-mensagem,#painel-prospeccao .pr-funil-respondeu{background:linear-gradient(100deg,#194267d9,#172c55d6);border-color:#719de5aa}
+#painel-prospeccao .pr-funil-demonstracao,#painel-prospeccao .pr-funil-proposta{background:linear-gradient(100deg,#3e3162bb,#222a4dd6);border-color:#9ca5e377}
+#painel-prospeccao .pr-funil-negociacao{background:linear-gradient(100deg,#885035c7,#513523ce);border-color:#e9ad7b99}
+#painel-prospeccao .pr-funil-fechada{background:linear-gradient(100deg,#1d7954c9,#155c4ac4);border-color:#87e5ac8a}
+#painel-prospeccao .pr-acao,#painel-prospeccao .pr-oportunidade,#painel-prospeccao .pr-atividade{width:100%;display:flex;align-items:center;gap:9px;text-align:left;padding:11px 10px;border-radius:11px;border:1px solid #90b5d22c;background:#c4d8ed0a;color:var(--pr-texto);min-width:0;margin-top:6px}
+#painel-prospeccao .pr-acao:hover,#painel-prospeccao .pr-oportunidade:hover,#painel-prospeccao button.pr-atividade:hover{border-color:#82c9df91;background:#9bbcc519}
+#painel-prospeccao .pr-acao-ordem,#painel-prospeccao .pr-oportunidade-num{flex-shrink:0;font-size:11px;color:#ffc28b;min-width:22px;font-variant-numeric:tabular-nums}
+#painel-prospeccao .pr-oportunidade-num{border:1px solid #c98a5b7c;background:#97593824;padding:5px 4px;text-align:center;border-radius:7px}
+#painel-prospeccao .pr-acao-texto,#painel-prospeccao .pr-oportunidade-texto{min-width:0;flex:1}
+#painel-prospeccao .pr-acao-texto strong,#painel-prospeccao .pr-oportunidade-texto strong{display:block;font-size:11px;line-height:1.4;font-weight:650;overflow-wrap:anywhere}
+#painel-prospeccao .pr-acao-texto small,#painel-prospeccao .pr-oportunidade-texto small{display:block;margin-top:3px;color:var(--pr-suave);font-size:10px;line-height:1.35;overflow-wrap:anywhere}
+#painel-prospeccao .pr-acao>.icone,#painel-prospeccao .pr-oportunidade>.icone{width:15px;height:15px;flex-shrink:0;color:#95c2e0}
+#painel-prospeccao .pr-pontos{font-size:15px;color:#f5b581;flex-shrink:0;white-space:nowrap}
+#painel-prospeccao .pr-pontos small{font-size:9px;color:#bcc9d8}
+#painel-prospeccao .pr-lembretes{width:100%;display:flex;align-items:center;justify-content:space-between;gap:7px;min-height:40px;color:#b9d7ee;font-size:11px;border:1px solid #699cc65e;border-radius:10px;background:#4881aa1b;margin-top:9px;padding:8px 12px}
+#painel-prospeccao .pr-lembretes .icone{width:17px;height:17px}
+#painel-prospeccao .pr-vazio{font-size:11px;color:var(--pr-suave);padding:14px 0;line-height:1.5}
+#painel-prospeccao .pr-grafico{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;height:182px;margin-top:14px;align-items:end}
+#painel-prospeccao .pr-dia{display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;min-width:0}
+#painel-prospeccao .pr-dia>strong{font-size:10px;font-weight:550;font-variant-numeric:tabular-nums}
+#painel-prospeccao .pr-dia>small{font-size:10px;color:var(--pr-suave)}
+#painel-prospeccao .pr-barra-externa{width:100%;flex:1;display:flex;align-items:flex-end;justify-content:center;border-bottom:1px solid #9dbbd44a;background:repeating-linear-gradient(to top,#acc4d60c 0,#acc4d60c 1px,transparent 1px,transparent 23%)}
+#painel-prospeccao .pr-barra-externa>span{width:65%;max-width:39px;min-height:0;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#6de8dc,#168a9a);box-shadow:inset 0 1px 0 #d3ffff9c,0 0 14px #41d5cd55}
+#painel-prospeccao .pr-dia-futuro{opacity:.45}
+#painel-prospeccao .pr-atividades{margin-bottom:12px}
+#painel-prospeccao .pr-atividade{min-height:42px;gap:11px;justify-content:flex-start;margin-top:5px;padding:8px 11px}
+#painel-prospeccao .pr-atividade>.icone{width:17px;height:17px;color:#59d7bd;flex-shrink:0}
+#painel-prospeccao .pr-atividade>span{flex:1;min-width:0;overflow-wrap:anywhere;font-size:11px}
+#painel-prospeccao .pr-atividade time{font-size:10px;color:var(--pr-suave);flex-shrink:0;text-align:right}
+#painel-prospeccao .pr-observacao{font-size:10px;line-height:1.55;color:#9fb3c5;margin:0}
+@media(max-width:1100px){
+ #painel-prospeccao .pr-meta{grid-template-columns:85px minmax(0,1fr) minmax(135px,.7fr);gap:13px}
+ #painel-prospeccao .pr-anel{width:82px}
+ #painel-prospeccao .pr-grade{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+}
+@media(max-width:760px){
+ #painel-prospeccao{padding:17px 14px;border-radius:19px}
+ #painel-prospeccao .pr-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ #painel-prospeccao .pr-kpi{min-height:111px;padding:13px}
+ #painel-prospeccao .pr-kpi>strong{font-size:26px}
+ #painel-prospeccao .pr-cabecalho{gap:8px;align-items:flex-start}
+ #painel-prospeccao .pr-titulo h2{font-size:18px}
+ #painel-prospeccao .pr-titulo p{font-size:10px}
+ #painel-prospeccao .pr-icone{width:37px;height:37px}
+ #painel-prospeccao .pr-ver{font-size:10px;min-height:34px;padding:5px 7px;gap:4px}
+ #painel-prospeccao .pr-ver .icone{width:12px;height:12px}
+ #painel-prospeccao .pr-meta{grid-template-columns:75px minmax(0,1fr);gap:12px;padding:13px}
+ #painel-prospeccao .pr-anel{width:72px;padding:7px}
+ #painel-prospeccao .pr-anel strong{font-size:17px}
+ #painel-prospeccao .pr-meta-corpo h3{font-size:14px}
+ #painel-prospeccao .pr-taxa{grid-column:1/-1;border-left:0;border-top:1px solid #8cbad046;padding:12px 0 0}
+ #painel-prospeccao .pr-taxa>strong{font-size:24px}
+ #painel-prospeccao .pr-grade{grid-template-columns:1fr}
+ #painel-prospeccao .pr-card{padding:14px}
+ #painel-prospeccao .pr-card h3{font-size:15px}
+ #painel-prospeccao .pr-grafico{height:154px}
+}
+@media(max-width:380px){
+ #painel-prospeccao{padding:14px 11px}
+ #painel-prospeccao .pr-cabecalho{flex-wrap:wrap}
+ #painel-prospeccao .pr-ver{margin-left:auto}
+ #painel-prospeccao .pr-kpi{padding:11px}
+ #painel-prospeccao .pr-kpi-titulo{font-size:11px}
+ #painel-prospeccao .pr-kpi-variacao{font-size:9px}
+ #painel-prospeccao .pr-atividade{flex-wrap:wrap}
+ #painel-prospeccao .pr-atividade time{margin-left:auto}
+}
