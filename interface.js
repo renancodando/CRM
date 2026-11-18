@@ -5,6 +5,7 @@ import {criarModulos} from './modulos/indice.js';
 import {empresasParaCSV} from './nucleo/backup.js';
 import {pontuarEmpresa,lerPontuacaoPesquisa} from './nucleo/pontuacao.js';
 import {navegacao,paiDaRota,montarVisaoGeral} from './nucleo/flow.js';
+import {renderizarPainelProspeccao,obterMetaMensal,salvarMetaMensal} from './painel-prospeccao.js';
 import {icone} from './icones.js';
 import {textoSeguro as t,normalizar,moeda,baixarArquivo,dataLocal,dataHumana} from './utilitarios.js';
 import {montarModelo} from './modelos.js';
@@ -82,10 +83,7 @@ function atualizarVisao(){
  const v=montarVisaoGeral(estado,empresasDoPeriodo());
  document.querySelector('[data-total]').textContent=v.total;document.querySelector('[data-grupo-a]').textContent=v.grupos.A;document.querySelector('[data-negociacao]').textContent=v.negociacoes;document.querySelector('[data-valor]').textContent=moeda(v.recebido);
  const btn=document.querySelector('#acao-principal'),a=v.principal;delete btn.dataset.acao;delete btn.dataset.m;delete btn.dataset.id;if(a.m){btn.dataset.m=a.m;btn.dataset.id=a.id;}else btn.dataset.acao=a.acao;btn.querySelector('strong').textContent=a.titulo;btn.setAttribute('aria-label',a.titulo+' · '+a.descricao);
- const attrs=a=>a.m?`data-m="${t(a.m)}" data-id="${t(a.id)}"`:`data-acao="${t(a.acao)}"`;
- document.querySelector('#proximas-acoes').innerHTML=v.acoes.slice(0,3).map((a,i)=>`<button class="flow-linha" ${attrs(a)}><span class="flow-ordem">${String(i+1).padStart(2,'0')}</span><span class="flow-texto"><strong>${t(a.titulo)}</strong><small>${t(a.descricao)}</small></span>${icone('seta')}</button>`).join('');
- document.querySelector('#flow-lembretes').innerHTML=v.lembretes?`<button class="flow-link flow-lembrete" data-acao="lembretes">${icone('sino')} ${v.lembretes} lembrete(s) pendente(s)</button>`:'';
- document.querySelector('#flow-destaques').innerHTML=v.destaques.length?v.destaques.map(({empresa:e,p})=>`<button class="flow-linha flow-empresa" data-empresa="${t(e.id)}"><span class="flow-texto"><strong>${t(e.nome)}</strong><small>${t(e.cidade)}${p.pesquisa?' · Grupo '+t(p.pesquisa.grupo)+' · evidência '+p.pesquisa.evidencia+'/100':''}</small></span><span class="flow-pontos">${p.total}<small>pts</small></span>${icone('seta')}</button>`).join(''):'<p class="flow-vazio">Nenhuma nova oportunidade prioritária disponível. Consulte as empresas e o Radar.</p>';
+ renderizarPainelProspeccao(document.getElementById('painel-prospeccao'),estado,v);
  const total=v.contagens.reduce((s,c)=>s+c.quantidade,0);document.querySelector('#flow-barra').innerHTML=total?v.contagens.map((c,i)=>c.quantidade?`<i class="flow-cor-${i}" style="flex:${c.quantidade}"></i>`:'').join(''):'<i class="flow-barra-vazia"></i>';
  document.querySelector('#etapas-pipeline').innerHTML=v.contagens.map((c,i)=>`<div class="flow-etapa"><i class="flow-cor-${i}"></i><span><small>${t(c.nome)}</small><strong>${c.quantidade}</strong></span></div>`).join('');
  document.querySelector('.notificacoes b').hidden=estado.notificacoesLidas||!v.lembretes;
@@ -168,7 +166,7 @@ document.addEventListener('click',e=>{
  if(alvo.dataset.modelo)return abrirModelo(alvo.dataset.modelo);
  if(alvo.dataset.rascunho)return abrirMensagens('',alvo.dataset.rascunho);
 });
-document.addEventListener('change',e=>{if(e.target.dataset.checkboxLembrete)concluirLembrete(e.target.dataset.checkboxLembrete);});
+document.addEventListener('change',e=>{if(e.target.dataset.checkboxLembrete)concluirLembrete(e.target.dataset.checkboxLembrete);if(e.target.id==='pr-meta-valor'){if(salvarMetaMensal(e.target.value))atualizarVisao();else{e.target.value=obterMetaMensal();avisar('Informe uma meta entre 1 e 1.000.000.');}}});
 document.querySelector('#periodo').addEventListener('change',e=>{periodo=e.target.value;atualizarVisao();});document.querySelector('.fechar-painel').addEventListener('click',fecharPainel);painel.addEventListener('cancel',e=>{e.preventDefault();fecharPainel();});painel.addEventListener('click',e=>{if(e.target!==painel)return;const retangulo=painel.getBoundingClientRect();if(e.clientX<retangulo.left||e.clientX>retangulo.right||e.clientY<retangulo.top||e.clientY>retangulo.bottom)fecharPainel();});
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();abrirBusca();}if(e.key==='Escape')alternarMenu(false);});document.querySelector('#controle-movimento').addEventListener('click',()=>{estado.preferencias.movimento=!estado.preferencias.movimento;salvar();document.dispatchEvent(new CustomEvent('orbita:preferencias',{detail:estado.preferencias}));});
 document.querySelectorAll('.acao-orbital').forEach(alvo=>{alvo.addEventListener('pointerenter',()=>document.dispatchEvent(new CustomEvent('orbita:foco',{detail:alvo.classList.contains('prospectar')?'prospectar':alvo.classList.contains('negociar')?'negociar':'fechar'})));alvo.addEventListener('pointerleave',()=>document.dispatchEvent(new CustomEvent('orbita:foco',{detail:''})));alvo.addEventListener('focus',()=>document.dispatchEvent(new CustomEvent('orbita:foco',{detail:'prospectar'})));alvo.addEventListener('blur',()=>document.dispatchEvent(new CustomEvent('orbita:foco',{detail:''})));});
