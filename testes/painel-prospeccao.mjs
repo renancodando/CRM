@@ -26,7 +26,7 @@ const r=calcularAtividadeProspeccao(estado,agora);
 assert.equal(r.hoje,2,'duas mensagens confirmadas hoje');
 assert.equal(r.ontem,1);
 assert.equal(r.semana,3,'semana civil começa na segunda-feira');
-assert.equal(r.semanaAnterior,0);
+assert.equal(r.semanaAnterior,1,'o envio de 10/11 pertence à semana anterior');
 assert.equal(r.mes,5,'registros futuros não entram no mês atual');
 assert.equal(r.mesAnterior,0);
 assert.equal(r.total,6,'total histórico inclui evento futuro confirmado e exclui revertidos');

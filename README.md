@@ -113,3 +113,7 @@ NODE_PATH=$(npm root -g) node testes/responsividade.cjs   # painéis nos oito ta
 ```
 
 Os testes de navegador usam Playwright. Para publicar o Órbita em hospedagem estática, envie a raiz do repositório (sem build).
+
+### Ambiente inferior da Visão Geral
+
+A região abaixo da meta reúne água procedural interativa, ampulheta 3D com transferência de areia em três minutos, Foco da Semana ligado à prioridade real, fluxo comercial e gráfico de envios com exploração por dia e período. A parte superior e o globo original foram preservados. Consulte [funcionamento e manutenção](docs/AMBIENTE-IMERSIVO.md) e [validações executadas](docs/VALIDACAO-AMBIENTE.md).
