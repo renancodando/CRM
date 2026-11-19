@@ -4,7 +4,7 @@ import {carregarFontes, Fundo, PalcoProvider} from '../lib/base';
 import {Acabamento} from '../../componentes/Atmosfera';
 
 /** Envolve um corte: carrega fontes, define o palco e aplica grão/vinheta. */
-export const Montagem: React.FC<{fundo: Fundo; children: React.ReactNode; cor?: string; grao?: boolean}> = ({fundo, children, cor = '#050506', grao = true}) => {
+export const Montagem: React.FC<{fundo: Fundo; children: React.ReactNode; cor?: string; grao?: boolean; vinheta?: number}> = ({fundo, children, cor = '#050506', grao = true, vinheta = 0.12}) => {
 	const [h] = useState(() => delayRender('fontes v2'));
 	const [ok, setOk] = useState(false);
 	useEffect(() => {
@@ -17,7 +17,7 @@ export const Montagem: React.FC<{fundo: Fundo; children: React.ReactNode; cor?: 
 		<PalcoProvider value={fundo}>
 			<AbsoluteFill style={{background: cor}}>
 				{ok && children}
-				{grao && <Acabamento vinheta={fundo === 'preto' ? 0.4 : 0.16} />}
+				{grao && <Acabamento vinheta={vinheta} />}
 			</AbsoluteFill>
 		</PalcoProvider>
 	);
