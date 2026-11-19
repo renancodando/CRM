@@ -65,6 +65,38 @@ const H={
   try{const pg=registrarPagamento(estado,r.empresa,{propostaId:prop||'',valor:reais(op.valorCentavos),forma:op.forma||'',observacao:op.observacao||'',confirmado:true,quando:new Date(op.recebidoEm).toISOString()});pg.operacaoId=op.id;pg.origem=op.origem;}catch(x){return {erro:x.message};}return {mensagem:`Pagamento de R$ ${(op.valorCentavos/100).toFixed(2).replace('.',',')} registrado como informado pelo usuário (ainda não conciliado).`,empresa:r.empresa};},
  'custo.registrar':(estado,op)=>{let emp=null;if(op.empresaId||op.empresaRef){const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;emp=r.empresa;}estado.custos.push({id:novoId(),descricao:op.descricao,tipo:op.categoria||'outro',categoria:op.categoria||'',valor:reais(op.valorCentavos),quando:new Date(op.ocorreuEm).toISOString(),empresaId:emp?.id||'',formaPagamento:op.formaPagamento||'',origem:op.origem,operacaoId:op.id});return {mensagem:`Custo "${op.descricao}" registrado.`};},
  'sessao.registrar':(estado,op)=>{let emp=null;if(op.empresaId||op.empresaRef){const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;emp=r.empresa;}const fim=new Date(op.inicio?new Date(op.inicio).getTime()+op.duracaoMinutos*6e4:Date.now()),ini=new Date(fim.getTime()-op.duracaoMinutos*6e4);estado.sessoes.push({id:novoId(),empresaId:emp?.id||'',atividade:op.atividade,inicio:ini.toISOString(),fim:fim.toISOString(),duracaoMin:op.duracaoMinutos,manual:true,observacao:op.observacao||'',origem:op.origem,operacaoId:op.id});return {mensagem:`${(op.duracaoMinutos/60).toFixed(2).replace('.',',')} h registradas em ${op.atividade}.`};},
+ 'agenda.reorganizar_contatos':(estado,op)=>{
+  // A alteração em lote só é executada após aprovação explícita no Connect.
+  const retornos=op.retornos||[];
+  if(op.confirmadoPeloUsuario!==true||!Array.isArray(retornos)||retornos.length<1||retornos.length>10)
+   return {erro:'Informe de 1 a 10 retornos e confirme a reorganização da agenda.'};
+  const ids=new Set();
+  for(const r of retornos){
+   if(ids.has(r.empresaId))return {erro:'A lista de retornos contém empresa repetida.'};
+   ids.add(r.empresaId);
+   const empresa=estado.empresas.find(e=>e.id===r.empresaId);
+   if(!empresa)return {erro:'Empresa não encontrada: '+r.empresaId};
+   if(empresa.situacao!=='ativa'||empresa.etapa==='fechada')
+    return {erro:'Não é possível agendar empresa inativa ou fechada: '+empresa.nome};
+   if(!Number.isFinite(Date.parse(r.quando)))return {erro:'Data do retorno inválida.'};
+  }
+  const removidos=estado.lembretes.filter(l=>l.concluido!==true).length;
+  // Conservar registros concluídos, histórico de mensagens e todos os cadastros.
+  estado.lembretes=estado.lembretes.filter(l=>l.concluido===true);
+  for(const empresa of estado.empresas)empresa.retornoEm='';
+  for(const r of retornos){
+   const empresa=estado.empresas.find(e=>e.id===r.empresaId);
+   const quando=new Date(r.quando).toISOString();
+   empresa.retornoEm=quando;
+   empresa.proximaAcao=r.titulo;
+   empresa.rev=(empresa.rev||0)+1;
+   empresa.historico.push({quando:agora(),texto:'Retorno agendado manualmente para '+quando+'.'});
+   estado.lembretes.push({id:novoId(),titulo:r.titulo+' · '+empresa.nome,quando,empresa:empresa.id,concluido:false,origem:'agenda-manual',operacaoId:op.id});
+  }
+  estado.config.automacoes.retornoDemo=false;
+  estado.notificacoesLidas=false;
+  return {mensagem:'Agenda reorganizada: '+removidos+' lembrete(s) pendente(s) removido(s), '+retornos.length+' retorno(s) agendado(s). Aviso automático de 3 dias desativado.'};
+ },
  'tarefa.criar':(estado,op)=>{let emp=null;if(op.empresaId||op.empresaRef){const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;emp=r.empresa;}const id=novoId();estado.tarefas.push({id,titulo:op.titulo,descricao:op.descricao||'',empresaId:emp?.id||'',prazo:op.prazo||'',prazoSomenteData:op.prazoSomenteData||'',prioridade:op.prioridade||'media',categoria:op.categoria||'',duracaoH:op.duracaoHoras??null,dependeDe:op.dependeDe||[],estado:'aberta',criadaEm:agora(),origem:op.origem,operacaoId:op.id});
   const quando=op.prazo||(op.prazoSomenteData?new Date(op.prazoSomenteData+'T09:00:00').toISOString():'');if(quando){estado.lembretes.push({id:novoId(),titulo:op.titulo+(emp?' · '+emp.nome:''),quando,empresa:emp?.id||'',concluido:false,origem:'assistente',tarefaId:id,operacaoId:op.id});estado.notificacoesLidas=false;}return {mensagem:`Tarefa "${op.titulo}" criada${quando?' com lembrete no Órbita (não é uma notificação do ChatGPT)':' sem data'}.`};},
  'conversao.rascunho_mensagem':(estado,op)=>{const r=resolverEmpresa(estado,op);if(r.erro||r.revisao)return r;const a=auditarMensagem(op.texto,{primeiraMensagem:true});estado.rascunhos.push({id:novoId(),empresa:r.empresa.id,texto:op.texto,textoSugerido:op.texto,quando:agora(),criadoEm:agora(),tipo:'',variante:0,estrategia:op.abordagem||'',porque:op.porque||'',auditoria:a,origem:op.origem,operacaoId:op.id,estadoMensagem:'rascunho',historicoEstados:[{estado:'rascunho',quando:agora()}]});return {mensagem:'Rascunho salvo para sua revisão. Nada foi enviado e nenhuma mensagem foi registrada como enviada.'+(a.ok?'':' Atenção: a auditoria de linguagem encontrou problemas.'),empresa:r.empresa};},
