@@ -1,0 +1,81 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "orbita-connect/agenda.reorganizar_contatos.schema.json",
+ "title": "Limpar agenda de mensagens e manter apenas retornos escolhidos",
+ "type": "object",
+ "additionalProperties": false,
+ "properties": {
+  "protocolo": {
+   "type": "string",
+   "pattern": "^1\\.\\d+$"
+  },
+  "id": {
+   "type": "string",
+   "maxLength": 80
+  },
+  "tipo": {
+   "const": "agenda.reorganizar_contatos"
+  },
+  "origem": {
+   "type": "string",
+   "maxLength": 60
+  },
+  "criadaEm": {
+   "type": "string",
+   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:\\d{2})$"
+  },
+  "dependeDe": {
+   "type": "array",
+   "maxItems": 10,
+   "items": {
+    "type": "string",
+    "maxLength": 80
+   }
+  },
+  "contexto": {
+   "type": "object"
+  },
+  "comentario": {
+   "type": "string",
+   "maxLength": 500
+  },
+  "confirmadoPeloUsuario": {
+   "const": true
+  },
+  "retornos": {
+   "type": "array",
+   "maxItems": 10,
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "empresaId": {
+      "type": "string",
+      "maxLength": 80
+     },
+     "quando": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:\\d{2})$"
+     },
+     "titulo": {
+      "type": "string",
+      "maxLength": 160
+     }
+    },
+    "required": [
+     "empresaId",
+     "quando",
+     "titulo"
+    ]
+   }
+  }
+ },
+ "required": [
+  "protocolo",
+  "id",
+  "tipo",
+  "origem",
+  "criadaEm",
+  "confirmadoPeloUsuario"
+ ]
+}
