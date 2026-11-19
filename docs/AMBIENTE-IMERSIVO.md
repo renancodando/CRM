@@ -6,6 +6,7 @@ A experiência fica na **Visão Geral, abaixo da Meta de prospecção**. O globo
 
 - **Ampulheta:** objeto Three.js com vidro, aros metálicos e 5.200 ou 9.000 grãos. A transferência dura exatamente **180.000 ms**. A inversão ocupa mais 4.600 ms; então começa outra transferência de três minutos. A orientação da areia acompanha a gravidade durante o giro. As posições de saída e entrada dos ciclos coincidem, evitando um corte no reinício.
 - **Relógio:** começa quando o ambiente é visto pela primeira vez. Usa o tempo absoluto transcorrido, não soma quadros nem intervalos. Abas suspensas não atrasam o ciclo. Nenhuma ação comercial é disparada pela ampulheta.
+- **Cenário:** diorama central com relevo, cúpula e pedestal em uma camada própria, aplicada a uma malha com profundidade e shader. Os pinos representam empresas cadastradas em posições conceituais; não indicam coordenadas geográficas. As camadas de arte não contêm textos, controles ou dados comerciais.
 - **Água:** shader procedural com ondas em diferentes escalas, normais de superfície, reflexos de luz e dos objetos 3D. Mouse, clique e toque produzem perturbações amortecidas que se sobrepõem. Os painéis compartilham uma superfície contínua.
 - **Foco da Semana:** abre a prioridade que `montarVisaoGeral()` já calcula para o estado atual. Não cria metas, negócios ou compromissos.
 - **Ritmo de Prospecção:** semanas civis de segunda a domingo, semana anterior, mês atual, mês anterior e histórico completo. Conta somente eventos `mensagem-enviada` válidos, confirmados, não revertidos e até o instante atual. Hover, botões dos dias e controle de teclado mostram os valores exatos. A interpolação é monotônica e os efeitos de luz não alteram os pontos da série.
@@ -25,6 +26,8 @@ A composição inferior foi adaptada à estrutura aprovada do CRM. A referência
 | `ambiente/cena.js` | Renderizador compartilhado, luzes, reflexos, qualidade e interações |
 | `ambiente/ampulheta.js` | Vidro, peças metálicas e distribuição dos grãos |
 | `ambiente/agua.js` | Shader da superfície e perturbações |
+| `ambiente/observatorio.js` | Diorama em camadas, movimento da água interna e pinos das empresas |
+| `ativos/ambiente/` | Arte ambiental otimizada, sem elementos da interface |
 | `ambiente/foco.js` | Objeto central, materiais e suporte |
 | `ambiente/ritmo.js` | Gráfico SVG, transição de séries, tooltips e teclado |
 | `ambiente/ambiente.css` | Composição responsiva e microinterações, limitadas à área nova |
@@ -59,7 +62,7 @@ O relatório das verificações executadas está em `docs/VALIDACAO-AMBIENTE.md`
 
 ## Limites gráficos
 
-A areia é uma simulação visual de distribuição volumétrica orientada pela gravidade, com partículas de queda; não é um solucionador de colisões entre milhares de grãos. A água usa um campo procedural de ondas e reflexos renderizados, não dinâmica de fluidos volumétrica. Essas escolhas mantêm a experiência compatível com um CRM no navegador.
+A areia é uma simulação visual de distribuição volumétrica orientada pela gravidade, com partículas de queda; não é um solucionador de colisões entre milhares de grãos. A água usa um campo procedural de ondas e reflexos renderizados e materiais do cenário, não dinâmica de fluidos volumétrica. Essas escolhas mantêm a experiência compatível com um CRM no navegador.
 
 A taxa de quadros depende da GPU. Em renderizadores por software, a resolução dos efeitos é reduzida; textos e controles HTML mantêm a nitidez. Sem WebGL2, permanecem os controles, o gráfico, o relógio e uma representação CSS da ampulheta; a superfície WebGL fica indisponível. Com movimento reduzido ou ambiente pausado, a decoração fica estática e o relógio textual continua correto.
 

@@ -1,6 +1,6 @@
 # Validação do ambiente inferior
 
-Verificações executadas em 18/11/2026, com Chromium headless, Playwright e WebGL2 por SwiftShader no ambiente de desenvolvimento.
+Verificações iniciais em 18/11/2026 e revisão visual e funcional em 19/11/2026, com Chromium headless, Playwright e WebGL2 por SwiftShader no ambiente de desenvolvimento.
 
 ## Preservação da parte superior
 
@@ -34,6 +34,14 @@ As somas SHA-256 de `index.html`, `estilos.css`, `flow.css` e `universo.js` perm
 - Nenhum erro de JavaScript ou de compilação dos shaders observado nos fluxos executados.
 
 O teste de navegador reutilizável está em `testes/ambiente-ui.cjs`. Os dados de teste são descartáveis e locais ao navegador de validação.
+
+## Revisão da composição em 19/11/2026
+
+A composição inferior recebeu o diorama central, os painéis compactos nas proporções da referência, o Foco da Semana menor junto à água e arte própria para o relevo e o primeiro plano. O shader refrata a camada de água e continua processando perturbações de mouse e toque. A ampulheta e seus grãos continuam sendo geometria e partículas Three.js.
+
+A suíte `testes/ambiente-ui.cjs` foi executada na revisão e aprovou as oito larguras, os dados, a manutenção da instância gráfica, o toque, a pausa, a suspensão fora da tela e a auditoria WCAG da região nova. O teste agora usa rolagem instantânea para posicionar o ponteiro e espera o envio do toque aos uniformes WebGL, evitando depender de um atraso fixo de 250 ms.
+
+Foram corrigidos o transbordamento do conteúdo em 1024 px e a área clicável do Foco que avançava sobre o piso. Nenhum arquivo da região superior foi alterado.
 
 ## Limites da verificação
 

@@ -87,10 +87,12 @@ export function criarRitmo(alvo, {podeAnimar = () => true} = {}) {
   if (podeAnimar() && anterior.length) {inicio = performance.now(); quadro = requestAnimationFrame(transicionar);} else desenhar(pontos);
  }
  seletor.addEventListener('change', () => atualizar(estado), opcoes);
- svg.addEventListener('pointermove', e => {
+ const apontarDia = e => {
   const r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 720;
   mostrarDia(Math.round((x - limites.esquerda) / (limites.direita - limites.esquerda) * Math.max(0, serie.length - 1)));
- }, {...opcoes, passive: true});
+ };
+ svg.addEventListener('pointermove', apontarDia, {...opcoes, passive: true});
+ svg.addEventListener('pointerdown', apontarDia, {...opcoes, passive: true});
  svg.addEventListener('pointerleave', () => {if (!alvo.contains(document.activeElement)) retirarFoco();}, opcoes);
  botoes.addEventListener('click', e => {const b = e.target.closest('button'); if (b) mostrarDia(Number(b.dataset.dia), true);}, opcoes);
  botoes.addEventListener('focusin', e => {if (e.target.dataset.dia != null) mostrarDia(Number(e.target.dataset.dia), true);}, opcoes);

@@ -6,20 +6,23 @@ uniform vec2 resolucao;
 uniform float tempo;
 uniform float horizonte;
 uniform sampler2D reflexos;
+uniform sampler2D piso;
+uniform float pisoPronto;
 uniform vec3 foco;
 uniform vec3 ampulheta;
+uniform vec3 observatorio;
 uniform vec4 perturbacoes[12];
 uniform vec4 paineis[3];
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float ruido(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+1.),f.x),f.y);}
 float relevo(vec2 p){
- float h=sin(p.x*2.7+p.y*1.3-tempo*.55)*.045;
- h+=sin(p.x*-3.6+p.y*5.7+tempo*.69)*.028;
- h+=sin(p.x*9.4+p.y*3.1-tempo*.83)*.008;
- h+=(ruido(p*5.+vec2(tempo*.14,-tempo*.2))-.5)*.018;
- h+=(ruido(p*15.+vec2(-tempo*.08,tempo*.11))-.5)*.003;
- h+=sin(p.x*36.7+p.y*24.2+tempo*1.3)*.0018;
- h+=sin(p.x*-27.1+p.y*41.3-tempo*1.17)*.0013;
+ float irregular=ruido(p*.9+vec2(tempo*.026,-tempo*.019));
+ float detalhe=ruido(p*2.1+vec2(-tempo*.014,tempo*.021));
+ float h=sin(p.x*9.1+p.y*2.7+irregular*5.-tempo*.55)*.013;
+ h+=sin(p.x*-3.6+p.y*23.7+detalhe*4.3+tempo*.69)*.009;
+ h+=sin(p.x*31.4+p.y*17.1+irregular*9.-tempo*.83)*.0025;
+ h+=(ruido(p*18.+vec2(tempo*.14,-tempo*.2))-.5)*.004;
+ h+=(ruido(p*41.+vec2(-tempo*.08,tempo*.11))-.5)*.0012;
  for(int i=0;i<12;i++){
   vec4 onda=perturbacoes[i];float idade=tempo-onda.z;
   if(idade>=0.&&idade<5.5){
@@ -34,9 +37,10 @@ vec3 reflexoObjeto(vec3 objeto,vec2 uv,vec2 distorcao){
  float distancia=objeto.y-uv.y;
  if(distancia<0.)return vec3(0.);
  vec2 amostra=vec2(uv.x,objeto.y+distancia*.84)+distorcao;
- vec4 cor=texture2D(reflexos,amostra,1.5+distancia*12.);
+ float distanciaFisica=distancia*resolucao.y/max(1.,min(resolucao.x,1264.));
+ vec4 cor=texture2D(reflexos,amostra,1.5+distanciaFisica*12.);
  float recorte=1.-smoothstep(objeto.z*.75,objeto.z*1.3,abs(uv.x-objeto.x));
- return cor.rgb*cor.a*exp(-distancia*6.)*recorte*.68;
+ return cor.rgb*cor.a*exp(-distanciaFisica*10.)*recorte*.68;
 }
 void main(){
  vec2 uv=uvTela;float aspecto=resolucao.x/resolucao.y;
@@ -61,7 +65,7 @@ void main(){
  float verdeLateral=exp(-pow((uv.x-.12+normal.z*.08)/.11,2.))+exp(-pow((uv.x-.91+normal.z*.06)/.12,2.));
  cor+=vec3(.04,.12,.09)*verdeLateral*reflexoLuz*(.3+trilha*.7);
  vec2 distorcao=normal.xz*vec2(.019,.010)*(1.+profundidade);
- cor+=reflexoObjeto(foco,uv,distorcao)+reflexoObjeto(ampulheta,uv,distorcao*.7);
+ cor+=reflexoObjeto(foco,uv,distorcao)+reflexoObjeto(ampulheta,uv,distorcao*.7)+reflexoObjeto(observatorio,uv,distorcao)*.38;
  for(int i=0;i<3;i++){
   vec4 painel=paineis[i];float abaixo=painel.y-uv.y;
   float largura=1.-smoothstep(painel.z*.75,painel.z,abs(uv.x-painel.x+distorcao.x));
@@ -69,28 +73,38 @@ void main(){
  }
  float contato=exp(-pow((uv.y-foco.y)/.025,2.))*exp(-pow((uv.x-foco.x)/max(.025,foco.z*.7),2.));
  cor*=1.-contato*.62;
- float distanciaFoco=length(vec2((uv.x-foco.x)*aspecto,(uv.y-foco.y)*3.2));
+ float distanciaFoco=length(vec2(uv.x-foco.x,(uv.y-foco.y)*3.2*resolucao.y/resolucao.x));
  float circulos=pow(max(0.,sin(distanciaFoco*95.-tempo*.75)),18.)*exp(-distanciaFoco*5.5);
  cor+=vec3(.46,.30,.15)*circulos*.15*(1.-smoothstep(foco.y-.012,foco.y+.02,uv.y));
  float agua=(1.-smoothstep(horizonte-.07,horizonte+.02,uv.y));
- vec3 ambiente=vec3(.002,.011,.011)+vec3(.01,.042,.033)*exp(-length((uv-vec2(.52,.65))*vec2(1.5,1.))*.9);
+ vec3 ambiente=vec3(.0005,.003,.0025)+vec3(.002,.009,.007)*exp(-length((uv-vec2(.52,.65))*vec2(1.5,1.))*.9);
+ vec2 uvPiso=vec2(uv.x,uv.y*resolucao.y/(resolucao.x/3.));
+ vec4 fotoBase=texture2D(piso,clamp(uvPiso,vec2(0.),vec2(1.)));
+ float superficie=smoothstep(.10,.23,uv.x)*(1.-smoothstep(.77,.90,uv.x));
+ vec2 corrente=vec2(sin(p.y*7.-tempo*.18),sin(p.x*4.+tempo*.21))*.0005;
+ vec2 uvRefratada=uvPiso+(normal.xz*vec2(.0035,.002)+corrente)*superficie;
+ vec3 foto=texture2D(piso,clamp(uvRefratada,vec2(0.),vec2(1.))).rgb;
+ float campo=(1.-smoothstep(.70,1.,uvPiso.y))*pisoPronto;
  cor=mix(ambiente,cor,agua);
+ cor=mix(cor,foto+cor*.38,campo);
  cor*=mix(.55,1.,smoothstep(0.,.1,uv.x)*(1.-smoothstep(.9,1.,uv.x)));
  gl_FragColor=vec4(cor,1.);
  #include <tonemapping_fragment>
  #include <colorspace_fragment>
 }`;
 
-export function criarAgua(textura) {
+export function criarAgua(textura,aoCarregar=()=>{}) {
+ const reserva=new T.DataTexture(new Uint8Array([0,0,0,255]),1,1);reserva.needsUpdate=true;let texturaPiso=null;
  const perturbacoes=Array.from({length:12},()=>new T.Vector4(0,0,-100,0));
- const uniformes={resolucao:{value:new T.Vector2(1000,600)},tempo:{value:0},horizonte:{value:.82},reflexos:{value:textura},foco:{value:new T.Vector3(.5,.12,.14)},ampulheta:{value:new T.Vector3(.93,.43,.07)},perturbacoes:{value:perturbacoes},paineis:{value:Array.from({length:3},()=>new T.Vector4(0,0,0,0))}};
+ const uniformes={resolucao:{value:new T.Vector2(1000,600)},tempo:{value:0},horizonte:{value:.82},reflexos:{value:textura},piso:{value:reserva},pisoPronto:{value:0},foco:{value:new T.Vector3(.5,.12,.14)},ampulheta:{value:new T.Vector3(.93,.43,.07)},observatorio:{value:new T.Vector3(.5,.46,.25)},perturbacoes:{value:perturbacoes},paineis:{value:Array.from({length:3},()=>new T.Vector4(0,0,0,0))}};
  const material=new T.ShaderMaterial({uniforms:uniformes,vertexShader:'varying vec2 uvTela;void main(){uvTela=uv;gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:fragmento,depthWrite:false,depthTest:false});
  const cena=new T.Scene(),camera=new T.Camera();cena.add(new T.Mesh(new T.PlaneGeometry(2,2),material));
+ new T.TextureLoader().load(new URL('../ativos/ambiente/piso.webp',import.meta.url).href,t=>{t.colorSpace=T.SRGBColorSpace;texturaPiso=t;uniformes.piso.value=t;uniformes.pisoPronto.value=1;aoCarregar();});
  let proxima=0;
  function perturbar(x,y,forca,tempo) {
   const aspecto=uniformes.resolucao.value.x/uniformes.resolucao.value.y,profundidade=Math.max(.035,uniformes.horizonte.value-y);
   const px=(x-.5)*aspecto*4/(.24+profundidade),py=2.5/(.24+profundidade);
   perturbacoes[proxima].set(px,py,tempo,forca);proxima=(proxima+1)%perturbacoes.length;
  }
- return {cena,camera,uniformes,perturbar};
+ return {cena,camera,uniformes,perturbar,destruir(){reserva.dispose();texturaPiso?.dispose();}};
 }

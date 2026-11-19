@@ -15,8 +15,8 @@ export function raioDaAmpulheta(y) {
 export function criarAmpulheta({economica = false} = {}) {
  const conjunto = new T.Group(), movimento = new T.Group(); conjunto.add(movimento);
  const metal = new T.MeshStandardMaterial({color: '#a77b46', metalness: .95, roughness: .23});
- const escuro = new T.MeshStandardMaterial({color: '#18352d', metalness: .94, roughness: .2});
- const borda = new T.MeshStandardMaterial({color: '#d6b47b', metalness: .94, roughness: .17});
+ const escuro = new T.MeshStandardMaterial({color: '#18231e', metalness: .92, roughness: .24, envMapIntensity: .35});
+ const borda = new T.MeshStandardMaterial({color: '#c9b588', metalness: .96, roughness: .19, envMapIntensity: .65});
  const perfil = Array.from({length: 109}, (_, i) => {const y = -ALTURA + i / 108 * ALTURA * 2;return new T.Vector2(raioDaAmpulheta(y), y);});
  const vidro = new T.Mesh(new T.LatheGeometry(perfil, economica ? 40 : 64), new T.MeshPhysicalMaterial({color: '#f4fcf8', metalness: 0, roughness: .055, transmission: .82, thickness: .06, ior: 1.46, clearcoat: 1, clearcoatRoughness: .05, attenuationColor: '#9ec5b2', attenuationDistance: 7, transparent: true, opacity: .38, side: T.DoubleSide, depthWrite: false, envMapIntensity: 1.15}));
  vidro.material.onBeforeCompile = shader => {
@@ -27,8 +27,9 @@ export function criarAmpulheta({economica = false} = {}) {
  for (const sinal of [-1, 1]) {
   const tampa = new T.Group(); tampa.position.y = sinal * 1.94; movimento.add(tampa);
   for (const [r, h, y, material] of [[.57,.10,0,escuro],[.60,.035,sinal*.055,borda],[.52,.025,-sinal*.06,metal]]) {
-   const peca = new T.Mesh(new T.CylinderGeometry(r,r,h,64),material);peca.position.y = y;tampa.add(peca);
+   const peca = new T.Mesh(new T.CylinderGeometry(r,r,h,64,1,true),material);peca.position.y = y;tampa.add(peca);
   }
+  const labio=new T.Mesh(new T.RingGeometry(.43,.60,64),borda);labio.rotation.x=Math.PI/2;labio.position.y=sinal*.072;tampa.add(labio);
   const aro = new T.Mesh(new T.TorusGeometry(.575,.018,8,72),borda);aro.rotation.x = Math.PI/2;aro.position.y = sinal*.06;tampa.add(aro);
   const marcas=new T.InstancedMesh(new T.BoxGeometry(.012,.014,.028),metal,48),auxiliar=new T.Object3D();
   for(let i=0;i<48;i++){
@@ -36,6 +37,8 @@ export function criarAmpulheta({economica = false} = {}) {
   }
   tampa.add(marcas);
  }
+ const reflexo=new T.LineBasicMaterial({color:'#c7dacf',transparent:true,opacity:.3,depthWrite:false});
+ for(const lado of [-1,1]){const pontos=[];for(let i=0;i<=96;i++){const y=-1.9+i/96*3.8,r=raioDaAmpulheta(y);pontos.push(new T.Vector3(lado*r*.83,y,r*.566));}movimento.add(new T.Line(new T.BufferGeometry().setFromPoints(pontos),reflexo));}
  const quantidade = economica ? 5200 : 9000, candidatos = Math.ceil(quantidade * 1.45), superior = [], inferior = [];
  let semente = 1729;
  const aleatorio = () => {semente = (Math.imul(semente,1664525)+1013904223)>>>0;return semente/4294967296;};
@@ -57,13 +60,13 @@ export function criarAmpulheta({economica = false} = {}) {
  const posicoes = new Float32Array((quantidade+45)*3), sementes = new Float32Array(quantidade+45);
  for(let i=0;i<sementes.length;i++)sementes[i]=aleatorio();
  const geometria = new T.BufferGeometry();geometria.setAttribute('position',new T.BufferAttribute(posicoes,3).setUsage(T.DynamicDrawUsage));geometria.setAttribute('semente',new T.BufferAttribute(sementes,1));
- const material = new T.ShaderMaterial({transparent:true,depthWrite:true,uniforms:{escala:{value:45},brilho:{value:1},fluxo:{value:1}},vertexShader:`attribute float semente;varying float tom;varying float altura;uniform float escala;void main(){vec4 p=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*p;gl_PointSize=clamp(escala*(.75+semente*.65),1.1,4.8);tom=semente;altura=position.y;}`,fragmentShader:`precision highp float;varying float tom;varying float altura;uniform float brilho;void main(){vec2 p=gl_PointCoord*2.-1.;float r=dot(p,p);if(r>1.)discard;float luz=.43+.57*sqrt(1.-r);float centelha=pow(max(0.,1.-length(p-vec2(-.35,.4))),8.);vec3 areia=mix(vec3(.40,.22,.065),vec3(.98,.76,.40),tom*.55+.35);areia*=luz*brilho;areia+=vec3(1.,.87,.59)*centelha*.6;gl_FragColor=vec4(areia,smoothstep(1.,.6,r));}`});
+ const material = new T.ShaderMaterial({transparent:true,depthWrite:true,uniforms:{escala:{value:45},brilho:{value:1},fluxo:{value:1}},vertexShader:`attribute float semente;varying float tom;varying float altura;uniform float escala;void main(){vec4 p=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*p;gl_PointSize=clamp(escala*(.75+semente*.65),1.1,4.8);tom=semente;altura=position.y;}`,fragmentShader:`precision highp float;varying float tom;varying float altura;uniform float brilho;void main(){vec2 p=gl_PointCoord*2.-1.;float r=dot(p,p);if(r>1.)discard;float luz=.43+.57*sqrt(1.-r);float centelha=pow(max(0.,1.-length(p-vec2(-.35,.4))),8.);vec3 areia=mix(vec3(.40,.22,.065),vec3(.98,.76,.40),tom*.55+.35);areia*=luz*brilho;areia+=vec3(1.,.87,.59)*centelha*.6;gl_FragColor=vec4(areia,(1.-smoothstep(.6,1.,r)));}`});
  const graos = new T.Points(geometria,material);graos.frustumCulled=false;movimento.add(graos);
  const pos = new T.Vector3();
  let ultimaTransferencia=-1,ultimaParidade=-1;
  function atualizar(tempo,segundos,alturaEmPixels,dpr,reacao=0) {
   const angulos=orientarAmpulheta(tempo.virada,tempo.paridade);movimento.rotation.set(angulos.x,angulos.y,angulos.z);
-  material.uniforms.escala.value = alturaEmPixels/4.2*.026*dpr;
+  material.uniforms.escala.value = alturaEmPixels/4.2*.031*dpr;
   material.uniforms.brilho.value = 1.10 + Math.sin(segundos*1.2)*.025 + reacao*.15;
   const sinal = tempo.paridade ? -1:1;
   if(tempo.invertendo){

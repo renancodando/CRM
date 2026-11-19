@@ -10,11 +10,18 @@ export function montarAmbiente() {
    <section class="pr-resumo-cena" aria-label="Resumo comercial registrado">
     <div class="pr-marca-cena"><svg viewBox="0 0 70 60" aria-hidden="true"><ellipse cx="35" cy="30" rx="30" ry="15" transform="rotate(-38 35 30)"/><ellipse cx="35" cy="30" rx="24" ry="22" transform="rotate(-38 35 30)"/><circle cx="57" cy="11" r="2"/></svg><div><h3 data-pr-marca>Órbita</h3><p>Central de Prospecção Ativa</p></div></div>
     <div class="pr-medidas-cena">
-     <div>${icone('aviao')}<span><strong data-pr-enviadas>0</strong><small>Mensagens confirmadas</small></span></div>
-     <div>${icone('mensagem')}<span><strong data-pr-respostas>0</strong><small>Respostas registradas</small></span></div>
-     <div>${icone('acordo')}<span><strong data-pr-negociacoes>0</strong><small>Em negociação</small></span></div>
-     <div>${icone('verificado')}<span><strong data-pr-vendas>0</strong><small>Empresas na etapa fechada</small></span></div>
+     <div>${icone('aviao')}<span><strong data-pr-enviadas>0</strong><small>Mensagens enviadas</small></span></div>
+     <div>${icone('mensagem')}<span><strong data-pr-respostas>0</strong><small>Respostas recebidas</small></span></div>
+     <div>${icone('acordo')}<span><strong data-pr-negociacoes>0</strong><small>Negociações</small></span></div>
+     <div>${icone('verificado')}<span><strong data-pr-vendas>0</strong><small>Vendas fechadas</small></span></div>
     </div>
+   </section>
+   <section class="pr-diorama-cena" aria-label="Observatório de oportunidades">
+    <div class="pr-diorama-volume" aria-hidden="true"></div>
+    <button class="pr-marcador-radar pr-balao-mapa" data-acao="empresas">${icone('alvo')}<span><strong><b data-pr-radar>0</b> empresas</strong><small>no radar</small></span></button>
+    <button class="pr-marcador-negocio pr-balao-mapa" data-etapa="negociacao">${icone('brilho')}<span><strong><b data-pr-mapa-negociacao>0</b> em negociação</strong><small>Etapa atual</small></span></button>
+    <button class="pr-marcador-venda pr-balao-mapa" data-acao="hoje">${icone('verificado')}<span><strong><b data-pr-venda-semana>0</b> vendas</strong><small>nesta semana</small></span></button>
+    <span class="pr-rosa-ventos" aria-hidden="true">N</span>
    </section>
    <section class="pr-foco-cena" aria-labelledby="pr-titulo-foco">
     <div class="pr-suporte-foco" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -27,7 +34,7 @@ export function montarAmbiente() {
     <p class="pr-foco-origem">Prioridade atual do CRM</p>
    </section>
    <section class="pr-fluxo-cena" aria-labelledby="pr-titulo-fluxo">
-    <header>${icone('pipeline')}<div><h3 id="pr-titulo-fluxo">Fluxo Comercial</h3><p>Empresas na etapa atual</p></div></header>
+    <header>${icone('relogio')}<div><h3 id="pr-titulo-fluxo">Fluxo Comercial</h3><p>Empresas na etapa atual</p></div></header>
     <div class="pr-fluxo-objetos"><div class="pr-funil-vivo" data-pr-funil></div>
      <figure class="pr-ampulheta-cena">
       <div class="pr-ampulheta-volume" aria-hidden="true"><div class="pr-ampulheta-reserva"><i class="pr-vidro-superior"></i><i class="pr-vidro-inferior"></i><b></b><b></b><span></span></div></div>
@@ -91,6 +98,7 @@ export function criarAmbiente(alvo) {
   carregando = import('./cena.js').then(({criarCena}) => {
    if (destruido) return;
    cena = criarCena(alvo, {inicio, preferencias: estadoAtual?.preferencias || {}});
+   cena?.atualizarEmpresas(estadoAtual?.empresas||[]);
    alvo.classList.add(cena ? 'pr-com-webgl' : 'pr-sem-webgl');
    ajustarAtividade();
   }).catch(() => alvo.classList.add('pr-sem-webgl'));
@@ -132,6 +140,10 @@ export function criarAmbiente(alvo) {
    botao.setAttribute('aria-label', 'Foco da Semana: ' + foco.titulo + '. ' + foco.detalhe);
    alvo.querySelector('[data-pr-marca]').textContent = estado.preferencias?.marca || 'Órbita';
    const escrever = (chave, valor) => {alvo.querySelector(`[data-pr-${chave}]`).textContent = valor.toLocaleString('pt-BR');};
+   escrever('radar', (estado.empresas || []).length);
+   escrever('mapa-negociacao', atividade.contagens.find(e => e.id === 'negociacao')?.quantidade || 0);
+   const hoje=new Date(),inicioSemana=new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()-((hoje.getDay()+6)%7));
+   escrever('venda-semana',(estado.eventos||[]).filter(e=>!e.revertido&&e.tipo==='venda'&&new Date(e.quando)>=inicioSemana&&new Date(e.quando)<=hoje).length);
    escrever('enviadas', atividade.total); escrever('respostas', (estado.eventos || []).filter(e => !e.revertido && e.tipo === 'resposta' && new Date(e.quando) <= new Date()).length);
    escrever('negociacoes', atividade.contagens.find(e => e.id === 'negociacao')?.quantidade || 0);
    escrever('vendas', atividade.contagens.find(e => e.id === 'fechada')?.quantidade || 0);
@@ -159,7 +171,7 @@ export function criarAmbiente(alvo) {
     hora.textContent = new Date(evento.quando).toLocaleString('pt-BR', {day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'});
     lista.append(linha);
    }
-   ritmo.atualizar(estado); atualizarTempo(); ajustarAtividade();
+   ritmo.atualizar(estado); cena?.atualizarEmpresas(estado.empresas||[]); atualizarTempo(); ajustarAtividade();
   },
   destruir() {destruido = true; clearInterval(timer); observador.disconnect(); mutacoes.disconnect(); abortar.abort(); ritmo.destruir(); cena?.destruir();}
  };
