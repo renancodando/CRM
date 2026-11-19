@@ -56,6 +56,7 @@ Regras gerais
 | `venda.registrar` | sim | Venda contratada. **Não** registra pagamento. |
 | `pagamento.registrar` | sim | Pagamento informado pelo usuário (`valorCentavos`, `recebidoEm`). Não é conciliação. |
 | `custo.registrar` / `sessao.registrar` | não | Custos e horas de trabalho. |
+| `agenda.reorganizar_contatos` | **sim; revisão obrigatória** | Após sua aprovação, remove os lembretes pendentes, limpa as datas antigas de retorno e agenda somente os contatos selecionados. Preserva mensagens, históricos e lembretes concluídos. Desativa a sugestão de retorno após demonstração; a caixa de agendamento de 3 dias fica desmarcada por padrão. |
 | `tarefa.criar` / `tarefa.atualizar` | não | Tarefas/follow-ups; geram lembrete **dentro do Órbita** (não é notificação do ChatGPT). |
 | `conversao.rascunho_mensagem` | não | Salva um **rascunho** de mensagem para sua revisão (auditoria de linguagem anexada). Nunca envia e nunca registra mensagem enviada. |
 | `conversao.objecao_registrada` | não | Registra uma objeção do cliente (catálogo do Órbita Conversão). |
