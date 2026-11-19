@@ -79,6 +79,12 @@
    "sensivel": false,
    "esquema": "esquemas/sessao.registrar.schema.json"
   },
+  "agenda.reorganizar_contatos": {
+   "rotulo": "Limpar agenda de mensagens e manter apenas retornos escolhidos",
+   "categoria": "agenda",
+   "sensivel": true,
+   "esquema": "esquemas/agenda.reorganizar_contatos.schema.json"
+  },
   "tarefa.criar": {
    "rotulo": "Criar tarefa",
    "categoria": "tarefas",
