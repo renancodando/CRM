@@ -2,3 +2,6 @@ node_modules/
 .remotion/
 out/*.tmp*
 __pycache__/
+public/audio/v2/stems/
+public/audio/v2/*.wav
+out/v2/

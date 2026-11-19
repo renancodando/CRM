@@ -395,6 +395,8 @@ def gerar(idv):
     filtro = f"loudnorm=I=-14:TP=-1.5:LRA=11:measured_I={j['input_i']}:measured_TP={j['input_tp']}:measured_LRA={j['input_lra']}:measured_thresh={j['input_thresh']}:offset={j['target_offset']}:linear=true"
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", bruto, "-af", filtro, "-ar", str(SR), "-c:a", "pcm_s16le", os.path.join(SAIDA, f"mix-{idv}.wav")], check=True)
     os.remove(bruto)
+    wav = os.path.join(SAIDA, f"mix-{idv}.wav")
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", wav, os.path.join(SAIDA, f"mix-{idv}.flac")], check=True)
     print(f"{idv}: {dur:.1f}s")
 
 

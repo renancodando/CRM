@@ -53,7 +53,7 @@ export const Corte: React.FC<{id: IdCorte; audio?: boolean}> = ({id, audio = tru
 					</Plano>
 				))}
 				<Legendas falas={falas} y={1360} claro={r.fundo === 'marfim'} />
-				{audio && <Audio src={staticFile(`audio/v2/mix-${id}.wav`)} />}
+				{audio && <Audio src={staticFile(`audio/v2/mix-${id}.flac`)} />}
 			</PalcoProvider>
 		</Montagem>
 	);
