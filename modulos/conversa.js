@@ -74,7 +74,7 @@ export function criarConversa(ctx,reabrir){
  function htmlConfirmacao(e){
   const p=pendentes();if(!p.length)return '';const r=p[0];
   return `<div class="alerta-duplicidade" role="alertdialog" aria-label="Confirmar envio"><strong>Você enviou a mensagem?</strong> O WhatsApp foi aberto${r.contatoRotulo?' para '+t(r.contatoRotulo):''} (${t(r.numero||'')}). Só a sua confirmação registra o envio.<label class="campo largo"><span>Texto exatamente como foi enviado (edite se mudou no WhatsApp)</span><textarea id="cv-texto-enviado" rows="4" maxlength="4000">${t(r.texto)}</textarea></label>
-   <label><input type="checkbox" id="cv-agendar" checked> Agendar retorno em ${t(String(conv(estado()).config.follow.intervalosDias[0]))} dias se não houver resposta</label>${demoSel(e,true)}
+   <label><input type="checkbox" id="cv-agendar"> Agendar retorno em ${t(String(conv(estado()).config.follow.intervalosDias[0]))} dias se não houver resposta</label>${demoSel(e,true)}
    <div class="acoes-linha"><button type="button" class="botao-principal" data-m="conversao.confirmar-envio" data-id="${t(r.id)}">Sim, enviei</button><button type="button" data-m="conversao.cancelar-envio" data-id="${t(r.id)}">Não enviei (cancelar)</button><button type="button" data-m="conversao.manter-pendente">Decidir depois</button></div></div>`;
  }
  const demoSel=(e,confirmacao)=>{const demos=estado().demonstracoes.filter(d=>d.empresaId===e.id);if(!demos.length)return '';const d=demos.find(x=>x.id===L.demoId)||demos.find(x=>x.urlPublica)||demos[0];
