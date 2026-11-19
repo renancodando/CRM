@@ -14,7 +14,7 @@ export const configuracaoPadrao=()=>({
  pesos:{semSite:25,contatoDireto:20,resposta:15,interesse:20,demonstracao:20},
  publicacao:{automatica:false,rastreioAtivo:false,modoRastreio:'agregado'},
  comercial:{precoNormal:1230,precoPromocional:800,precoPix:600,parcelasMax:12,jurosParcelas:0,suporteDias:30,prazoEntregaDias:7,validadeDias:7,pagamento:'Pagamento único pelo desenvolvimento.',suporte:'Um mês de suporte e pequenas alterações.'},
- automacoes:{retornoDemo:true,negociacaoParada:true,propostaVencendo:true,proximaAcao:true,cadastroIncompleto:true,suporteVencendo:true,diasRetornoDemo:3,diasNegociacaoParada:7,diasPropostaAviso:2,diasSuporteAviso:7}
+ automacoes:{retornoDemo:false,negociacaoParada:true,propostaVencendo:true,proximaAcao:true,cadastroIncompleto:true,suporteVencendo:true,diasRetornoDemo:3,diasNegociacaoParada:7,diasPropostaAviso:2,diasSuporteAviso:7}
 });
 export const novoId=()=>(globalThis.crypto?.randomUUID?.()||'id-'+Date.now().toString(36)+Math.random().toString(36).slice(2,10));
 const lista=v=>Array.isArray(v)?v.map(x=>String(x).trim()).filter(Boolean):typeof v==='string'?v.split(/\n|;/).map(x=>x.trim()).filter(Boolean):[];
