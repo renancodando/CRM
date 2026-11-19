@@ -30,14 +30,14 @@ export const Fundo: React.FC<{luz?: number; foco?: {x: number; y: number}}> = ({
 };
 
 /** Grão de filme + vinheta, aplicados por cima de tudo */
-export const Acabamento: React.FC = () => {
+export const Acabamento: React.FC<{vinheta?: number}> = ({vinheta = 0.55}) => {
 	const t = useT();
 	const f = Math.floor(t * 30);
 	return (
 		<>
 			<AbsoluteFill
 				style={{
-					background: 'radial-gradient(ellipse 85% 75% at 50% 48%, transparent 55%, rgba(0,0,0,0.55) 100%)',
+					background: `radial-gradient(ellipse 85% 75% at 50% 48%, transparent 55%, rgba(0,0,0,${vinheta}) 100%)`,
 					pointerEvents: 'none',
 				}}
 			/>
