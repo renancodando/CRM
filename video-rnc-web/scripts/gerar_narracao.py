@@ -10,8 +10,9 @@ if os.path.exists(CA):
 import edge_tts
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CFG = json.load(open(os.path.join(RAIZ, "scripts", "narracao.json"), encoding="utf-8"))
-SAIDA = os.path.join(RAIZ, "public", "audio", "narracao")
+ALVO = os.environ.get("NARRACAO", "scripts/narracao.json")
+CFG = json.load(open(os.path.join(RAIZ, ALVO), encoding="utf-8"))
+SAIDA = os.path.join(RAIZ, "public", "audio", os.environ.get("NARRACAO_DIR", "narracao"))
 os.makedirs(SAIDA, exist_ok=True)
 
 async def gerar(fala):
@@ -33,7 +34,7 @@ async def main():
         i, d = await gerar(f)
         duracoes[i] = d
         print(f"{i}: {d:.2f}s  {f['texto']}")
-    json.dump(duracoes, open(os.path.join(RAIZ, "scripts", "narracao_duracoes.json"), "w"), indent=2)
+    json.dump(duracoes, open(os.path.join(SAIDA, "duracoes.json"), "w"), indent=2)
     print("total falado:", round(sum(duracoes.values()), 2))
 
 asyncio.run(main())

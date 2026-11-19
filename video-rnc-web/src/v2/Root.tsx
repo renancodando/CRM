@@ -3,16 +3,17 @@ import {AbsoluteFill, Composition} from 'remotion';
 import {Montagem} from './comp/Montagem';
 import {Plano, Fundo, useLocal} from './lib/base';
 import {SiteVao} from './sites/Vao';
-import {SiteNucleo} from './sites/Nucleo';
 import {SiteLustro} from './sites/Lustro';
-import {SiteAmbar} from './sites/Ambar';
+import {SiteBrasa} from './sites/Brasa';
+import {Corte, duracaoCorte, IdCorte} from './filme/Corte';
+import roteiros from './filme/roteiros.json';
+import {Capa} from './filme/Capa';
 
 const Site: React.FC<{site: string}> = ({site}) => {
 	const {t} = useLocal();
 	return <AbsoluteFill>{site === 'vao' && <SiteVao t={t} />}
-			{site === 'nucleo' && <SiteNucleo t={t} />}
 			{site === 'lustro' && <SiteLustro t={t} />}
-			{site === 'ambar' && <SiteAmbar t={t} />}</AbsoluteFill>;
+			{site === 'brasa' && <SiteBrasa t={t} />}</AbsoluteFill>;
 };
 
 const Teste: React.FC<{site: string; fundo: Fundo; dur: number}> = ({site, fundo, dur}) => (
@@ -28,8 +29,11 @@ const H = 1920;
 export const RootV2: React.FC = () => (
 	<>
 		<Composition id="S-vao" component={Teste} durationInFrames={210} fps={30} width={W} height={H} defaultProps={{site: 'vao', fundo: 'livre' as Fundo, dur: 7}} />
-		<Composition id="S-nucleo" component={Teste} durationInFrames={210} fps={30} width={W} height={H} defaultProps={{site: 'nucleo', fundo: 'livre' as Fundo, dur: 7}} />
 		<Composition id="S-lustro" component={Teste} durationInFrames={210} fps={30} width={W} height={H} defaultProps={{site: 'lustro', fundo: 'livre' as Fundo, dur: 7}} />
-		<Composition id="S-ambar" component={Teste} durationInFrames={180} fps={30} width={W} height={H} defaultProps={{site: 'ambar', fundo: 'livre' as Fundo, dur: 6}} />
+		<Composition id="S-brasa" component={Teste} durationInFrames={195} fps={30} width={W} height={H} defaultProps={{site: 'brasa', fundo: 'livre' as Fundo, dur: 6.5}} />
+		{(Object.keys(roteiros) as IdCorte[]).map((id) => (
+			<Composition key={id} id={`Filme-${id}`} component={Corte} durationInFrames={Math.round(duracaoCorte(id) * 30)} fps={30} width={W} height={H} defaultProps={{id, audio: false}} />
+		))}
+		<Composition id="Capa" component={Capa} durationInFrames={1} fps={30} width={W} height={H} />
 	</>
 );

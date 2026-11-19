@@ -1,0 +1,23 @@
+{
+  "voz": "pt-BR-AntonioNeural",
+  "velocidade": "+0%",
+  "tom": "-3Hz",
+  "falas": [
+    {"id": "a01", "texto": "Parece animação."},
+    {"id": "a02", "texto": "Mas é um site."},
+    {"id": "a03", "texto": "Um site pode mostrar o seu serviço acontecendo."},
+    {"id": "a04", "texto": "Pode apresentar o seu trabalho com elegância."},
+    {"id": "a05", "texto": "Pode provar a qualidade do que você faz."},
+    {"id": "a06", "texto": "E pode facilitar o próximo passo do cliente."},
+    {"id": "a07", "texto": "Mesmo negócio. Mesmas informações."},
+    {"id": "a08", "texto": "Outra impressão."},
+    {"id": "a09", "texto": "Até vinte de dezembro, o seu site sai de novecentos e sessenta e oito..."},
+    {"id": "a10", "texto": "por seiscentos reais."},
+    {"id": "a11", "texto": "Seu negócio merece uma presença digital à altura."},
+    {"id": "a12", "texto": "Peça sua demonstração pelo WhatsApp."},
+    {"id": "b01", "texto": "Sites sob medida para o seu negócio."},
+    {"id": "b02", "texto": "Serviços organizados. Contato a um toque."},
+    {"id": "b03", "texto": "Até vinte de dezembro: de novecentos e sessenta e oito por seiscentos reais."},
+    {"id": "c01", "texto": "Seu site profissional por seiscentos reais, até vinte de dezembro."}
+  ]
+}

@@ -9,7 +9,8 @@ import {metal} from '../lib/estilo';
  * Logotipo RNC WEB. Anima letra a letra a partir de `ini` (segundos).
  * brilho: 0..1 posição do reflexo metálico.
  */
-export const Logo: React.FC<{t: number; ini: number; tamanho: number; brilho?: number; reflexo?: boolean; linha?: number}> = ({
+export const Logo: React.FC<{t: number; ini: number; tamanho: number; brilho?: number; reflexo?: boolean; linha?: number; escuro?: boolean}> = ({
+	escuro = false,
 	t,
 	ini,
 	tamanho,
@@ -43,7 +44,7 @@ export const Logo: React.FC<{t: number; ini: number; tamanho: number; brilho?: n
 						opacity: Math.min(1, k * 1.3),
 						filter: `blur(${(1 - k) * 16}px)`,
 						transform: `perspective(800px) translateZ(${(1 - k) * -420}px) rotateY(${(1 - k) * 50}deg)`,
-						...metal(brilho - i * 0.03),
+						...metal(brilho - i * 0.03, escuro ? 0.6 : 1, escuro),
 					}}
 				>
 					{c}
@@ -68,7 +69,7 @@ export const Logo: React.FC<{t: number; ini: number; tamanho: number; brilho?: n
 					marginTop: tamanho * 0.16,
 					height: Math.max(2, tamanho * 0.012),
 					width: `${linhaK * 100}%`,
-					background: 'linear-gradient(90deg, transparent, rgba(220,224,230,0.9) 30%, #fff 50%, rgba(220,224,230,0.9) 70%, transparent)',
+					background: escuro ? 'linear-gradient(90deg, transparent, #2a2c30 30%, #000 50%, #2a2c30 70%, transparent)' : 'linear-gradient(90deg, transparent, rgba(220,224,230,0.9) 30%, #fff 50%, rgba(220,224,230,0.9) 70%, transparent)',
 					boxShadow: '0 0 12px rgba(255,255,255,0.45)',
 				}}
 			/>

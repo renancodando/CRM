@@ -13,12 +13,14 @@ export const COR = {
 };
 
 /** Texto metálico prateado com brilho deslizante. brilho: 0..1 posição do reflexo */
-export const metal = (brilho = -1, intensidade = 1): CSSProperties => {
+export const metal = (brilho = -1, intensidade = 1, escuro = false): CSSProperties => {
 	const pos = -40 + brilho * 180; // % do reflexo
 	return {
 		backgroundImage: [
 			`linear-gradient(105deg, transparent ${pos - 14}%, rgba(255,255,255,${0.95 * intensidade}) ${pos}%, transparent ${pos + 14}%)`,
-			'linear-gradient(180deg, #ffffff 0%, #eceef1 30%, #a9adb5 52%, #7d828b 58%, #d6d9de 78%, #f4f5f7 100%)',
+			escuro
+				? 'linear-gradient(180deg, #3d4046 0%, #1a1b1f 42%, #050506 52%, #4a4e55 60%, #16171a 82%, #2c2e33 100%)'
+				: 'linear-gradient(180deg, #ffffff 0%, #eceef1 30%, #a9adb5 52%, #7d828b 58%, #d6d9de 78%, #f4f5f7 100%)',
 		].join(','),
 		WebkitBackgroundClip: 'text',
 		backgroundClip: 'text',

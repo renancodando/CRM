@@ -10,63 +10,47 @@ export const OSSO = '#ECE6DA';
 export const NANQUIM = '#1E1D1A';
 const ARGILA = '#B4532A';
 const LINHA = 'rgba(30,29,26,0.85)';
-const hx = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
-/** interpola 3 cores ao longo de 0..1 */
-const mix = (cs: string[], k: number) => {
-	const seg = k < 0.5 ? 0 : 1;
-	const kk = k < 0.5 ? k * 2 : (k - 0.5) * 2;
-	const a = hx(cs[seg]);
-	const b = hx(cs[seg + 1]);
-	return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * kk)).join(',')})`;
-};
 
-/** "Fotografias" de arquitetura compostas em vetor (luz, volumes e sombra) */
-export const ImagemArq: React.FC<{v: number; w: number; h: number; zoom?: number; hora?: number}> = ({v, w, h, zoom = 1, hora = -1}) => {
-	const ceuHora = hora >= 0 ? `linear-gradient(180deg, ${mix(['#b9cbd6', '#e9d3b4', '#3c3346'], hora)} 0%, ${mix(['#e9ecea', '#f2e7d6', '#d98b5f'], hora)} 70%)` : null;
-	const ceu = ceuHora ?? ['linear-gradient(180deg,#e9d3b4 0%,#f2e7d6 60%,#efe5d6 100%)', 'linear-gradient(180deg,#cdd5d6 0%,#e9e6df 70%)', 'linear-gradient(180deg,#d9c3a8 0%,#efe1cf 75%)'][v % 3];
+
+/** Corte técnico (seção) desenhado em linha, com sol e sombra que mudam com a hora */
+export const Corte: React.FC<{k: number; hora: number}> = ({k, hora}) => {
+	const d = (i: number) => ({pathLength: 1, strokeDasharray: 1, strokeDashoffset: 1 - clamp(k * 1.7 - i * 0.12)});
+	const ang = lerp(18, 162, hora) * (Math.PI / 180);
+	const sx = 173 - Math.cos(ang) * 150;
+	const sy = 150 - Math.sin(ang) * 120;
+	const sombra = Math.max(0, Math.cos(ang)) * 60;
 	return (
-		<div style={{position: 'relative', width: w, height: h, overflow: 'hidden', background: ceu}}>
-			<div style={{position: 'absolute', inset: 0, transform: `scale(${zoom})`, transformOrigin: '60% 70%'}}>
-				{v % 3 === 0 && (
-					<>
-						<div style={{position: 'absolute', left: '-5%', right: '-5%', top: '72%', bottom: 0, background: '#d8ccb9'}} />
-						<div style={{position: 'absolute', left: '8%', width: '84%', top: '38%', height: '9%', background: '#f7f3ec', boxShadow: '0 1px 0 rgba(0,0,0,0.05)'}} />
-						<div style={{position: 'absolute', left: '12%', width: '76%', top: '47%', height: '25%', background: 'linear-gradient(90deg,#3e3a33,#26231f 60%,#4a453d)'}} />
-						<div style={{position: 'absolute', left: '30%', width: '22%', top: '49%', height: '23%', background: 'linear-gradient(180deg,#f5d9a8,#e8b978)', opacity: hora >= 0 ? 0.35 + Math.max(0, hora - 0.5) * 1.3 : 0.9, boxShadow: hora > 0.6 ? `0 0 ${30 * (hora - 0.6)}px rgba(245,200,130,0.8)` : 'none'}} />
-						{hora >= 0 && <div style={{position: 'absolute', left: `${8 + (1 - hora) * 10}%`, width: '84%', top: '72%', height: '10%', background: 'rgba(40,34,28,0.28)', transform: `skewX(${(hora - 0.5) * 70}deg)`, filter: 'blur(2px)'}} />}
-						{hora >= 0 && <div style={{position: 'absolute', left: `${10 + hora * 70}%`, top: `${30 - Math.sin(hora * Math.PI) * 22}%`, width: 18, height: 18, borderRadius: '50%', background: hora > 0.8 ? '#ffb27a' : '#fff6e0', boxShadow: '0 0 30px rgba(255,230,190,0.9)'}} />}
-						{[18, 60, 82].map((x) => (
-							<div key={x} style={{position: 'absolute', left: `${x}%`, width: '1.3%', top: '47%', height: '25%', background: '#ede6da'}} />
-						))}
-						<div style={{position: 'absolute', left: '-5%', right: '40%', top: '80%', height: '7%', background: 'linear-gradient(90deg,#7f9497,#a9b8b8)'}} />
-						<div style={{position: 'absolute', left: '64%', width: '24%', top: '18%', height: '24%', borderRadius: '50%', background: 'radial-gradient(circle at 40% 40%,#6f7558,#454a36)'}} />
-						<div style={{position: 'absolute', left: '75.5%', width: '1%', top: '38%', height: '10%', background: '#4a4436'}} />
-					</>
-				)}
-				{v % 3 === 1 && (
-					<>
-						<div style={{position: 'absolute', left: '-10%', right: '-10%', top: '62%', bottom: 0, background: '#b9b2a4', clipPath: 'polygon(0 30%,100% 0,100% 100%,0 100%)'}} />
-						<div style={{position: 'absolute', left: '22%', width: '70%', top: '30%', height: '18%', background: '#f4f1eb'}} />
-						<div style={{position: 'absolute', left: '26%', width: '62%', top: '35%', height: '9%', background: '#2b2e30'}} />
-						<div style={{position: 'absolute', left: '22%', width: '70%', top: '48%', height: '3%', background: 'rgba(0,0,0,0.25)', filter: 'blur(3px)'}} />
-						<div style={{position: 'absolute', left: '30%', width: '1.5%', top: '48%', height: '22%', background: '#e9e4da'}} />
-						<div style={{position: 'absolute', left: '10%', width: '30%', top: '52%', height: '20%', background: '#ded8cc'}} />
-					</>
-				)}
-				{v % 3 === 2 && (
-					<>
-						<div style={{position: 'absolute', left: 0, right: 0, top: '58%', height: '12%', background: 'linear-gradient(180deg,#8ea1a3,#b7c2bf)'}} />
-						<div style={{position: 'absolute', left: 0, right: 0, top: '70%', bottom: 0, background: '#e2d6c2'}} />
-						<div style={{position: 'absolute', left: '6%', width: '88%', top: '24%', height: '5%', background: '#f6f2ea'}} />
-						{[10, 26, 42, 58, 74, 89].map((x) => (
-							<div key={x} style={{position: 'absolute', left: `${x}%`, width: '1.6%', top: '29%', height: '45%', background: '#f1ece3', boxShadow: '4px 0 6px rgba(0,0,0,0.12)'}} />
-						))}
-						<div style={{position: 'absolute', left: '6%', width: '88%', top: '29%', height: '45%', background: 'linear-gradient(180deg,rgba(40,36,30,0.55),rgba(40,36,30,0.1))'}} />
-					</>
-				)}
-			</div>
-			<Grao opacidade={0.12} seed={v + 4} />
-		</div>
+		<svg width={346} height={238} viewBox="0 0 346 238" style={{display: 'block'}}>
+			{/* terreno */}
+			<path d="M0 196 H346" stroke={OSSO} strokeWidth={1.4} {...d(0)} />
+			{Array.from({length: 22}, (_, i) => (
+				<path key={i} d={`M${i * 16} 204 l8 -8`} stroke={OSSO} strokeOpacity={0.3} strokeWidth={0.6} opacity={clamp(k * 2 - 0.6)} />
+			))}
+			{/* volumes em corte (paredes cortadas em preenchimento) */}
+			<path d="M40 196 V120 H306 V196" fill="none" stroke={OSSO} strokeWidth={1.2} {...d(1)} />
+			<path d="M28 120 H318 V112 H28 Z" fill={OSSO} fillOpacity={0.9 * clamp(k * 2 - 0.5)} stroke="none" />
+			<path d="M70 112 V62 H250 V112" fill="none" stroke={OSSO} strokeWidth={1.2} {...d(2)} />
+			<path d="M60 62 H262 V56 H60 Z" fill={OSSO} fillOpacity={0.9 * clamp(k * 2 - 0.7)} />
+			{/* pátio (vazio central) */}
+			<path d="M140 196 V120 M196 196 V120" stroke={OSSO} strokeOpacity={0.5} strokeWidth={0.8} strokeDasharray="3 3" opacity={clamp(k * 2 - 0.8)} />
+			<text x={168} y={168} textAnchor="middle" fontFamily={F.mono} fontSize={7} fill={OSSO} opacity={clamp(k * 2 - 1)} letterSpacing={1}>PÁTIO</text>
+			{/* cotas */}
+			<g opacity={clamp(k * 2 - 1)} stroke={OSSO} strokeWidth={0.5} fill={OSSO} fontFamily={F.mono} fontSize={6.5}>
+				<path d="M330 196 V56 M326 196 H334 M326 120 H334 M326 56 H334" />
+				<text x={336} y={160} stroke="none" transform="rotate(90 336 160)">3,10</text>
+				<text x={336} y={86} stroke="none" transform="rotate(90 336 86)">2,80</text>
+			</g>
+			{/* luz do sol */}
+			<g opacity={clamp(k * 2 - 1)}>
+				<line x1={sx} y1={sy} x2={168} y2={150} stroke="#E7B36A" strokeWidth={0.8} strokeDasharray="2 3" />
+				<circle cx={sx} cy={sy} r={6} fill="#E7B36A" />
+				<path d={`M140 196 L${140 + sombra} 196 L${140 + sombra * 0.6} 120 L140 120 Z`} fill="#E7B36A" opacity={0.18} />
+			</g>
+			<g fontFamily={F.mono} fontSize={7} fill={OSSO} opacity={clamp(k * 2 - 1.1)} letterSpacing={1}>
+				<text x={8} y={226}>CORTE AA · ESC 1:200</text>
+				<text x={338} y={226} textAnchor="end">320 m² · 3 SUÍTES</text>
+			</g>
+		</svg>
 	);
 };
 
@@ -250,21 +234,16 @@ export const SiteVao: React.FC<{t: number; modo?: 'completo' | 'curto'}> = ({t, 
 								);
 							})}
 						</div>
-						{/* imagem do projeto em foco abre a partir da linha */}
+						{/* corte técnico do projeto em foco, com estudo de luz */}
 						{foco > 0 && (
-							<div style={{position: 'absolute', left: 22, right: 22, top: lerp(250, 262, foco), height: lerp(0, 238, foco), overflow: 'hidden', borderRadius: 2}}>
-								<ImagemArq v={0} w={346} h={238} zoom={lerp(1.18, 1.0, foco)} hora={hora} />
-								<div style={{position: 'absolute', left: 12, bottom: 10, display: 'flex', gap: 14, fontFamily: F.mono, fontSize: 8.5, color: '#fff', letterSpacing: 1, opacity: p(t, T.foco + 0.6, T.foco + 1.0)}}>
-									<span>320 m²</span>
-									<span>PÁTIO CENTRAL</span>
-									<span>VER PROJETO →</span>
-								</div>
+							<div style={{position: 'absolute', left: 22, right: 22, top: 262, height: lerp(0, 238, foco), overflow: 'hidden', borderTop: `1px solid rgba(236,230,218,0.25)`, background: NANQUIM}}>
+								<Corte k={p(t, T.foco + 0.2, T.foco + 1.2, ease.inOut)} hora={hora} />
 							</div>
 						)}
 						{foco > 0 && (
 							<div style={{position: 'absolute', left: 22, right: 22, top: 512, opacity: p(t, T.foco + 0.6, T.foco + 1.0), color: OSSO, fontFamily: F.mono, fontSize: 8.5, letterSpacing: 1}}>
 								<div style={{display: 'flex'}}>
-									<span>LUZ AO LONGO DO DIA</span>
+									<span>ESTUDO DE LUZ</span>
 									<span style={{marginLeft: 'auto'}}>{String(Math.round(lerp(6, 19, hora))).padStart(2, '0')}h</span>
 								</div>
 								<div style={{position: 'relative', height: 1, background: 'rgba(236,230,218,0.3)', marginTop: 10}}>
