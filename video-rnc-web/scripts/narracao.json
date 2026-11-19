@@ -1,0 +1,16 @@
+{
+  "voz": "pt-BR-AntonioNeural",
+  "velocidade": "+4%",
+  "tom": "-2Hz",
+  "falas": [
+    {"id": "n1", "texto": "Agora mesmo, alguém está procurando o que você oferece."},
+    {"id": "n2", "texto": "Vai encontrar você... ou o seu concorrente?"},
+    {"id": "n3", "texto": "Sua empresa merece ser vista."},
+    {"id": "n4", "texto": "Na RNC Web, criamos sites profissionais, com identidade única."},
+    {"id": "n5", "texto": "Cada projeto é desenhado do zero, para o seu negócio."},
+    {"id": "n6", "texto": "Perfeito no celular, com WhatsApp e localização a um toque."},
+    {"id": "n7", "texto": "E cabe no seu orçamento."},
+    {"id": "n8", "texto": "Sites a partir de seiscentos reais."},
+    {"id": "n9", "texto": "RNC Web. O próximo passo do seu negócio começa aqui."}
+  ]
+}

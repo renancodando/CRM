@@ -1,0 +1,36 @@
+{
+  "name": "rnc-web-comercial",
+  "version": "1.0.0",
+  "description": "Comercial cinematográfico RNC Web (Remotion)",
+  "scripts": {
+    "estudio": "remotion studio src/index.ts",
+    "narracao": "python3 scripts/gerar_narracao.py",
+    "trilha": "python3 scripts/gerar_trilha.py",
+    "audio": "npm run narracao && npm run trilha",
+    "render:vertical": "remotion render src/index.ts RNCWeb-9x16 out/bruto-9x16.mp4 && bash scripts/finalizar.sh out/bruto-9x16.mp4 out/rnc-web-comercial-9x16.mp4 && rm out/bruto-9x16.mp4",
+    "render:horizontal": "remotion render src/index.ts RNCWeb-16x9 out/bruto-16x9.mp4 && bash scripts/finalizar.sh out/bruto-16x9.mp4 out/rnc-web-comercial-16x9.mp4 && rm out/bruto-16x9.mp4",
+    "render": "npm run render:vertical && npm run render:horizontal",
+    "frame": "remotion still src/index.ts",
+    "tudo": "npm run audio && npm run render",
+    "verificar": "tsc",
+    "quadros": "node scripts/quadros.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.545",
+    "@remotion/fonts": "^4.0.545",
+    "@remotion/media-utils": "^4.0.545",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.545"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@remotion/bundler": "^4.0.545",
+    "@remotion/renderer": "^4.0.545",
+    "@types/react": "^18.3.12",
+    "typescript": "^5.6.3"
+  },
+  "private": true
+}
