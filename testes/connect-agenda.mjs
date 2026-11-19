@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {estadoInicial,normalizarEmpresa} from '../nucleo/esquema.js';
+import {processarOperacao,aprovarRevisao,politica} from '../nucleo/connect/motor.js';
+import {validarOperacao,esquemaJSON} from '../nucleo/connect/protocolo.js';
+
+const empresa=(id,nome,etapa='negociacao')=>normalizarEmpresa({id,nome,cidade:'Jaú - SP',etapa,situacao:'ativa',retornoEm:'2026-11-23T10:00:00-03:00'});
+const novo=()=>{const s=estadoInicial();s.config.connect.nivel=4;s.config.connect.sensiveisAuto={agenda:true};s.config.automacoes.retornoDemo=true;s.empresas=[empresa('gtech','Gtechservice'),empresa('mitech','Mi Tech Jaú'),empresa('ozzy','OzzyTech','mensagem'),empresa('outra','Loja antiga','mensagem')];s.lembretes=[{id:'antigo1',titulo:'Retomar conversa · Loja antiga',empresa:'outra',quando:'2026-11-19T10:00:00Z',concluido:false},{id:'antigo2',titulo:'Retomar conversa · Mi Tech',empresa:'mitech',quando:'2026-11-22T10:00:00Z',concluido:false},{id:'feito',titulo:'Enviado e concluído',empresa:'outra',quando:'2026-11-18T10:00:00Z',concluido:true}];return s;};
+const operacao={
+ protocolo:'1.0',id:'reorganizar-test',tipo:'agenda.reorganizar_contatos',origem:'chatgpt',criadaEm:'2026-11-19T14:47:00-03:00',confirmadoPeloUsuario:true,
+ retornos:[{empresaId:'gtech',quando:'2026-11-20T10:00:00-03:00',titulo:'Enviar mensagem de acompanhamento'},{empresaId:'mitech',quando:'2026-11-20T10:00:00-03:00',titulo:'Enviar mensagem de acompanhamento'},{empresaId:'ozzy',quando:'2026-11-21T10:00:00-03:00',titulo:'Retomar contato'}]
+};
+let n=0;
+function teste(nome,fn){fn();n++;console.log('✓ '+nome);}
+teste('Esquema de operação de agenda tem confirmação explícita',()=>{assert.equal(validarOperacao(operacao).ok,true);assert.equal(esquemaJSON(operacao.tipo).properties.confirmadoPeloUsuario.const,true);assert.equal(validarOperacao({...operacao,confirmadoPeloUsuario:false}).ok,false);});
+teste('A reorganização exige revisão mesmo no nível 4 com automação permitida',()=>{const s=novo();assert.equal(politica(operacao,s).decisao,'revisao');const antes=JSON.stringify(s.lembretes);const c=processarOperacao(s,operacao);assert.equal(c.estado,'aguardando-revisao');assert.equal(JSON.stringify(s.lembretes),antes);});
+teste('Após aprovação restam apenas três retornos ativos, e o histórico é preservado',()=>{const s=novo();const antes=JSON.stringify(s.empresas[0].historico);processarOperacao(s,operacao);const c=aprovarRevisao(s,operacao.id);assert.equal(c.estado,'aplicada');const ativos=s.lembretes.filter(l=>!l.concluido);assert.equal(ativos.length,3);assert.equal(s.lembretes.filter(l=>l.concluido).length,1);assert.equal(s.config.automacoes.retornoDemo,false);assert.equal(s.empresas.find(e=>e.id==='outra').retornoEm,'');assert.equal(ativos.filter(l=>l.empresa==='gtech').length,1);assert.equal(ativos.find(l=>l.empresa==='mitech').quando,new Date('2026-11-20T10:00:00-03:00').toISOString());assert.equal(ativos.find(l=>l.empresa==='ozzy').quando,new Date('2026-11-21T10:00:00-03:00').toISOString());assert.ok(s.empresas[0].historico.length>=JSON.parse(antes).length);const repetida=processarOperacao(s,operacao);assert.equal(repetida.repetida,true);assert.equal(s.lembretes.filter(l=>!l.concluido).length,3);});
+teste('Referência desconhecida rejeita operação de forma atômica',()=>{const s=novo(),before=JSON.stringify(s.lembretes);const op={...operacao,id:'agenda-invalida',retornos:[{empresaId:'inexistente',quando:'2026-11-21T10:00:00-03:00',titulo:'Contatar'}]};processarOperacao(s,op);const c=aprovarRevisao(s,op.id);assert.equal(c.estado,'rejeitada');assert.equal(JSON.stringify(s.lembretes),before);});
+console.log('Testes de agenda: '+n+' aprovados.');
