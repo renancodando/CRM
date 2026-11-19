@@ -20,6 +20,7 @@ export function politica(op,estado){
  const ov=cfg.permissoes?.[op.tipo];if(ov==='bloqueada')return {decisao:'bloqueada',motivo:'Esta operação foi bloqueada nas suas permissões.'};
  let sens=def.sensivel;if(op.tipo==='empresa.situacao'&&op.situacao==='ativa')sens=true;
  if(op.tipo==='reversao.solicitar')return {decisao:'revisao',motivo:'Reversões sempre exigem sua revisão.'};
+  if(op.tipo==='agenda.reorganizar_contatos')return {decisao:'revisao',motivo:'A limpeza de lembretes em lote sempre exige sua confirmação no Órbita.'};
  if(cfg.nivel===2)return {decisao:'revisao',motivo:'Nível 2 (sugestão): toda operação aguarda sua revisão.'};
  if(sens){if(cfg.nivel>=4&&cfg.sensiveisAuto?.[def.categoria]===true&&ov!=='revisao')return {decisao:'auto'};return {decisao:'revisao',motivo:'Operação sensível: exige sua revisão.'};}
  return ov==='revisao'?{decisao:'revisao',motivo:'Você exigiu revisão para esta operação.'}:{decisao:'auto'};
@@ -83,7 +84,7 @@ const H={
   const removidos=estado.lembretes.filter(l=>l.concluido!==true).length;
   // Conservar registros concluídos, histórico de mensagens e todos os cadastros.
   estado.lembretes=estado.lembretes.filter(l=>l.concluido===true);
-  for(const empresa of estado.empresas)empresa.retornoEm='';
+  for(const empresa of estado.empresas)if(empresa.retornoEm){empresa.retornoEm='';empresa.rev=(empresa.rev||0)+1;}
   for(const r of retornos){
    const empresa=estado.empresas.find(e=>e.id===r.empresaId);
    const quando=new Date(r.quando).toISOString();
