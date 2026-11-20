@@ -52,16 +52,20 @@ export const config = {
 	beneficios: ['Mais profissionalismo.', 'Mais confiança.', 'Mais facilidade para entrar em contato.'],
 
 	oferta: {
-		rotulo: 'Sites a partir de',
+		rotulo: 'Oferta de fim de ano',
+		produto: 'Site institucional ou landing page',
+		de: 'R$ 968',
 		moeda: 'R$',
 		valor: '600',
-		detalhe: 'Projeto personalizado  ·  Responsivo  ·  WhatsApp integrado',
+		validade: 'Válida até 20/12/2026',
+		detalhe: 'Design personalizado · Versão para celular · WhatsApp · Mapa e horários · SEO básico',
+		nota: 'Modalidade básica, com escopo definido em proposta. Recursos avançados têm orçamento à parte.',
 	},
 
 	encerramento: {
-		frase: ['O próximo passo', 'do seu negócio'],
-		fraseDestaque: 'começa aqui.',
-		cta: 'Solicite sua demonstração',
+		frase: ['Seu negócio merece', 'uma presença digital'],
+		fraseDestaque: 'à altura.',
+		cta: 'Peça sua demonstração pelo WhatsApp',
 		assinatura: 'Seu negócio merece uma presença digital profissional.',
 	},
 

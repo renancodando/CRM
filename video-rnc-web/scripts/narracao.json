@@ -1,16 +1,17 @@
 {
   "voz": "pt-BR-AntonioNeural",
-  "velocidade": "+4%",
+  "velocidade": "+3%",
   "tom": "-2Hz",
   "falas": [
     {"id": "n1", "texto": "Agora mesmo, alguém está procurando o que você oferece."},
     {"id": "n2", "texto": "Vai encontrar você... ou o seu concorrente?"},
     {"id": "n3", "texto": "Sua empresa merece ser vista."},
-    {"id": "n4", "texto": "Na RNC Web, criamos sites profissionais, com identidade única."},
-    {"id": "n5", "texto": "Cada projeto é desenhado do zero, para o seu negócio."},
+    {"id": "n4", "texto": "Sites profissionais, com a identidade do seu negócio."},
+    {"id": "n5", "texto": "Cada projeto é desenhado do zero. Nada de modelo pronto."},
     {"id": "n6", "texto": "Perfeito no celular, com WhatsApp e localização a um toque."},
-    {"id": "n7", "texto": "E cabe no seu orçamento."},
-    {"id": "n8", "texto": "Sites a partir de seiscentos reais."},
-    {"id": "n9", "texto": "RNC Web. O próximo passo do seu negócio começa aqui."}
+    {"id": "n7", "texto": "E com preço especial de fim de ano:"},
+    {"id": "n8", "texto": "de novecentos e sessenta e oito... por seiscentos reais."},
+    {"id": "n9", "texto": "Válido até vinte de dezembro."},
+    {"id": "n10", "texto": "Seu negócio merece uma presença digital à altura. Peça sua demonstração pelo WhatsApp."}
   ]
 }

@@ -4,7 +4,7 @@ import {config} from '../config';
 import {SANS, SERIF, MONO} from '../fonts';
 import {useT, useLayout, M, CENAS, p, ease, lerp} from '../lib/tempo';
 import {COR} from '../lib/estilo';
-import {Logo} from '../componentes/Logo';
+import {LogoRNC} from '../componentes/LogoRNC';
 import {Linha} from '../componentes/Texto';
 import {Cursor, IconeSeta, IconeWhats} from '../componentes/Icones';
 
@@ -17,8 +17,8 @@ export const Encerramento: React.FC = () => {
 	const C = config.contato;
 
 	const logoSobe = p(t, M.proximoPasso - 0.4, M.proximoPasso + 0.5, ease.inOut);
-	const logoY = V ? lerp(860, 470, logoSobe) : lerp(430, 190, logoSobe);
-	const logoTam = V ? lerp(170, 120, logoSobe) : lerp(180, 110, logoSobe);
+	const logoY = V ? lerp(700, 300, logoSobe) : lerp(300, 70, logoSobe);
+	const logoTam = V ? lerp(760, 520, logoSobe) : lerp(640, 420, logoSobe);
 	const brilho = p(t, M.encerramento + 0.2, M.encerramento + 1.2, ease.inOut);
 	const brilho0 = p(t, M.logoFinal + 0.5, M.logoFinal + 1.5, ease.inOut);
 
@@ -46,7 +46,7 @@ export const Encerramento: React.FC = () => {
 				}}
 			/>
 			<div style={{position: 'absolute', left: 0, right: 0, top: logoY, display: 'flex', justifyContent: 'center'}}>
-				<Logo t={t} ini={M.logoFinal} tamanho={logoTam} brilho={t > M.encerramento ? brilho : brilho0} reflexo={false} />
+				<LogoRNC t={t} ini={M.logoFinal} largura={logoTam} brilho={t > M.encerramento ? brilho : brilho0} />
 			</div>
 
 			{/* o próximo passo */}
@@ -123,7 +123,7 @@ export const Encerramento: React.FC = () => {
 						background: `linear-gradient(180deg, #ffffff, #dfe2e7)`,
 						color: '#0b0c0e',
 						fontFamily: SANS,
-						fontSize: V ? 46 : 38,
+						fontSize: V ? 40 : 34,
 						fontWeight: 600,
 						letterSpacing: '-0.02em',
 						boxShadow: `0 0 0 1px rgba(255,255,255,0.4), 0 20px 60px -10px rgba(255,255,255,${0.18 + pressionado * 0.2}), inset 0 -3px 0 rgba(0,0,0,0.12)`,

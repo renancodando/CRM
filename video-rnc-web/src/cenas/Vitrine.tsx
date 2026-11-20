@@ -6,9 +6,7 @@ import {useT, useLayout, M, CENAS, p, ease, lerp} from '../lib/tempo';
 import {COR} from '../lib/estilo';
 import {Navegador} from '../componentes/Molduras';
 import {Linha} from '../componentes/Texto';
-import {SiteCarCare} from '../sites/CarCare';
-import {SiteEmporio} from '../sites/Emporio';
-import {SitePrecisionDesktop} from '../sites/PrecisionCell';
+import {VaoDesktop, BrasaDesktop, LustroDesktop} from '../sites/novos/Desktop';
 
 export const PASSO = 34; // graus entre telas
 
@@ -22,9 +20,9 @@ export const geometriaVitrine = (W: number, H: number, V: boolean) => {
 };
 
 const SITES = [
-	{rotulo: 'Estética automotiva', marco: M.site1},
-	{rotulo: 'Empório & café', marco: M.site2},
-	{rotulo: 'Assistência técnica', marco: M.site3},
+	{rotulo: 'Arquitetura', marco: M.site1},
+	{rotulo: 'Restaurante', marco: M.site2},
+	{rotulo: 'Estética automotiva', marco: M.site3},
 ];
 
 export const Vitrine: React.FC = () => {
@@ -76,11 +74,11 @@ export const Vitrine: React.FC = () => {
 						const hover = p(t, local + 0.45, local + 0.7) * (1 - p(t, local + 1.3, local + 1.5));
 						const site =
 							i === 0 ? (
-								<SiteCarCare t={t} ini={local} rolagem={rolagem} hover={hover} />
+								<VaoDesktop t={t} ini={local} rolagem={rolagem} hover={hover} />
 							) : i === 1 ? (
-								<SiteEmporio t={t} ini={local} rolagem={rolagem} hover={hover} />
+								<BrasaDesktop t={t} ini={local} rolagem={rolagem} hover={hover} />
 							) : (
-								<SitePrecisionDesktop t={t} ini={local} rolagem={rolagem * 0} hover={hover} />
+								<LustroDesktop t={t} ini={local} rolagem={rolagem * 0} hover={hover} />
 							);
 						return (
 							<div

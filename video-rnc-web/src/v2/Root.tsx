@@ -8,6 +8,18 @@ import {SiteBrasa} from './sites/Brasa';
 import {Corte, duracaoCorte, IdCorte} from './filme/Corte';
 import roteiros from './filme/roteiros.json';
 import {Capa} from './filme/Capa';
+import {LogoRNC} from '../componentes/LogoRNC';
+import {useCurrentFrame} from 'remotion';
+const TesteLogo: React.FC = () => {
+	const f = useCurrentFrame();
+	return (
+		<Montagem fundo="preto" grao={false}>
+			<AbsoluteFill style={{background: f < 50 ? '#f8f7f7' : '#060607', alignItems: 'center', justifyContent: 'center'}}>
+				<LogoRNC t={f / 30} ini={0} largura={900} variante={f < 50 ? 'original' : 'escuro'} brilho={0.4} />
+			</AbsoluteFill>
+		</Montagem>
+	);
+};
 
 const Site: React.FC<{site: string}> = ({site}) => {
 	const {t} = useLocal();
@@ -34,6 +46,7 @@ export const RootV2: React.FC = () => (
 		{(Object.keys(roteiros) as IdCorte[]).map((id) => (
 			<Composition key={id} id={`Filme-${id}`} component={Corte} durationInFrames={Math.round(duracaoCorte(id) * 30)} fps={30} width={W} height={H} defaultProps={{id, audio: false}} />
 		))}
+		<Composition id="TesteLogo" component={TesteLogo} durationInFrames={100} fps={30} width={W} height={H} />
 		<Composition id="Capa" component={Capa} durationInFrames={1} fps={30} width={W} height={H} />
 	</>
 );

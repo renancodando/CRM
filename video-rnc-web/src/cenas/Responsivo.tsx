@@ -6,7 +6,7 @@ import {useT, useLayout, M, CENAS, p, ease, lerp, flutua} from '../lib/tempo';
 import {COR} from '../lib/estilo';
 import {Linha} from '../componentes/Texto';
 import {IconeCadeado} from '../componentes/Icones';
-import {SitePrecisionDesktop, SitePrecisionMobile, Mapa, VERDE_WHATS} from '../sites/PrecisionCell';
+import {LustroDesktop, LustroMobile, MapaEscuro, VERDE_WHATS, NOITE} from '../sites/novos/Desktop';
 import {geometriaVitrine} from './Vitrine';
 
 const BalaoMensagem: React.FC<{k: number}> = ({k}) => (
@@ -115,7 +115,7 @@ export const Responsivo: React.FC = () => {
 							WebkitBoxReflect: `below 30px linear-gradient(transparent 80%, rgba(255,255,255,${0.1 * (1 - m * 0.4)}))`,
 						}}
 					>
-						<div style={{width: telaW, height: telaH, borderRadius: Math.max(0, raio - borda), overflow: 'hidden', position: 'relative', background: '#f3f5fb'}}>
+						<div style={{width: telaW, height: telaH, borderRadius: Math.max(0, raio - borda), overflow: 'hidden', position: 'relative', background: NOITE}}>
 							{/* barra do navegador desktop */}
 							{barraNav > 0.5 && (
 								<div
@@ -138,7 +138,7 @@ export const Responsivo: React.FC = () => {
 							{/* desktop */}
 							{desk > 0 && (
 								<div style={{position: 'absolute', left: 0, top: barraNav, opacity: desk, width: 1440, height: 900, transform: `scale(${telaW / 1440})`, transformOrigin: '0 0'}}>
-									<SitePrecisionDesktop t={99} ini={0} />
+									<LustroDesktop t={99} ini={0} />
 								</div>
 							)}
 							{/* mobile */}
@@ -147,7 +147,7 @@ export const Responsivo: React.FC = () => {
 									<div
 										style={{
 											height: statusH,
-											background: '#fff',
+											background: NOITE,
 											display: 'flex',
 											alignItems: 'flex-end',
 											justifyContent: 'space-between',
@@ -155,19 +155,19 @@ export const Responsivo: React.FC = () => {
 											fontFamily: SANS,
 											fontWeight: 600,
 											fontSize: 15 * escMob,
-											color: '#091943',
+											color: '#e9ecef',
 											position: 'relative',
 											zIndex: 2,
 										}}
 									>
 										<span>10:24</span>
-										<div style={{position: 'absolute', left: '50%', top: 8, width: 12, height: 12, marginLeft: -6, borderRadius: '50%', background: '#0b0b0d'}} />
+										<div style={{position: 'absolute', left: '50%', top: 8, width: 12, height: 12, marginLeft: -6, borderRadius: '50%', background: '#000'}} />
 										<span style={{display: 'flex', gap: 4, alignItems: 'center'}}>
-											<span style={{width: 18, height: 10, borderRadius: 3, border: '1.5px solid #091943', display: 'inline-block'}} />
+											<span style={{width: 18, height: 10, borderRadius: 3, border: '1.5px solid #e9ecef', display: 'inline-block'}} />
 										</span>
 									</div>
 									<div style={{width: 390, transform: `scale(${escMob})`, transformOrigin: '0 0', position: 'relative'}}>
-										<SitePrecisionMobile rolagem={rolagem} toque={toque} dedo={dedo} />
+										<LustroMobile rolagem={rolagem} toque={toque} dedo={dedo} t={t} />
 										
 									</div>
 								</div>
@@ -199,17 +199,17 @@ export const Responsivo: React.FC = () => {
 								top: V ? h * 0.56 : h * 0.5,
 								transform: `translateZ(${180 * mapa}px) translateY(${(1 - mapa) * 40}px)`,
 								opacity: mapa,
-								background: '#fff',
+								background: '#111114',
 								borderRadius: 24,
 								padding: 14,
 								boxShadow: '0 40px 80px -10px rgba(0,0,0,0.85)',
 								fontFamily: SANS,
 							}}
 						>
-							<Mapa w={V ? 330 : 360} h={V ? 200 : 210} pulso={(t * 0.9) % 1} />
-							<div style={{display: 'flex', alignItems: 'center', gap: 10, padding: '14px 6px 4px', fontSize: 21, fontWeight: 600, color: '#091943'}}>
+							<MapaEscuro w={V ? 330 : 360} h={V ? 200 : 210} pulso={(t * 0.9) % 1} />
+							<div style={{display: 'flex', alignItems: 'center', gap: 10, padding: '14px 6px 4px', fontSize: 21, fontWeight: 600, color: '#e9ecef'}}>
 								<div style={{width: 11, height: 11, borderRadius: '50%', background: VERDE_WHATS}} />
-								Aberto agora <span style={{fontWeight: 400, color: '#7a84a0'}}>· até 18h</span>
+								Aberto agora <span style={{fontWeight: 400, color: '#8a8f96'}}>· até 19h</span>
 							</div>
 						</div>
 					)}

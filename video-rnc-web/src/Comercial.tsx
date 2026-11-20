@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {AbsoluteFill, Audio, continueRender, delayRender, staticFile} from 'remotion';
-import {carregarFontes} from './fonts';
+import {carregarFontes} from './v2/lib/base';
 import {Fundo, Acabamento} from './componentes/Atmosfera';
 import {Gancho} from './cenas/Gancho';
 import {Marca} from './cenas/Marca';

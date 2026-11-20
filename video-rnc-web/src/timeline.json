@@ -1,16 +1,17 @@
 {
   "fps": 30,
-  "duracao": 31.5,
+  "duracao": 35.0,
   "narracao": {
     "n1": 0.25,
     "n2": 3.45,
     "n3": 5.95,
-    "n4": 8.05,
-    "n5": 12.95,
-    "n6": 16.85,
-    "n7": 20.6,
-    "n8": 22.2,
-    "n9": 25.75
+    "n4": 8.1,
+    "n5": 12.0,
+    "n6": 17.05,
+    "n7": 20.95,
+    "n8": 23.1,
+    "n9": 26.35,
+    "n10": 28.3
   },
   "cenas": {
     "gancho": [
@@ -23,19 +24,19 @@
     ],
     "vitrine": [
       11.8,
-      16.7
+      16.9
     ],
     "responsivo": [
-      16.7,
+      16.9,
       21.5
     ],
     "preco": [
       21.5,
-      25.5
+      27.9
     ],
     "final": [
-      25.5,
-      31.5
+      27.9,
+      35.0
     ]
   },
   "marcos": {
@@ -47,23 +48,26 @@
     "impacto": 5.95,
     "travessia": 7.75,
     "logo": 8.15,
-    "brilhoLogo": 9.2,
+    "brilhoLogo": 9.4,
     "site1": 11.8,
     "site2": 13.45,
     "site3": 15.1,
-    "morph": 17.0,
-    "toqueWhats": 18.35,
-    "mensagem": 18.75,
+    "morph": 17.2,
+    "toqueWhats": 18.55,
+    "mensagem": 18.95,
+    "mapa": 19.3,
     "silencio": 21.0,
-    "linhaLuz": 21.75,
-    "precoRotulo": 22.25,
-    "preco": 23.2,
-    "brilhoPreco": 23.9,
-    "logoFinal": 25.7,
-    "proximoPasso": 26.95,
-    "cta": 28.55,
-    "cliqueCta": 29.25,
-    "encerramento": 30.0,
-    "mapa": 19.05
+    "linhaLuz": 21.6,
+    "precoRotulo": 21.85,
+    "de": 23.0,
+    "risco": 23.9,
+    "preco": 24.95,
+    "brilhoPreco": 25.6,
+    "validade": 26.3,
+    "logoFinal": 28.0,
+    "proximoPasso": 28.35,
+    "cta": 31.15,
+    "cliqueCta": 32.3,
+    "encerramento": 99
   }
 }

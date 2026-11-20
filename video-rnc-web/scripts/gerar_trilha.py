@@ -391,12 +391,20 @@ for j, nota in enumerate((84, 88, 91, 95, 98)):
     soma(musica, sino(nota, 0.028, 3.0), M["preco"] + 0.12 + j * 0.09, pan=-0.6 + j * 0.3)
 soma(sfx, brilho_luz(1.0, 0.08, 3200, 9500), M["brilhoPreco"], pan=0.25)
 
+# — preço anterior riscado e validade
+if "risco" in M:
+    _t = tt(0.45)
+    _r = passa_banda(ruido(0.45), 2500, 9000) * (0.3 + 0.7 * np.sin(np.pi * _t / 0.45)) * 0.5
+    soma(sfx, _r * 0.4, M["risco"], pan=0.1)
+if "validade" in M:
+    soma(sfx, clique_ui(0.08, 1800), M["validade"], pan=-0.1)
+
 # — encerramento: resolução harmônica
 f_ini = TL["cenas"]["final"][0]
 soma(sfx, sopro(0.9, 0.14, 200, 3000, 0.4, -0.4), f_ini - 0.4)
 fim_acordes = [
-    (f_ini, 27.5, [41, 48, 52, 55, 57], 29),
-    (27.5, M["cliqueCta"], [43, 50, 57, 59, 62], 31),
+    (f_ini, f_ini + 2.4, [41, 48, 52, 55, 57], 29),
+    (f_ini + 2.4, M["cliqueCta"], [43, 50, 57, 59, 62], 31),
     (M["cliqueCta"], DUR, [36, 43, 52, 59, 62], 24),
 ]
 for a, b, notas, raiz in fim_acordes:

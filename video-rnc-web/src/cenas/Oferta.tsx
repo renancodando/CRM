@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill} from 'remotion';
 import {config} from '../config';
-import {SANS, MONO} from '../fonts';
+import {SANS, MONO, SERIF} from '../fonts';
 import {useT, useLayout, M, CENAS, p, ease, lerp} from '../lib/tempo';
 import {COR, metal} from '../lib/estilo';
 
@@ -50,7 +50,7 @@ export const Oferta: React.FC = () => {
 					position: 'absolute',
 					left: 0,
 					right: 0,
-					top: linhaY - tamValor * 0.86 - (V ? 120 : 100),
+					top: linhaY - tamValor * 0.86 - (V ? 300 : 245),
 					textAlign: 'center',
 					fontFamily: SANS,
 					fontWeight: 500,
@@ -64,6 +64,16 @@ export const Oferta: React.FC = () => {
 			>
 				{O.rotulo}
 			</div>
+			<div style={{position: 'absolute', left: 0, right: 0, top: linhaY - tamValor * 0.86 - (V ? 236 : 190), textAlign: 'center', fontFamily: SANS, fontSize: V ? 50 : 42, fontWeight: 500, letterSpacing: '-0.03em', color: '#f5f5f7', opacity: p(t, M.precoRotulo + 0.3, M.precoRotulo + 0.9), transform: `translateY(${(1 - p(t, M.precoRotulo + 0.3, M.precoRotulo + 0.9)) * 16}px)`}}>
+				{O.produto}
+			</div>
+			<div style={{position: 'absolute', left: 0, right: 0, top: linhaY - tamValor * 0.86 - (V ? 150 : 120), display: 'flex', justifyContent: 'center', opacity: p(t, M.de, M.de + 0.4)}}>
+				<div style={{position: 'relative', fontFamily: SANS, fontSize: V ? 62 : 50, fontWeight: 400, color: '#9a9da4', letterSpacing: '-0.02em'}}>
+					de {O.de}
+					<div style={{position: 'absolute', left: -10, top: '54%', height: 4, borderRadius: 2, background: '#f5f5f7', width: `calc(${p(t, M.risco, M.risco + 0.45, ease.inOut) * 100}% + 20px)`, transform: 'rotate(-4deg)', boxShadow: '0 0 10px rgba(255,255,255,0.5)'}} />
+				</div>
+			</div>
+			<div style={{position: 'absolute', left: 0, right: 0, textAlign: 'center', top: linhaY - tamValor * 0.86 - (V ? 72 : 58), fontFamily: SERIF, fontStyle: 'italic', fontSize: V ? 46 : 38, color: '#f5f5f7', opacity: p(t, M.preco - 0.3, M.preco + 0.2)}}>por</div>
 			{/* valor nascendo da linha */}
 			<div style={{position: 'absolute', left: 0, right: 0, top: linhaY - tamValor * 0.86, height: tamValor * 0.86, overflow: 'hidden'}}>
 				<div style={{transform: `translateY(${(1 - sobe) * 100}%)`, filter: `blur(${(1 - sobe) * 10}px)`}}>{valor}</div>
@@ -112,24 +122,16 @@ export const Oferta: React.FC = () => {
 					}}
 				/>
 			)}
-			{/* detalhe */}
-			<div
-				style={{
-					position: 'absolute',
-					left: 0,
-					right: 0,
-					top: linhaY + (V ? 150 : 110),
-					textAlign: 'center',
-					fontFamily: MONO,
-					fontSize: V ? 22 : 22,
-					letterSpacing: V ? '0.02em' : '0.08em',
-					color: COR.cinza,
-					opacity: det,
-					transform: `translateY(${(1 - det) * 12}px)`,
-					whiteSpace: 'pre',
-				}}
-			>
+			{/* validade */}
+			<div style={{position: 'absolute', left: 0, right: 0, top: linhaY + (V ? 64 : 44), display: 'flex', justifyContent: 'center', opacity: p(t, M.validade, M.validade + 0.45), transform: `translateY(${(1 - p(t, M.validade, M.validade + 0.45)) * 14}px)`}}>
+				<div style={{padding: V ? '18px 38px' : '14px 30px', borderRadius: 999, background: 'rgba(10,10,12,0.85)', boxShadow: '0 0 0 1.5px rgba(255,255,255,0.55)', fontFamily: SANS, fontWeight: 600, fontSize: V ? 40 : 32, color: '#f5f5f7'}}>{O.validade}</div>
+			</div>
+			{/* o que inclui + escopo */}
+			<div style={{position: 'absolute', left: V ? 90 : 260, right: V ? 90 : 260, top: linhaY + (V ? 200 : 140), textAlign: 'center', fontFamily: MONO, fontSize: V ? 24 : 21, lineHeight: 1.6, letterSpacing: '0.02em', color: '#c9ccd2', opacity: det}}>
 				{O.detalhe}
+			</div>
+			<div style={{position: 'absolute', left: V ? 110 : 330, right: V ? 110 : 330, top: linhaY + (V ? 310 : 215), textAlign: 'center', fontFamily: SANS, fontSize: V ? 23 : 19, lineHeight: 1.4, color: '#7d8088', opacity: p(t, M.validade + 0.3, M.validade + 0.8)}}>
+				{O.nota}
 			</div>
 		</AbsoluteFill>
 	);

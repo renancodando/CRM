@@ -4,7 +4,7 @@ import {config} from '../config';
 import {SANS, SERIF} from '../fonts';
 import {useT, useLayout, M, CENAS, p, ease, lerp} from '../lib/tempo';
 import {COR} from '../lib/estilo';
-import {Logo} from '../componentes/Logo';
+import {LogoRNC} from '../componentes/LogoRNC';
 import {Linha} from '../componentes/Texto';
 
 /** Riscos de luz radiais — a câmera atravessando a estrutura */
@@ -68,7 +68,7 @@ export const Marca: React.FC = () => {
 						position: 'absolute',
 						left: 0,
 						right: 0,
-						top: V ? 760 : 380,
+						top: V ? 560 : 250,
 						display: 'flex',
 						flexDirection: 'column',
 						alignItems: 'center',
@@ -77,14 +77,16 @@ export const Marca: React.FC = () => {
 						transformStyle: 'preserve-3d',
 					}}
 				>
-					<Logo t={t} ini={M.logo} tamanho={V ? 196 : 210} brilho={brilho} />
+					<div style={{WebkitBoxReflect: 'below 10px linear-gradient(transparent 70%, rgba(255,255,255,0.12))'}}>
+						<LogoRNC t={t} ini={M.logo} largura={V ? 860 : 900} brilho={brilho} />
+					</div>
 				</div>
 				<div
 					style={{
 						position: 'absolute',
 						left: 0,
 						right: 0,
-						top: V ? 1130 : 720,
+						top: V ? 1150 : 830,
 						textAlign: 'center',
 						fontFamily: SANS,
 						fontSize: V ? 50 : 46,
