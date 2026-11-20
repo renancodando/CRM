@@ -38,3 +38,22 @@ bash scripts/render_v2.sh
 ## Avaliação
 
 Veja a seção "Revisão crítica" ao final deste arquivo. Ela é preenchida depois de assistir aos vídeos renderizados.
+
+## Revisão crítica (versão A, assistida quadro a quadro)
+
+| Critério | Nota | Evidência / o que ainda pode melhorar |
+|---|---|---|
+| Originalidade | 8 | Abertura colada no 3D real ("Parece animação." → "Mas é um site.") e planta baixa como menu. O carrossel de telas lembra o filme 1 de propósito |
+| Qualidade dos sites | 8 | Reparo Fino é um trabalho real e forte. Vão e Brasa têm identidade própria. Lustro é o mais simples dos três |
+| Complexidade das interações | 7 | Rolagem real com 3D, menu-planta, medidor, reserva completa. As interações conceituais são roteirizadas, não clicáveis |
+| Direção de arte | 8 | Palco preto e prata coerente, cada site com tipografia e paleta próprias, sem fotos falsas |
+| Cinematografia | 7 | Recuo da abertura, travellings e telas em 3D. Faltam movimentos de câmera mais ousados entre os sites |
+| Animação | 7 | Fluida no geral. A captura real foi feita a 10 fps e interpolada, o que deixa um leve "fantasma" no texto do site durante a rolagem rápida |
+| Montagem e ritmo | 8 | Nova descoberta a cada 5–7 s, pausa antes do preço, nada repetido |
+| Som | 7 | Trilha original com progressão e assinatura sonora; voz neural natural. Uma trilha gravada por músicos soaria mais rica |
+| Legibilidade no celular | 8 | Textos grandes dentro da zona segura e legendas em pastilha. Os textos internos dos sites conceituais ficam pequenos nas telas reduzidas |
+| Clareza da oferta | 9 | R$ 968 riscado, R$ 600, validade, itens incluídos e nota de escopo |
+| Confiança | 8 | Site real identificado como real e conceitos identificados como conceito |
+| Força da chamada | 8 | "Peça sua demonstração pelo WhatsApp", mas sem o número (preencher `config.contato`) |
+
+**Próximos ajustes sugeridos:** recapturar o Reparo Fino a 30 fps reais (cerca de 1 h de render) para eliminar o fantasma da interpolação; preencher o WhatsApp no `config.ts`; trocar a voz por locutor ou licença comercial antes de impulsionar com anúncio pago.
