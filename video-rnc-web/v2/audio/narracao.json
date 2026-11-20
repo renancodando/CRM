@@ -3,21 +3,109 @@
   "velocidade": "+0%",
   "tom": "-3Hz",
   "falas": [
-    {"id": "a01", "texto": "Parece animação."},
-    {"id": "a02", "texto": "Mas é um site."},
-    {"id": "a03", "texto": "Um site pode mostrar o seu serviço acontecendo."},
-    {"id": "a04", "texto": "Pode apresentar o seu trabalho com elegância."},
-    {"id": "a05", "texto": "Pode provar a qualidade do que você faz."},
-    {"id": "a06", "texto": "E pode facilitar o próximo passo do cliente."},
-    {"id": "a07", "texto": "Mesmo negócio. Mesmas informações."},
-    {"id": "a08", "texto": "Outra impressão."},
-    {"id": "a09", "texto": "Até vinte de dezembro, o seu site sai de novecentos e sessenta e oito..."},
-    {"id": "a10", "texto": "por seiscentos reais."},
-    {"id": "a11", "texto": "Seu negócio merece uma presença digital à altura."},
-    {"id": "a12", "texto": "Peça sua demonstração pelo WhatsApp."},
-    {"id": "b01", "texto": "Sites sob medida para o seu negócio."},
-    {"id": "b02", "texto": "Serviços organizados. Contato a um toque."},
-    {"id": "b03", "texto": "Até vinte de dezembro: de novecentos e sessenta e oito por seiscentos reais."},
-    {"id": "c01", "texto": "Seu site profissional por seiscentos reais, até vinte de dezembro."}
+    {
+      "id": "a01",
+      "texto": "Parece animação."
+    },
+    {
+      "id": "a02",
+      "texto": "Mas é um site."
+    },
+    {
+      "id": "a03",
+      "texto": "Um site pode mostrar o seu serviço acontecendo."
+    },
+    {
+      "id": "a04",
+      "texto": "Pode apresentar o seu trabalho com elegância."
+    },
+    {
+      "id": "a05",
+      "texto": "Pode provar a qualidade do que você faz."
+    },
+    {
+      "id": "a06",
+      "texto": "E pode facilitar o próximo passo do cliente."
+    },
+    {
+      "id": "a07",
+      "texto": "Mesmo negócio. Mesmas informações."
+    },
+    {
+      "id": "a08",
+      "texto": "Outra impressão."
+    },
+    {
+      "id": "a09",
+      "texto": "Até vinte de dezembro, o seu site sai de novecentos e sessenta e oito..."
+    },
+    {
+      "id": "a10",
+      "texto": "por seiscentos reais."
+    },
+    {
+      "id": "a11",
+      "texto": "Seu negócio merece uma presença digital à altura."
+    },
+    {
+      "id": "a12",
+      "texto": "Peça sua demonstração pelo WhatsApp."
+    },
+    {
+      "id": "b01",
+      "texto": "Sites sob medida para o seu negócio."
+    },
+    {
+      "id": "b02",
+      "texto": "Serviços organizados. Contato a um toque."
+    },
+    {
+      "id": "b03",
+      "texto": "Até vinte de dezembro: de novecentos e sessenta e oito por seiscentos reais."
+    },
+    {
+      "id": "c01",
+      "texto": "Seu site profissional por seiscentos reais, até vinte de dezembro."
+    },
+    {
+      "id": "e01",
+      "texto": "Seu Instagram não é o seu site."
+    },
+    {
+      "id": "e02",
+      "texto": "E tudo bem. Cada um tem um papel."
+    },
+    {
+      "id": "e03",
+      "texto": "No Instagram, você cria relacionamento e mostra o dia a dia da sua empresa."
+    },
+    {
+      "id": "e04",
+      "texto": "Mas quem decide quem vê é o algoritmo. E o espaço é da plataforma."
+    },
+    {
+      "id": "e05",
+      "texto": "No Google, o cliente já está procurando o que você oferece."
+    },
+    {
+      "id": "e06",
+      "texto": "Ele quer endereço, horário e um bom motivo para escolher você."
+    },
+    {
+      "id": "e07",
+      "texto": "E o site é o seu endereço próprio na internet."
+    },
+    {
+      "id": "e08",
+      "texto": "Seus serviços organizados, a sua identidade e o contato a um toque, sem depender de aplicativo."
+    },
+    {
+      "id": "e09",
+      "texto": "O Instagram atrai. O Google mostra o caminho. O site apresenta a sua empresa por inteiro."
+    },
+    {
+      "id": "e10",
+      "texto": "Nós criamos o site que conecta tudo isso."
+    }
   ]
 }

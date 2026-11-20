@@ -5,7 +5,7 @@ import {F, p, ease, lerp, clamp, useLocal, usePalco} from '../lib/base';
 import {metal} from '../../lib/estilo';
 import {Linha} from '../comp/ui';
 import {IconeWhats, Cursor} from '../../componentes/Icones';
-import {Logo} from '../../componentes/Logo';
+import {LogoRNC} from '../../componentes/LogoRNC';
 import {Navegador} from '../../componentes/Molduras';
 import {Tela, Captura, FundoPalco, Quadro} from './Palco';
 import {SiteVao} from '../sites/Vao';
@@ -300,7 +300,7 @@ const MINIS: {tipo: 'cap' | 'vao' | 'lustro' | 'brasa'; ts: number}[] = [
 	{tipo: 'brasa', ts: 2.2},
 ];
 type TF = {conv: number; logo: number; frase: number; cta: number; clique: number};
-export const CenaFinal: React.FC<{curta?: boolean; T?: TF}> = ({curta = false, T: TP}) => {
+export const CenaFinal: React.FC<{curta?: boolean; T?: TF; frase?: string; destaque?: string}> = ({curta = false, T: TP, frase = 'Presença digital', destaque = 'à altura.'}) => {
 	const {t, d} = useLocal();
 	const {txt, sub, claro} = useTinta();
 	const T = TP ?? (curta ? {conv: 0.9, logo: 0.8, frase: 1.4, cta: 1.9, clique: 2.7} : {conv: 1.6, logo: 1.7, frase: 2.5, cta: 3.3, clique: 4.4});
@@ -336,13 +336,13 @@ export const CenaFinal: React.FC<{curta?: boolean; T?: TF}> = ({curta = false, T
 					})}
 			</AbsoluteFill>
 			<AbsoluteFill style={{background: `radial-gradient(circle at 50% 40%, ${claro ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)'}, transparent 40%)`, opacity: flash}} />
-			<div style={{position: 'absolute', left: 0, right: 0, top: 640, display: 'flex', justifyContent: 'center'}}>
-				<Logo t={t} ini={T.logo} tamanho={168} brilho={p(t, T.logo + 0.8, T.logo + 1.9, ease.inOut)} reflexo={false} escuro={claro} />
+			<div style={{position: 'absolute', left: 0, right: 0, top: 520, display: 'flex', justifyContent: 'center'}}>
+				<LogoRNC t={t} ini={T.logo} largura={620} brilho={p(t, T.logo + 0.8, T.logo + 1.9, ease.inOut)} variante={claro ? 'original' : 'escuro'} />
 			</div>
-			<div style={{position: 'absolute', left: 0, right: 0, top: 880, textAlign: 'center', fontFamily: F.inter, fontWeight: 500, fontSize: 64, letterSpacing: '-0.035em', color: txt}}>
+			<div style={{position: 'absolute', left: 0, right: 0, top: 920, textAlign: 'center', fontFamily: F.inter, fontWeight: 500, fontSize: 60, letterSpacing: '-0.035em', color: txt}}>
 				<Linha t={t} ini={T.frase}>
 					<span>
-						Presença digital <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 400, fontSize: '1.14em'}}>à altura.</span>
+						{frase} <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 400, fontSize: '1.14em'}}>{destaque}</span>
 					</span>
 				</Linha>
 			</div>

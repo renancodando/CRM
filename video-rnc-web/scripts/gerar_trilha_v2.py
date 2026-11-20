@@ -280,8 +280,8 @@ def gerar(idv):
         b = a + c["dur"]
         tipo = c["tipo"]
         P = c.get("props", {})
-        if tipo in ("gancho", "curiosidade", "desejo"):
-            rev = a + (P.get("recuo", 2.3) if tipo == "gancho" else 1.9 if tipo == "curiosidade" else 2.4)
+        if tipo in ("gancho", "curiosidade", "desejo", "e-gancho"):
+            rev = a + (P.get("recuo", 2.3) if tipo == "gancho" else 1.9 if tipo == "curiosidade" else 2.45)
             m.soma(m.mus, m.sub(26, rev - a, 1.0, 0.2) * 0.2, a + 0.05)
             m.soma(m.mus, m.pad([50, 57, 62], rev - a, brilho=700, ataque=1.6, soltura=0.2) * 0.06, a + 0.05)
             m.soma(m.sfx, m.brilho(0.9, 1800, 6200) * 0.08, a, pan=-0.3)
@@ -299,6 +299,10 @@ def gerar(idv):
             for j, nota in enumerate((62, 69, 76)):
                 m.soma(m.mus, m.sino(nota, 2.6) * 0.03, rev + 0.3 + j * 0.15, pan=-0.4 + j * 0.4)
             groove(m, rev + 0.4, b, 0)
+        elif tipo.startswith("e-") and tipo != "e-gancho":
+            camada = min(3, camada + 1) if tipo != "e-juntos" else 3
+            m.soma(m.sfx, m.sopro(0.85, 250, 5200, -0.6 if i % 2 else 0.6, 0.6 if i % 2 else -0.6) * 0.2, a - 0.45)
+            groove(m, a, b, camada)
         elif tipo in ("reparo", "site", "leque"):
             camada = min(3, camada + 1)
             m.soma(m.sfx, m.sopro(0.85, 250, 5200, -0.6 if i % 2 else 0.6, 0.6 if i % 2 else -0.6) * 0.22, a - 0.45)

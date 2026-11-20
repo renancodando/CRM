@@ -551,5 +551,128 @@
         "ini": 13.5
       }
     ]
+  },
+  "E": {
+    "nome": "Seu Instagram não é o seu site",
+    "fundo": "preto",
+    "cenas": [
+      {
+        "tipo": "e-gancho",
+        "de": 0,
+        "dur": 5.7
+      },
+      {
+        "tipo": "e-social",
+        "de": 5.7,
+        "dur": 10.0
+      },
+      {
+        "tipo": "e-busca",
+        "de": 15.7,
+        "dur": 7.9
+      },
+      {
+        "tipo": "e-site",
+        "de": 23.6,
+        "dur": 9.6
+      },
+      {
+        "tipo": "e-juntos",
+        "de": 33.2,
+        "dur": 7.4
+      },
+      {
+        "tipo": "oferta",
+        "de": 40.6,
+        "dur": 7.0,
+        "props": {
+          "T": {
+            "linha": 0.2,
+            "rotulo": 0.35,
+            "de": 0.8,
+            "risco": 2.7,
+            "preco": 4.35,
+            "validade": 5.0,
+            "itens": 5.4
+          }
+        }
+      },
+      {
+        "tipo": "final",
+        "de": 47.6,
+        "dur": 5.8,
+        "props": {
+          "frase": "O site que",
+          "destaque": "conecta tudo.",
+          "T": {
+            "conv": 1.0,
+            "logo": 0.9,
+            "frase": 1.6,
+            "cta": 2.9,
+            "clique": 4.3
+          }
+        }
+      }
+    ],
+    "falas": [
+      {
+        "id": "e01",
+        "ini": 0.3
+      },
+      {
+        "id": "e02",
+        "ini": 2.55
+      },
+      {
+        "id": "e03",
+        "ini": 5.95,
+        "legenda": true
+      },
+      {
+        "id": "e04",
+        "ini": 10.45,
+        "legenda": true
+      },
+      {
+        "id": "e05",
+        "ini": 15.95,
+        "legenda": true
+      },
+      {
+        "id": "e06",
+        "ini": 19.7,
+        "legenda": true
+      },
+      {
+        "id": "e07",
+        "ini": 23.85,
+        "legenda": true
+      },
+      {
+        "id": "e08",
+        "ini": 26.65,
+        "legenda": true
+      },
+      {
+        "id": "e09",
+        "ini": 33.45
+      },
+      {
+        "id": "a09",
+        "ini": 40.8
+      },
+      {
+        "id": "a10",
+        "ini": 44.95
+      },
+      {
+        "id": "e10",
+        "ini": 47.9
+      },
+      {
+        "id": "a12",
+        "ini": 50.6
+      }
+    ]
   }
 }

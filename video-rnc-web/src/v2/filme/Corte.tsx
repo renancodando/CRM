@@ -4,6 +4,7 @@ import {Plano, PalcoProvider, Fundo} from '../lib/base';
 import {Legendas, Fala} from '../comp/ui';
 import {Montagem} from '../comp/Montagem';
 import {CenaGancho, CenaReparo, CenaSite, CenaTransformacao, CenaOferta, CenaFinal, AberturaCuriosidade, AberturaDesejo, CenaLeque} from './Cenas';
+import {EGancho, ESocial, EBusca, ESite, EJuntos} from './Explicativo';
 import roteiros from './roteiros.json';
 import narracao from '../../../v2/audio/narracao.json';
 import duracoes from '../../../public/audio/narracao-v2/duracoes.json';
@@ -31,6 +32,16 @@ const Cena: React.FC<{tipo: string; props: any}> = ({tipo, props}) => {
 			return <AberturaDesejo />;
 		case 'leque':
 			return <CenaLeque />;
+		case 'e-gancho':
+			return <EGancho />;
+		case 'e-social':
+			return <ESocial />;
+		case 'e-busca':
+			return <EBusca />;
+		case 'e-site':
+			return <ESite />;
+		case 'e-juntos':
+			return <EJuntos />;
 		default:
 			return null;
 	}
