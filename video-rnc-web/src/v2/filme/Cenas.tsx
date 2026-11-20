@@ -56,7 +56,7 @@ const Destaque: React.FC<{children: React.ReactNode; k?: number}> = ({children, 
 
 // ————————————————————————————————————————————————————————— GANCHO (site real)
 /** Começa colado no 3D do site (parece animação) e recua até revelar a página. */
-export const CenaGancho: React.FC<{recuo?: number; texto?: boolean; capInicio?: number}> = ({recuo = 2.35, texto = true, capInicio = 0}) => {
+export const CenaGancho: React.FC<{recuo?: number; texto?: boolean; capInicio?: number; velocidade?: number}> = ({recuo = 2.35, texto = true, capInicio = 0, velocidade = 0.5}) => {
 	const {t, d} = useLocal();
 	const {claro} = useTinta();
 	const z = p(t, recuo, recuo + 1.25, ease.camera);
@@ -69,7 +69,7 @@ export const CenaGancho: React.FC<{recuo?: number; texto?: boolean; capInicio?: 
 				<div style={{position: 'absolute', left: 540 - w / 2, top: lerp(0, 940 - (640 * 16) / 18, z), transform: `rotateY(${lerp(0, -9, z) + p(t, recuo + 1.2, d, ease.suave) * 4}deg) rotateX(${lerp(0, 3, z)}deg)`}}>
 					<Tela w={w} raio={lerp(0, 58, z)} reflexo={0.1 * z} borda={z}>
 						<div style={{position: 'absolute', inset: 0, transform: `scale(${zoom})`, transformOrigin: '540px 330px'}}>
-							<Captura arquivo={CAP_MOBILE} inicio={capInicio} />
+							<Captura arquivo={CAP_MOBILE} inicio={capInicio} velocidade={velocidade} />
 						</div>
 						<div style={{position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(4,4,5,0) 0%, rgba(4,4,5,0) 34%, rgba(4,4,5,0.92) 52%, #040405 64%)', opacity: 1 - z}} />
 					</Tela>
@@ -102,7 +102,7 @@ export const CenaGancho: React.FC<{recuo?: number; texto?: boolean; capInicio?: 
 };
 
 // ————————————————————————————————————————————————————————— REPARO FINO (celular + computador)
-export const CenaReparo: React.FC<{capInicio?: number; capDesk?: number; frase?: boolean}> = ({capInicio = 4.6, capDesk = 2.5, frase = true}) => {
+export const CenaReparo: React.FC<{capInicio?: number; capDesk?: number; frase?: boolean; velocidade?: number}> = ({capInicio = 4.6, capDesk = 2.5, frase = true, velocidade = 1}) => {
 	const {t, d} = useLocal();
 	const w = 640;
 	const h = (w * 16) / 9;
@@ -115,12 +115,12 @@ export const CenaReparo: React.FC<{capInicio?: number; capDesk?: number; frase?:
 			<AbsoluteFill style={{perspective: 2200}}>
 				<div style={{position: 'absolute', left: lerp(540 - w / 2, 70, mov), top: lerp(940 - h / 2, 330, mov), transform: `rotateY(${lerp(-5, 10, mov)}deg) scale(${lerp(1, 0.86, mov)}) translateZ(${-sai * 600}px)`, transformOrigin: '0 0', opacity: 1 - sai}}>
 					<Tela w={w} raio={58} reflexo={0}>
-						<Captura arquivo={CAP_MOBILE} inicio={capInicio} />
+						<Captura arquivo={CAP_MOBILE} inicio={capInicio} velocidade={velocidade} />
 					</Tela>
 				</div>
 				<div style={{position: 'absolute', left: lerp(900, 150, desk), top: 1000, transform: `rotateY(${lerp(-40, -14, desk) + p(t, 2.4, d, ease.suave) * 6}deg) translateZ(${lerp(-500, 60, desk) - sai * 600}px)`, opacity: desk * (1 - sai), transformOrigin: '0 50%'}}>
 					<Navegador largura={880} url="tecnica-alpha.vercel.app">
-						<Captura arquivo={CAP_DESKTOP} inicio={capDesk} largura={1440} altura={900} />
+						<Captura arquivo={CAP_DESKTOP} inicio={capDesk} velocidade={0.66} largura={1440} altura={900} />
 					</Navegador>
 				</div>
 			</AbsoluteFill>
