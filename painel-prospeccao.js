@@ -1,6 +1,8 @@
 /* Resumo visual da prospecção: lê o estado existente, não altera negócios ou histórico. */
 import {icone} from './icones.js';
 import {textoSeguro as t} from './utilitarios.js';
+import {montarAmbiente, criarAmbiente} from './ambiente/componente.js';
+const ambientes = new WeakMap();
 
 const META_CHAVE='orbita-meta-mensagens-mes';
 const META_PADRAO=500;
@@ -94,21 +96,24 @@ export function renderizarPainelProspeccao(alvo,estado,visao){
  for(const [nome,valor,anterior,desenho,tom] of kpis)html.push('<div class="pr-kpi pr-'+tom+'"><span class="pr-kpi-titulo">'+icone(desenho)+t(nome)+'</span><strong>'+inteiro(valor)+'</strong>'+(anterior==null?'<small class="pr-kpi-variacao pr-sem-base">Desde o primeiro registro</small>':variacao(valor,anterior))+'</div>');
  html.push('</div>');
  html.push('<div class="pr-meta"><div class="pr-anel" style="--pr-porcentagem:'+limite+'%"><span><strong>'+inteiro(progresso)+'%</strong><small>da meta</small></span></div><div class="pr-meta-corpo"><h3>Meta de prospecção</h3><label class="pr-meta-label" for="pr-meta-valor">Meta mensal de mensagens confirmadas</label><div class="pr-meta-ajuste"><input id="pr-meta-valor" type="number" min="1" max="1000000" step="1" inputmode="numeric" value="'+meta+'" aria-label="Meta mensal de mensagens"><span>mensagens/mês</span></div><div class="pr-progresso"><span style="width:'+limite+'%"></span></div><p>'+inteiro(a.mes)+' de '+inteiro(meta)+' mensagens neste mês</p></div><div class="pr-taxa"><span>'+icone('alvo')+' Taxa de resposta</span><strong>'+taxa+'</strong><small>'+a.responderam+' de '+a.contatos+' empresas com envio registrado responderam</small></div></div>');
- html.push('<div class="pr-grade">');
- html.push('<article class="pr-card pr-funil"><header>'+icone('pipeline')+'<span><h3>Funil de vendas</h3><p>Empresas na etapa atual</p></span></header><div class="pr-funil-etapas">');
- for(const c of a.contagens)html.push('<button class="pr-funil-etapa pr-funil-'+t(c.id)+'" data-etapa="'+t(c.id)+'" style="--pr-largura:'+(100*(.40+.60*c.quantidade/maiorEtapa)).toFixed(1)+'%">'+icone(c.desenho)+'<span>'+t(c.nome)+'</span><strong>'+inteiro(c.quantidade)+'</strong></button>');
- html.push('</div></article>');
- html.push('<article class="pr-card pr-semana"><header>'+icone('grafico')+'<span><h3>Desempenho da semana</h3><p>Mensagens enviadas por dia</p></span></header><div class="pr-grafico" role="img" aria-label="Mensagens registradas nesta semana: '+a.semanaDias.map(d=>d.nome+' '+d.quantidade).join(', ')+'">');
- for(const dia of a.semanaDias)html.push('<div class="pr-dia'+(dia.futuro?' pr-dia-futuro':'')+'"><strong>'+inteiro(dia.quantidade)+'</strong><div class="pr-barra-externa"><span style="height:'+(dia.quantidade?Math.max(5,Math.round(dia.quantidade/maior*100)):0)+'%"></span></div><small>'+dia.nome+'</small></div>');
- html.push('</div></article>');
- html.push('</div>');
- html.push('<article class="pr-card pr-atividades"><header>'+icone('camadas')+'<span><h3>Atividades recentes</h3><p>Últimas ações registradas no CRM</p></span><button class="pr-link" data-acao="hoje">Ver histórico '+icone('seta')+'</button></header><div>');
- if(!a.recentes.length)html.push('<p class="pr-vazio">Nenhuma mensagem ou interação confirmada ainda.</p>');
- for(const e of a.recentes){
-  const [descricao,desenho]=TIPOS_ATIVIDADE[e.tipo],empresa=emp.get(e.empresaId),nome=empresa?.nome||'empresa não cadastrada';
-  html.push((empresa?'<button class="pr-atividade" data-empresa="'+t(empresa.id)+'">':'<div class="pr-atividade">')+icone(desenho)+'<span>'+t(descricao+' '+nome)+'</span><time datetime="'+t(e.quando)+'">'+t(hora(e.quando))+'</time>'+(empresa?'</button>':'</div>'));
- }
- html.push('</div></article>');
+ html.push(montarAmbiente());
  html.push('<p class="pr-observacao">Os envios são contabilizados apenas após confirmação no Órbita. Abrir o WhatsApp não conta como mensagem enviada. A taxa considera empresas com envio confirmado e resposta posterior.</p>');
- alvo.innerHTML=html.join('');
+ if (!ambientes.has(alvo)) {
+  alvo.innerHTML=html.join('');
+  ambientes.set(alvo,criarAmbiente(alvo.querySelector('.pr-ambiente')));
+ } else {
+  const molde=document.createElement('template');molde.innerHTML=html.join('');
+  for (const seletor of ['.pr-cabecalho','.pr-kpis','.pr-meta','.pr-observacao']) {
+   const atual=alvo.querySelector(seletor),novo=molde.content.querySelector(seletor);
+   if (atual.outerHTML!==novo.outerHTML) {
+    if (seletor==='.pr-meta') {
+     for(const texto of ['.pr-anel strong','.pr-meta-corpo>p','.pr-taxa>strong','.pr-taxa>small'])atual.querySelector(texto).textContent=novo.querySelector(texto).textContent;
+     for(const estilo of ['.pr-anel','.pr-progresso>span'])atual.querySelector(estilo).style.cssText=novo.querySelector(estilo).style.cssText;
+     const campo=atual.querySelector('#pr-meta-valor'),valor=novo.querySelector('#pr-meta-valor').value;
+     campo.value=valor;campo.setAttribute('value',valor);
+    } else atual.replaceWith(novo);
+   }
+  }
+ }
+ ambientes.get(alvo).atualizar(estado,a,visao,a.contagens,TIPOS_ATIVIDADE);
 }
