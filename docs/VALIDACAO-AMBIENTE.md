@@ -43,6 +43,16 @@ A suíte `testes/ambiente-ui.cjs` foi executada na revisão e aprovou as oito la
 
 Foram corrigidos o transbordamento do conteúdo em 1024 px e a área clicável do Foco que avançava sobre o piso. Nenhum arquivo da região superior foi alterado.
 
+## Interações do observatório em 19/11/2026
+
+`node testes/marcadores.mjs` aprovou a ausência de pontos fictícios no estado vazio, o limite de nove empresas identificadas, a deduplicação dos pontos e a preservação dos dados recebidos.
+
+`testes/marcadores-ui.cjs` executou o cadastro pelo formulário normal do CRM, abriu a central da empresa pelo marcador usando Enter, clique e toque, conferiu o tooltip e seu fechamento por Escape e verificou os nove alvos em todas as oito larguras. O teste também confirmou a renderização textual de nomes com conteúdo HTML, sem execução de marcação.
+
+A auditoria WCAG da região com marcadores e tooltip ativo não encontrou violações. Uma perturbação de toque no lago interno foi observada nos uniformes WebGL do próprio diorama. O mesmo canvas foi mantido durante as atualizações dos dados.
+
+Os testes usam empresas descartáveis em um contexto isolado do navegador. Nenhum registro foi acrescentado aos dados de prospecção publicados.
+
 ## Limites da verificação
 
 SwiftShader usa CPU; este ambiente não comprova 60 FPS em GPUs físicas. A qualidade se adapta ao renderizador e ao tempo dos quadros. Não foram utilizados aparelhos físicos, Safari ou Firefox nesta verificação.

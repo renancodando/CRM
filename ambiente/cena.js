@@ -5,7 +5,7 @@ import {criarFoco} from './foco.js';
 import {criarObservatorio} from './observatorio.js';
 import {consultarAmpulheta} from './tempo.js';
 
-export function criarCena(raiz, {inicio, preferencias}) {
+export function criarCena(raiz, {inicio, preferencias,aoProjetar=()=>{}}) {
  const tela=raiz.querySelector('.pr-tela-ambiente');
  let renderizador;
  try {const contexto=tela.getContext('webgl2',{alpha:true,antialias:true,powerPreference:'low-power'});if(!contexto)return null;renderizador=new T.WebGLRenderer({canvas:tela,context:contexto,alpha:true,antialias:true,powerPreference:'low-power'});} catch {return null;}
@@ -38,7 +38,7 @@ export function criarCena(raiz, {inicio, preferencias}) {
  const poeira=new T.Points(geometriaPoeira,new T.PointsMaterial({color:'#d8c59a',size:.013,transparent:true,opacity:.35,depthWrite:false}));cena.add(poeira);
  let largura=1,altura=1,alturaAmpulheta=250,escalaAmpulheta=1,quadro=0,ativo=false,animar=false,perdido=false,destruido=false,ultimoQuadro=0,contagem=0,lentos=0,amostras=0;
  const ponteiro={x:0,y:0},alvoPonteiro={x:0,y:0};
- let instanteVisual=null;
+ let instanteVisual=null,deslocamentoMapa={x:0,y:0};
  let focoAlvo=0,reacaoFoco=0,reacaoAmpulheta=0,ultimaOnda=0,ultimoPonteiro={x:-1,y:-1},sujo=true;
  const abortar=new AbortController(),opcoes={signal:abortar.signal};
  const refletidos=[raiz.querySelector('.pr-ritmo-cena'),raiz.querySelector('.pr-recentes-cena'),raiz.querySelector('.pr-resumo-cena')];
@@ -47,6 +47,10 @@ export function criarCena(raiz, {inicio, preferencias}) {
   const escala=(dimensao==='largura'?r.width:r.height)*unidade/tamanho;
   objeto.scale.setScalar(escala);objeto.position.set((r.left-p.left+r.width/2-largura/2)*unidade,(altura/2-(r.top-p.top+r.height/2))*unidade,0);
   return {x:(r.left-p.left+r.width/2)/largura,y:1-(r.bottom-p.top)/altura,largura:r.width/largura,escala};
+ }
+ function projetarMarcadores(){
+  cena.updateMatrixWorld(true);camera.updateMatrixWorld();
+  aoProjetar(observatorio.projetar(camera).map(p=>({id:p.id,x:(p.x*.5+.5)*largura-deslocamentoMapa.x,y:(.5-p.y*.5)*altura-deslocamentoMapa.y})));
  }
  function redimensionar() {
   if(destruido)return;
@@ -58,6 +62,7 @@ export function criarCena(raiz, {inicio, preferencias}) {
   renderizador.setPixelRatio(dpr);renderizador.setSize(largura,altura,false);reflexos.setSize(Math.max(1,Math.round(largura*dpr*.6)),Math.max(1,Math.round(altura*dpr*.6)));
   camera.left=-largura/altura*5;camera.right=-camera.left;camera.updateProjectionMatrix();
   agua.uniformes.resolucao.value.set(largura,altura);
+  const caixaMapa=raiz.querySelector('.pr-diorama-volume').getBoundingClientRect();deslocamentoMapa={x:caixaMapa.left-r.left,y:caixaMapa.top-r.top};
   const posMapa=posicionar(observatorio.objeto,raiz.querySelector('.pr-diorama-volume'),observatorio.largura,'largura');
   agua.uniformes.observatorio.value.set(posMapa.x,posMapa.y+.013,posMapa.largura/2);
   const posFoco=posicionar(foco.objeto,raiz.querySelector('.pr-foco-alvo'),3.24,'largura');
@@ -68,7 +73,7 @@ export function criarCena(raiz, {inicio, preferencias}) {
   agua.uniformes.ampulheta.value.set(posTempo.x,posTempo.y,posTempo.largura*.65);
   agua.uniformes.horizonte.value=largura<620?.92:.49;
   refletidos.forEach((n,i)=>{const a=n.getBoundingClientRect();agua.uniformes.paineis.value[i].set((a.left-r.left+a.width/2)/largura,1-(a.bottom-r.top)/altura,a.width/largura/2,i===2?.4:1);});
-  poeira.scale.set(largura/altura*4.6,3.8,1);
+  poeira.scale.set(largura/altura*4.6,3.8,1);projetarMarcadores();
   sujo=true;if(ativo&&!quadro)agendar();
  }
  const tamanho=new ResizeObserver(redimensionar);tamanho.observe(raiz);tamanho.observe(raiz.querySelector('.pr-foco-alvo'));tamanho.observe(raiz.querySelector('.pr-ampulheta-volume'));tamanho.observe(raiz.querySelector('.pr-diorama-volume'));
@@ -82,7 +87,7 @@ export function criarCena(raiz, {inicio, preferencias}) {
   reacaoFoco+=(focoAlvo-reacaoFoco)*.06;reacaoAmpulheta*=.97;
   if(instanteVisual==null||animar)instanteVisual=segundos;
   foco.atualizar(instanteVisual,animar?reacaoFoco:0,ponteiro);
-  observatorio.atualizar(instanteVisual,ponteiro);
+  observatorio.atualizar(instanteVisual,ponteiro,animar);projetarMarcadores();
   ampulheta.objeto.scale.setScalar(escalaAmpulheta*(1-.1*Math.sin(tempo.virada*Math.PI)));
   ampulheta.objeto.rotation.x=.13;
   ampulheta.objeto.rotation.y=Math.sin(tempo.virada*Math.PI)*1.05+(animar?ponteiro.x*.035:0);
@@ -109,7 +114,8 @@ export function criarCena(raiz, {inicio, preferencias}) {
   if(!clique&&(agora-ultimaOnda<70||Math.hypot(e.clientX-ultimoPonteiro.x,e.clientY-ultimoPonteiro.y)<5))return;
   ultimaOnda=agora;ultimoPonteiro={x:e.clientX,y:e.clientY};
   const variacao=.86+.14*Math.sin(x*113+y*71+agora*.003);
-  agua.perturbar(x,y,(clique?.065+(e.pressure||.5)*.04:.013)*variacao,(Date.now()-inicio)/1000);
+  const forca=(clique?.065+(e.pressure||.5)*.04:.013)*variacao,tempo=(Date.now()-inicio)/1000;
+  agua.perturbar(x,y,forca,tempo);observatorio.perturbar(x,y,forca,tempo,camera);
   alvoPonteiro.x=(x-.5)*2;alvoPonteiro.y=(y-.5)*2;
   if(clique)reacaoAmpulheta=1;
  }
@@ -123,7 +129,8 @@ export function criarCena(raiz, {inicio, preferencias}) {
  tela.addEventListener('webglcontextrestored',()=>{perdido=false;raiz.classList.add('pr-com-webgl');sujo=true;agendar();},opcoes);
  redimensionar();
  return {
-  atualizarEmpresas(empresas){observatorio.atualizarEmpresas(empresas);sujo=true;agendar();},
+  atualizarEmpresas(empresas){observatorio.atualizarEmpresas(empresas);projetarMarcadores();sujo=true;agendar();},
+  destacarEmpresa(id){observatorio.destacarEmpresa(id);sujo=true;agendar();},
   definirAtividade(novaAtividade,novoMovimento){const mudou=animar!==novoMovimento||ativo!==novaAtividade,mudouMovimento=animar!==novoMovimento;ativo=novaAtividade;animar=novoMovimento;if(mudouMovimento)redimensionar();if(!ativo){cancelAnimationFrame(quadro);quadro=0;ultimoQuadro=0;}else if(mudou||sujo){ultimoQuadro=0;agendar();}},
   definirQualidade(nova){qualidade=nova||'equilibrada';fator=software?.60:economica?.75:1;redimensionar();},
   destruir(){destruido=true;cancelAnimationFrame(quadro);tamanho.disconnect();abortar.abort();const geometrias=new Set(),materiais=new Set();for(const c of [cena,agua.cena])c.traverse(n=>{if(n.geometry)geometrias.add(n.geometry);for(const m of Array.isArray(n.material)?n.material:[n.material])if(m)materiais.add(m);});geometrias.forEach(g=>g.dispose());materiais.forEach(m=>m.dispose());agua.destruir();reflexos.dispose();mapa.dispose();observatorio.texturas.forEach(t=>t.dispose());foco.texturas.forEach(t=>t.dispose());renderizador.dispose();}

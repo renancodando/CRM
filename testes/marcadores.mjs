@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {selecionarMarcadores,POSICOES_PINOS} from '../ambiente/marcadores.js';
+assert.deepEqual(selecionarMarcadores(),[],'sem empresas não há marcadores fictícios');
+const empresas=Array.from({length:15},(_,i)=>({id:'empresa-'+i,nome:'Empresa '+i,etapa:'encontrada'}));
+const selecionadas=selecionarMarcadores(empresas);
+assert.equal(selecionadas.length,9);
+assert.deepEqual(selecionadas.map(e=>e.id),empresas.slice(0,9).map(e=>e.id));
+assert.equal(selecionadas[8].posicao,POSICOES_PINOS[8]);
+assert.equal(selecionarMarcadores([null,{},empresas[0],empresas[0],empresas[1]]).length,2,'não cria pontos duplicados ou sem identificação');
+assert.equal(selecionarMarcadores([{id:'a',nome:'<img src=x>',etapa:'negociacao'}])[0].nome,'<img src=x>','o nome é preservado como dado para renderização textual');
+assert.equal(empresas.length,15,'a galeria não remove empresas do estado');
+console.log('Marcadores: estado vazio, nove pontos reais, identificação única e preservação dos dados validados.');

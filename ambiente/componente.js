@@ -1,6 +1,7 @@
 import {icone} from '../icones.js';
 import {obterFoco} from './dados.js';
 import {criarRitmo} from './ritmo.js';
+import {criarMarcadores} from './marcadores.js';
 import {consultarAmpulheta, formatarRestante} from './tempo.js';
 
 export function montarAmbiente() {
@@ -18,6 +19,7 @@ export function montarAmbiente() {
    </section>
    <section class="pr-diorama-cena" aria-label="Observatório de oportunidades">
     <div class="pr-diorama-volume" aria-hidden="true"></div>
+    <div class="pr-pinos-acessiveis" role="group" aria-label="Empresas no observatório" hidden></div>
     <button class="pr-marcador-radar pr-balao-mapa" data-acao="empresas">${icone('alvo')}<span><strong><b data-pr-radar>0</b> empresas</strong><small>no radar</small></span></button>
     <button class="pr-marcador-negocio pr-balao-mapa" data-etapa="negociacao">${icone('brilho')}<span><strong><b data-pr-mapa-negociacao>0</b> em negociação</strong><small>Etapa atual</small></span></button>
     <button class="pr-marcador-venda pr-balao-mapa" data-acao="hoje">${icone('verificado')}<span><strong><b data-pr-venda-semana>0</b> vendas</strong><small>nesta semana</small></span></button>
@@ -76,6 +78,7 @@ export function criarAmbiente(alvo) {
  let cena, carregando, visivel = false, destruido = false, estadoAtual, ultimaHora = '';
  const podeAnimar = () => visivel && !document.hidden && !document.body.classList.contains('modal-aberto') && !reduzir.matches && !document.documentElement.classList.contains('movimento-pausado');
  const ritmo = criarRitmo(alvo.querySelector('.pr-ritmo-cena'), {podeAnimar});
+ const marcadores=criarMarcadores(alvo.querySelector('.pr-pinos-acessiveis'),{destacar:id=>cena?.destacarEmpresa(id)});
  function atualizarTempo() {
   const tempo = consultarAmpulheta(inicio ?? Date.now()), texto = tempo.invertendo ? 'Invertendo' : formatarRestante(tempo.restante);
   if (texto !== ultimaHora) {
@@ -97,7 +100,7 @@ export function criarAmbiente(alvo) {
   if (carregando || cena || destruido) return;
   carregando = import('./cena.js').then(({criarCena}) => {
    if (destruido) return;
-   cena = criarCena(alvo, {inicio, preferencias: estadoAtual?.preferencias || {}});
+   cena = criarCena(alvo, {inicio, preferencias: estadoAtual?.preferencias || {}, aoProjetar:pontos=>marcadores.posicionar(pontos)});
    cena?.atualizarEmpresas(estadoAtual?.empresas||[]);
    alvo.classList.add(cena ? 'pr-com-webgl' : 'pr-sem-webgl');
    ajustarAtividade();
@@ -132,6 +135,7 @@ export function criarAmbiente(alvo) {
  return {
   atualizar(estado, atividade, visao, etapas, tipos) {
    estadoAtual = estado;
+   marcadores.atualizar(estado.empresas||[],etapas);
    const foco = obterFoco(estado, visao), botao = alvo.querySelector('[data-pr-foco]');
    for (const chave of ['m', 'id', 'acao']) delete botao.dataset[chave];
    if (foco.m) {botao.dataset.m = foco.m; botao.dataset.id = foco.id || '';} else botao.dataset.acao = foco.acao || 'hoje';
@@ -173,6 +177,6 @@ export function criarAmbiente(alvo) {
    }
    ritmo.atualizar(estado); cena?.atualizarEmpresas(estado.empresas||[]); atualizarTempo(); ajustarAtividade();
   },
-  destruir() {destruido = true; clearInterval(timer); observador.disconnect(); mutacoes.disconnect(); abortar.abort(); ritmo.destruir(); cena?.destruir();}
+  destruir() {destruido = true; clearInterval(timer); observador.disconnect(); mutacoes.disconnect(); abortar.abort(); ritmo.destruir(); marcadores.destruir(); cena?.destruir();}
  };
 }

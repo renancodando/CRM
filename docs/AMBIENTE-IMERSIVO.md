@@ -6,8 +6,8 @@ A experiência fica na **Visão Geral, abaixo da Meta de prospecção**. O globo
 
 - **Ampulheta:** objeto Three.js com vidro, aros metálicos e 5.200 ou 9.000 grãos. A transferência dura exatamente **180.000 ms**. A inversão ocupa mais 4.600 ms; então começa outra transferência de três minutos. A orientação da areia acompanha a gravidade durante o giro. As posições de saída e entrada dos ciclos coincidem, evitando um corte no reinício.
 - **Relógio:** começa quando o ambiente é visto pela primeira vez. Usa o tempo absoluto transcorrido, não soma quadros nem intervalos. Abas suspensas não atrasam o ciclo. Nenhuma ação comercial é disparada pela ampulheta.
-- **Cenário:** diorama central com relevo, cúpula e pedestal em uma camada própria, aplicada a uma malha com profundidade e shader. Os pinos representam empresas cadastradas em posições conceituais; não indicam coordenadas geográficas. As camadas de arte não contêm textos, controles ou dados comerciais.
-- **Água:** shader procedural com ondas em diferentes escalas, normais de superfície, reflexos de luz e dos objetos 3D. Mouse, clique e toque produzem perturbações amortecidas que se sobrepõem. Os painéis compartilham uma superfície contínua.
+- **Cenário:** diorama central com relevo, cúpula e pedestal em uma camada própria, aplicada a uma malha com profundidade e shader. Os até nove pinos representam empresas cadastradas em posições conceituais; não indicam coordenadas geográficas. Cada ponto mostra o nome e a etapa da empresa e abre a central existente por clique, toque ou Enter. A lista completa continua disponível no botão do radar. As camadas de arte não contêm textos, controles ou dados comerciais.
+- **Água:** shader procedural com ondas em diferentes escalas, normais de superfície, reflexos de luz e dos objetos 3D. Mouse, clique e toque produzem perturbações amortecidas que se sobrepõem. Os painéis compartilham uma superfície contínua. O lago dentro da cúpula também recebe as perturbações de mouse e toque; as ondas afetam apenas a água, preservando o relevo.
 - **Foco da Semana:** abre a prioridade que `montarVisaoGeral()` já calcula para o estado atual. Não cria metas, negócios ou compromissos.
 - **Ritmo de Prospecção:** semanas civis de segunda a domingo, semana anterior, mês atual, mês anterior e histórico completo. Conta somente eventos `mensagem-enviada` válidos, confirmados, não revertidos e até o instante atual. Hover, botões dos dias e controle de teclado mostram os valores exatos. A interpolação é monotônica e os efeitos de luz não alteram os pontos da série.
 - **Fluxo Comercial e movimentações:** continuam abrindo as etapas, empresas e o histórico pelos eventos existentes do CRM.
@@ -26,7 +26,8 @@ A composição inferior foi adaptada à estrutura aprovada do CRM. A referência
 | `ambiente/cena.js` | Renderizador compartilhado, luzes, reflexos, qualidade e interações |
 | `ambiente/ampulheta.js` | Vidro, peças metálicas e distribuição dos grãos |
 | `ambiente/agua.js` | Shader da superfície e perturbações |
-| `ambiente/observatorio.js` | Diorama em camadas, movimento da água interna e pinos das empresas |
+| `ambiente/observatorio.js` | Diorama em camadas, entrada discreta, nuvens, ondas no lago e projeção dos pinos |
+| `ambiente/marcadores.js` | Seleção dos pontos reais, botões acessíveis, tooltips e alinhamento com os objetos 3D |
 | `ativos/ambiente/` | Arte ambiental otimizada, sem elementos da interface |
 | `ambiente/foco.js` | Objeto central, materiais e suporte |
 | `ambiente/ritmo.js` | Gráfico SVG, transição de séries, tooltips e teclado |
@@ -48,10 +49,12 @@ As opções existentes de **Preferências → Qualidade gráfica**, **Pausar amb
 
 ```sh
 node testes/ambiente.mjs
+node testes/marcadores.mjs
 node testes/painel-prospeccao.mjs
 node testes/visao-geral.mjs
 node testes/metricas.mjs
 NODE_PATH=/caminho/dos/node_modules CHROMIUM_PATH=/caminho/do/chromium node testes/ambiente-ui.cjs
+NODE_PATH=/caminho/dos/node_modules CHROMIUM_PATH=/caminho/do/chromium node testes/marcadores-ui.cjs
 ```
 
 O teste de navegador precisa de Playwright instalado no ambiente de desenvolvimento e do servidor em `:3111`; `ORBITA_URL` permite outro endereço. A auditoria WCAG adicional usa `@axe-core/playwright` quando disponível. Essas ferramentas não são dependências do CRM publicado.
