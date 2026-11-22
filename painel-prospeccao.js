@@ -191,7 +191,7 @@ function montar(alvo){
  h.push('<section class="pv-m pv-fluxo" aria-labelledby="pv-tit-fluxo"><div class="pv-fundo" aria-hidden="true"></div><canvas class="pv-fx" aria-hidden="true"></canvas>');
  h.push(tx('fluxo',1312,158,19.5,'pv-tit','Fluxo Comercial',' id="pv-tit-fluxo" role="heading" aria-level="3"',-.014)+tx('fluxo',1312,180,14,'pv-sub','Evolução das oportunidades','',-.015));
  ANEIS.forEach(([xr,xn,b,fr,fn],i)=>{h.push('<button class="pv-alvo pv-anel" data-pv-anel="'+i+'" '+caixa('fluxo',...ANEIS_CAIXA[i])+'></button>'+tx('fluxo',xr,b,fr,'pv-anel-rot','',' data-pv-ar="'+i+'" aria-hidden="true"')+tx('fluxo',xn,b,fn,'pv-anel-num','0',' data-pv-an="'+i+'" aria-hidden="true"'));});
- h.push('<figure class="pv-ampulheta" '+caixa('fluxo',1417,190,341,341)+'><canvas aria-hidden="true"></canvas><figcaption class="pv-so-leitor"><span data-pv-relogio>Ampulheta de 2 minutos</span></figcaption></figure>');
+ h.push('<figure class="pv-ampulheta" '+caixa('fluxo',1417,160,341,371)+'><canvas aria-hidden="true"></canvas><figcaption class="pv-so-leitor"><span data-pv-relogio>Ampulheta de 2 minutos</span></figcaption></figure>');
  h.push('</section>');
  /* Ritmo de prospecção */
  h.push('<section class="pv-m pv-ritmo" aria-labelledby="pv-tit-ritmo"><div class="pv-fundo" aria-hidden="true"></div>');

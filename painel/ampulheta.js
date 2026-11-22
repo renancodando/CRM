@@ -8,7 +8,7 @@
 export const ESCOAR=120000,GIRO=7600,CICLO_AMPULHETA=ESCOAR+GIRO;
 const TAU=Math.PI*2;
 const CX=1588.5,CY=359,IX=1520,IY=200,IW=138,IH=320;      // pixels da arte
-const OX=1417,OY=190,HX=1488,HY=182,HW=184,HH=350;           // halo do repouso                                      // canto do canvas (341 × 341)
+const OX=1417,OY=160,HX=1488,HY=182,HW=184,HH=350;           // halo do repouso                                      // canto do canvas (341 × 371)
 const LX=CX-OX,LY=CY-OY;                                   // centro no canvas
 const P=[[209,40],[214,48],[221,48],[226,47],[233,51],[242,56.5],[251,59.5],[262,60.5],[275,60.5],[287,59.5],[296,54],[305,47.5],[314,40.5],[320,35],[326,29.5],[332,26],[338,21.5],[344,16.5],[350,14],[356,11],[359,9.5],[365,11.5],[371,12.5],[380,16.5],[386,21],[392,25.5],[398,30.5],[404,34.5],[410,39.5],[416,43.5],[422,47.5],[431,52.5],[440,56.5],[449,59.5],[458,60.5],[470,60.5],[479,59.5],[485,57.5],[491,54.5],[497,50]];
 const w=y=>{if(y<=P[0][0])return P[0][1];for(let i=1;i<P.length;i++)if(y<=P[i][0]){const [a,wa]=P[i-1],[b,wb]=P[i];return wa+(wb-wa)*(y-a)/(b-a);}return P.at(-1)[1];};
@@ -133,7 +133,7 @@ const poeira=Array.from({length:40},(_,i)=>({x:(ruido(i*4.1)-.5)*130,v:.4+ruido(
 
 export function desenharAmpulheta(ctx,ms){
  const e=estadoAmpulheta(ms),t=ms/1000;
- ctx.clearRect(0,0,341,341);
+ ctx.clearRect(0,0,341,371);
  const rocha=LY+156;  // topo da rocha sob a base, no canvas
  if(!e.girando){
   /* repouso: halo da foto, vidro, areia, fio e respiração de luz */
@@ -159,7 +159,7 @@ export function desenharAmpulheta(ctx,ms){
  /* brilho de fundo */
  ctx.globalCompositeOperation='lighter';
  const brilho=.1+.35*carga*(1-gira*.3)+.4*Math.sin(Math.PI*fase(s,3,3.4));
- let gr=ctx.createRadialGradient(LX,LY+lift,0,LX,LY+lift,160);gr.addColorStop(0,'rgba(255,165,70,'+brilho+')');gr.addColorStop(1,'rgba(255,120,40,0)');ctx.fillStyle=gr;ctx.fillRect(0,0,341,341);
+ let gr=ctx.createRadialGradient(LX,LY+lift,0,LX,LY+lift,160);gr.addColorStop(0,'rgba(255,165,70,'+brilho+')');gr.addColorStop(1,'rgba(255,120,40,0)');ctx.fillStyle=gr;ctx.fillRect(0,0,341,371);
  /* poeira subindo da rocha durante a levitação */
  if(s>.8&&s<4.8)for(const p of poeira){const k=((s-.8)*p.v*.35+p.s)%1;ctx.fillStyle='rgba(255,200,140,'+(.5*(1-k)*anelA)+')';ctx.fillRect(LX+p.x*(1+k*.5),rocha-k*120,1.2,1.2);}
  ctx.globalCompositeOperation='source-over';

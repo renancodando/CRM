@@ -136,7 +136,7 @@ function criar(alvo){
   {el:q('.pv-cupula .pv-fx'),L:867,A:504,f:cupula()},
   {el:q('.pv-fluxo .pv-fx'),L:422,A:448,f:funil()},
   {el:q('.pv-foco .pv-fx'),L:355,A:335,f:foco()},
-  {el:q('.pv-ampulheta canvas'),L:341,A:341,f:(ctx,t,d,ag)=>desenharAmpulheta(ctx,ag)}
+  {el:q('.pv-ampulheta canvas'),L:341,A:371,f:(ctx,t,d,ag)=>desenharAmpulheta(ctx,ag)}
  ];
  const ritmo=criarRitmo(q('.pv-ritmo'),palco);
  const reduzir=matchMedia('(prefers-reduced-motion: reduce)');
