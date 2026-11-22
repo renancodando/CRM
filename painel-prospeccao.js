@@ -148,9 +148,9 @@ export function calcularPainelOrbita(estado,agora=new Date()){
 
 const animarNumero=(el,valor)=>{const de=Number(el.dataset.v||0);el.dataset.v=valor;if(de===valor||matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.classList.contains('movimento-pausado')){el.textContent=inteiro(valor);return;}const t0=performance.now(),dur=900;const passo=a=>{const k=Math.min(1,(a-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=inteiro(Math.round(de+(valor-de)*e));if(k<1)requestAnimationFrame(passo);};requestAnimationFrame(passo);};
 const pilula=({atual,anterior})=>{
- if(!anterior){return atual?['novo','pv-alta','Primeiro registro: não há base no mês anterior']:['—','','Sem registros neste mês e no anterior'];}
+ if(!anterior){return atual?['↑ +'+inteiro(atual),'pv-alta',inteiro(atual)+' a mais que no mês anterior, que não teve registros']:['+0','','Sem registros neste mês e no anterior'];}
  const pct=Math.round((atual-anterior)/anterior*100);
- return [(pct>0?'↑ +':pct<0?'↓ ':'')+pct+'%',pct>0?'pv-alta':pct<0?'pv-queda':'',pct+'% em relação ao mês anterior'];
+ return [(pct>0?'↑ +':pct<0?'↓ −':'')+Math.abs(pct)+'%',pct>0?'pv-alta':pct<0?'pv-queda':'',(pct>0?'+':'')+pct+'% em relação ao mês anterior'];
 };
 const relativo=(quando,agora=Date.now())=>{
  const m=Math.max(0,Math.round((agora-new Date(quando))/60000));
@@ -178,7 +178,7 @@ function montar(alvo){
   h.push('<button class="pv-alvo pv-kpi-linha" '+atr(acao)+' '+caixa('kpi',58,y,334,70)+' data-pv-kpi="'+chave+'"></button>');
     h.push(tx('kpi',136,bn-.5,23.5,'pv-num','0',' data-pv-n="'+chave+'" aria-hidden="true"'));
   h.push(tx('kpi',136,bl,16.5,'pv-rot',rotulo,' aria-hidden="true"',-.035));
-  h.push('<span class="pv-pilula" aria-hidden="true" data-pv-p="'+chave+'" '+caixa('kpi',313,[258,335,412,489][i],64,25)+'>—</span>');
+  h.push('<span class="pv-pilula" aria-hidden="true" data-pv-pc="'+chave+'" '+caixa('kpi',302,[250,327,404,481][i],86,42)+'><img src="ativos/painel/selo.webp" alt=""><b data-pv-p="'+chave+'">—</b></span>');
  });
  h.push('</section>');
  /* Cúpula */
@@ -205,10 +205,6 @@ function montar(alvo){
  h.push('<section class="pv-m pv-foco" aria-label="Foco da semana"><div class="pv-fundo" aria-hidden="true"></div><canvas class="pv-fx" aria-hidden="true"></canvas>');
  h.push('<button class="pv-foco-alvo" data-pv-foco '+caixa('foco',728,600,216,180)+'>'+tx([728,600],836,679,19.3,'pv-foco-1','Foco da Semana')+tx([728,600],836,705,18,'pv-foco-2','',' data-pv="foco"',-.02)+'</button>');
  h.push('</section>');
- /* Movimentações */
- h.push('<section class="pv-m pv-mov" aria-labelledby="pv-tit-mov"><div class="pv-fundo" aria-hidden="true"></div>');
- h.push('<div class="pv-mov-cab"><span class="pv-mov-brilho" aria-hidden="true" '+caixa('mov',1058,595,16,18)+'>'+ipv('brilho')+'</span>'+tx('mov',1082,608.5,18.8,'pv-tit','Movimentações Recentes',' id="pv-tit-mov" role="heading" aria-level="3"',-.03)+'<span class="pv-aovivo" '+caixa('mov',1517,591,76,25)+'><i aria-hidden="true"></i>Ao vivo</span></div>');
- h.push('<ol class="pv-lista" data-pv-lista></ol></section>');
  h.push('</div>');
  alvo.innerHTML=h.join('');
 }
@@ -218,7 +214,7 @@ function atualizar(alvo,d,estado,visao){
  for(const [chave,rotulo] of ROTULOS_KPI.map(x=>[x[0],x[1]])){
   const k=d.kpis[chave],[texto,classe,titulo]=pilula(k);
   animarNumero($('[data-pv-n="'+chave+'"]'),k.atual||0);
-  const p=$('[data-pv-p="'+chave+'"]');p.textContent=texto;p.className='pv-pilula '+classe;p.title=titulo;
+  $('[data-pv-p="'+chave+'"]').textContent=texto;const p=$('[data-pv-pc="'+chave+'"]');p.className='pv-pilula '+classe;p.title=titulo;
   $('[data-pv-kpi="'+chave+'"]').setAttribute('aria-label',inteiroF(k.atual)+' '+rotulo.toLowerCase()+' neste mês. '+titulo+'.');
  }
  animarNumero($('[data-pv="radar"]'),d.radar);
@@ -233,15 +229,6 @@ function atualizar(alvo,d,estado,visao){
  const foco=$('[data-pv-foco]');delete foco.dataset.acao;delete foco.dataset.m;delete foco.dataset.id;
  if(a.m){foco.dataset.m=a.m;foco.dataset.id=a.id||'';}else foco.dataset.acao=a.acao;
  $('[data-pv="foco"]').textContent=a.titulo;foco.setAttribute('aria-label','Foco da semana: '+a.titulo+'. '+(a.descricao||''));foco.title=a.descricao||'';
- /* Movimentações */
- const emp=new Map((estado.empresas||[]).map(e=>[e.id,e]));
- const lista=$('[data-pv-lista]');
- lista.innerHTML=d.movimentos.length?d.movimentos.map((e,i)=>{const [desc,des]=DESENHOS_MOV[e.chave],em=emp.get(e.empresaId),nome=em?.nome||'Empresa removida',y=[626,664,702,741][i];
-  return '<li class="pv-mov-item" style="--i:'+i+'"><'+(em?'button data-empresa="'+t(em.id)+'"':'div')+' class="pv-mov-linha" '+caixa('mov',1076,y,520,38)+'>'
-  +'<span class="pv-ladrilho pv-mini" aria-hidden="true" '+caixa([1076,y],1084,y+3,38,34)+'>'+ipv(des)+'</span>'
-  +tx([1076,y],1134,648.5+i*38.4,13.4,'pv-mov-nome',t(nome),'',-.02)+tx([1076,y],1314,648.5+i*38.4,12.4,'pv-mov-desc',t(desc),'',-.02)
-  +tx([1076,y],1589,648.5+i*38.4,12.8,'pv-mov-tempo','<time datetime="'+t(e.quando)+'">'+t(relativo(e.quando))+'</time>')
-  +'</'+(em?'button':'div')+'></li>';}).join(''):'<li class="pv-mov-vazio">Nenhuma mensagem ou interação confirmada ainda. As novas ações registradas no CRM aparecem aqui.</li>';
  /* Ritmo: dados entregues ao gráfico animado. */
  const dias=$('.pv-dias');
  d.semanaDias.forEach((dia,i)=>{const b=dias.children[i];b.setAttribute('aria-label',dia.nome+': '+dia.quantidade+(dia.quantidade===1?' mensagem confirmada':' mensagens confirmadas')+(dia.futuro?' (dia ainda não chegou)':''));b.classList.toggle('pv-hoje',i===d.hojeIndice);b.classList.toggle('pv-futuro',dia.futuro);});

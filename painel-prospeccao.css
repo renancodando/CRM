@@ -16,7 +16,7 @@
 .pv-palco{position:relative;container-type:inline-size;display:grid;gap:14px;padding:14px}
 .pv-m{position:relative;container-type:inline-size;min-width:0}
 .pv-kpi{--k:calc(100cqw / 356)}.pv-cupula{--k:calc(100cqw / 867)}.pv-fluxo{--k:calc(100cqw / 422)}
-.pv-ritmo{--k:calc(100cqw / 598)}.pv-foco{--k:calc(100cqw / 355)}.pv-mov{--k:calc(100cqw / 574)}
+.pv-ritmo{--k:calc(100cqw / 598)}.pv-foco{--k:calc(100cqw / 355)}
 .pv-fundo,.pv-fx,.pv-placa,.pv-agua{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .pv-fx{z-index:2}
 .pv-placa,.pv-agua{display:none}
@@ -31,14 +31,19 @@
 /* Indicadores */
 .pv-kpi{aspect-ratio:356/322;width:100%;max-width:520px;justify-self:center}
 .pv-kpi .pv-fundo{background:url(ativos/painel/cena.webp) no-repeat;background-size:calc(1672 * var(--k)) auto;background-position:calc(-44 * var(--k)) calc(-144 * var(--k));border-radius:calc(22 * var(--k))}
-.pv-num{font-weight:500;color:#f7dfc6;letter-spacing:-.01em;font-variant-numeric:tabular-nums;text-shadow:0 0 14px #ffb06a2e}
-.pv-rot{color:#cbd2d0}
+.pv-num{font-weight:500;color:#f8d6a8;letter-spacing:-.01em;font-variant-numeric:tabular-nums;text-shadow:0 0 14px #ffb06a2e}
+.pv-rot{color:#c9c9c9}
 .pv-kpi-linha{z-index:4;border-radius:calc(14 * var(--k));transition:background .35s,box-shadow .35s}
 .pv-kpi-linha:hover{background:radial-gradient(80% 120% at 20% 50%,#f3a45e1c,transparent 70%);box-shadow:inset 0 0 0 1px #f3a45e2e}
-.pv-pilula{z-index:3;display:grid;place-items:center;border-radius:999px;font-size:max(calc(12.5 * var(--k)),10px);font-weight:600;color:#7ff0cb;letter-spacing:.01em;background:linear-gradient(180deg,#1b5a4ccc,#0e3a33d9);border:1px solid #6be6c247;box-shadow:inset 0 1px 0 #b6fff01f,0 0 calc(14 * var(--k)) #3fe0b828;white-space:nowrap;pointer-events:none;animation:pv-pilula 4.5s ease-in-out infinite}
-.pv-pilula.pv-queda{color:#ffb39a;background:linear-gradient(180deg,#5a2a1bcc,#3a1a10d9);border-color:#ff9f7d47}
-.pv-pilula:not(.pv-alta):not(.pv-queda){color:#b9c8c5;background:linear-gradient(180deg,#233a38cc,#13201fd9);border-color:#9fc8c033}
-@keyframes pv-pilula{50%{box-shadow:inset 0 1px 0 #b6fff01f,0 0 calc(22 * var(--k)) #3fe0b84a}}
+.pv-pilula{z-index:3;display:grid;place-items:center;pointer-events:none;overflow:visible}
+.pv-pilula img{position:absolute;inset:0;width:100%;height:100%;transition:filter .4s}
+.pv-pilula b{position:relative;font-weight:500;font-size:max(calc(13.4 * var(--k)),9px);line-height:1;letter-spacing:0;color:#3fd4c2;text-shadow:0 0 calc(5 * var(--k)) #1fd6b066;white-space:nowrap;margin-top:calc(-2.5 * var(--k));font-variant-numeric:tabular-nums}
+.pv-pilula:after{content:"";position:absolute;left:calc(12 * var(--k));top:calc(9 * var(--k));width:calc(62 * var(--k));height:calc(24 * var(--k));border-radius:999px;background:linear-gradient(100deg,transparent 30%,#d8fff533 47%,#ffffff40 50%,transparent 64%) no-repeat;background-size:260% 100%;mix-blend-mode:screen;animation:pv-selo-brilho 5.5s ease-in-out infinite;animation-delay:calc(var(--y) * -.013s)}
+@keyframes pv-selo-brilho{0%,35%{background-position:130% 0}75%,100%{background-position:-40% 0}}
+.pv-pilula.pv-queda img{filter:hue-rotate(185deg) saturate(1.35) brightness(1.05)}
+.pv-pilula.pv-queda b{color:#ffb39a;text-shadow:0 0 calc(6 * var(--k)) #ff7a4a99}
+.pv-pilula:not(.pv-alta):not(.pv-queda) img{filter:grayscale(.9) brightness(.85)}
+.pv-pilula:not(.pv-alta):not(.pv-queda) b{color:#c3cfcc;text-shadow:none}
 .pv-kpi:after{content:"";position:absolute;z-index:2;pointer-events:none;left:calc(5 * var(--k));top:calc(6 * var(--k));width:calc(346 * var(--k));height:calc(312 * var(--k));border-radius:calc(20 * var(--k));background:linear-gradient(105deg,transparent 35%,#ffffff12 48%,#7ff0cb0d 52%,transparent 65%) no-repeat;background-size:250% 100%;animation:pv-brilho 7s ease-in-out infinite}
 @keyframes pv-brilho{0%{background-position:150% 0}55%,100%{background-position:-60% 0}}
 
@@ -73,10 +78,9 @@
 
 /* Ritmo */
 .pv-ritmo{border-radius:20px;background:linear-gradient(160deg,#0f2a27e6,#071816f0 55%,#0b1f1de6);border:1px solid #84f0d83a;box-shadow:inset 0 1px 0 #c8fff01a,0 16px 30px #0006;padding:16px 14px 12px}
-.pv-ritmo .pv-fundo,.pv-mov .pv-fundo,.pv-foco .pv-fundo{display:block}
-.pv-ritmo .pv-fundo,.pv-mov .pv-fundo{display:none}
+.pv-ritmo .pv-fundo{display:none}
+.pv-ritmo-cab .pv-t{position:static;height:auto;line-height:1.25;font-size:inherit}
 .pv-ritmo-cab{position:relative;padding-left:62px;min-height:46px}
-.pv-ritmo-cab .pv-t,.pv-mov-cab .pv-t{position:static;height:auto;line-height:1.25;font-size:inherit}
 .pv-ritmo-cab .pv-tit{font-size:17px}.pv-ritmo-cab .pv-sub{font-size:12.5px;margin-top:3px}
 .pv-pulso{position:absolute;z-index:4;left:8px;top:12px;width:56px;height:44px}
 .pv-pulso img{display:block;width:100%;height:100%}
@@ -104,29 +108,6 @@
 .pv-foco-2{color:#ffc583;text-shadow:0 0 10px #ff8a3a88,0 1px 2px #000c}
 
 /* Movimentações */
-.pv-mov{border-radius:20px;background:linear-gradient(160deg,#10231fe6,#081513f0 60%,#0c1c1ae6);border:1px solid #84f0d83a;box-shadow:inset 0 1px 0 #c8fff01a,0 16px 30px #0006;padding:14px}
-.pv-mov-cab{position:relative;display:flex;align-items:center;gap:10px;padding-right:90px;min-height:28px}
-.pv-mov-cab .pv-tit{font-size:16.5px}
-.pv-mov-brilho{position:static!important;width:15px!important;height:17px!important;color:#ffb36a;filter:drop-shadow(0 0 5px #ff9a4a);animation:pv-cintila 2.6s ease-in-out infinite}
-.pv-mov-brilho .pv-icone{fill:currentColor;stroke:none}
-@keyframes pv-cintila{50%{transform:scale(.7) rotate(45deg);opacity:.7}}
-.pv-aovivo{position:absolute!important;right:0;left:auto!important;top:50%!important;translate:0 -50%;width:auto!important;height:auto!important;display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;background:#0f3a33cc;border:1px solid #6be6c23d;font-size:12.5px;color:#c6f6e8;white-space:nowrap}
-.pv-aovivo i{width:7px;height:7px;border-radius:50%;background:#3df0b4;box-shadow:0 0 0 0 #3df0b4aa;animation:pv-vivo 1.8s ease-out infinite}
-@keyframes pv-vivo{70%{box-shadow:0 0 0 7px #3df0b400}100%{box-shadow:0 0 0 0 #3df0b400}}
-.pv-lista{list-style:none;margin:10px 0 0;padding:0}
-.pv-mov-item{animation:pv-entra .6s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i) * 90ms)}
-@keyframes pv-entra{from{opacity:0;translate:0 8px}}
-.pv-mov-linha{position:relative!important;left:auto!important;top:auto!important;width:100%!important;height:auto!important;display:grid;grid-template-columns:36px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:11px;row-gap:2px;align-items:center;padding:9px 4px;border-top:1px solid #8ff0da1a;border-radius:0}
-.pv-mov-item:first-child .pv-mov-linha{border-top:0}
-.pv-mov-linha .pv-t{position:static;height:auto;line-height:1.3;font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis}
-.pv-mini{position:relative!important;left:auto!important;top:auto!important;width:36px!important;height:34px!important;grid-row:1/3}
-.pv-mov-nome{grid-column:2;color:#f0f4f2;font-weight:500;font-size:14px!important}
-.pv-mov-desc{grid-column:2;grid-row:2;color:var(--pv-suave);font-size:12.5px!important}
-.pv-mov-tempo{grid-column:3;grid-row:1/3;color:#cfd9d6;font-size:12.5px!important}
-button.pv-mov-linha:hover{background:linear-gradient(90deg,#f3a45e14,transparent 70%)}
-.pv-ladrilho{display:grid;place-items:center;border-radius:10px;color:#ffb36e;background:radial-gradient(110% 95% at 25% 15%,#9a5626,#4a2812 45%,#1c120b 80%);border:1px solid #f6a76459;box-shadow:inset 0 1px 0 #ffd3a44d,inset 0 -6px 10px #0006,0 0 14px #ff8a3a40;padding:6px}
-.pv-ladrilho .pv-icone{filter:drop-shadow(0 0 3px #ff9a4a99)}
-.pv-mov-vazio{padding:14px 4px 6px;color:var(--pv-suave);font-size:13px;line-height:1.5}
 
 /* Celular: balões da cúpula viram três cartões logo abaixo da ilha */
 .pv-palco:not(.pv-replica) .pv-cupula{margin-bottom:clamp(66px,19cqw,84px)}
@@ -140,7 +121,8 @@ button.pv-mov-linha:hover{background:linear-gradient(90deg,#f3a45e14,transparent
  .pv-palco:not(.pv-replica){grid-template-columns:1fr 1fr;align-items:start}
  .pv-palco:not(.pv-replica) .pv-balao .pv-t{font-size:14px}.pv-palco:not(.pv-replica) .pv-balao .pv-b2{font-size:12px}
  .pv-palco:not(.pv-replica) .pv-cupula,.pv-palco:not(.pv-replica) .pv-ritmo{grid-column:1/-1}
- .pv-palco:not(.pv-replica) .pv-fluxo{order:1}.pv-palco:not(.pv-replica) .pv-cupula{order:2}.pv-palco:not(.pv-replica) .pv-ritmo{order:3}.pv-palco:not(.pv-replica) .pv-foco{order:4}.pv-palco:not(.pv-replica) .pv-mov{order:5;align-self:center}
+ .pv-palco:not(.pv-replica) .pv-foco{grid-column:1/-1}
+ .pv-palco:not(.pv-replica) .pv-fluxo{order:1}.pv-palco:not(.pv-replica) .pv-cupula{order:2}.pv-palco:not(.pv-replica) .pv-ritmo{order:3}.pv-palco:not(.pv-replica) .pv-foco{order:4}
 }
 
 /* Desktop: a composição inteira da referência */
@@ -154,25 +136,15 @@ button.pv-mov-linha:hover{background:linear-gradient(90deg,#f3a45e14,transparent
 .pv-replica .pv-fluxo{left:calc(1250 * var(--u) * 1px);top:calc(32 * var(--u) * 1px);width:calc(422 * var(--u) * 1px);height:calc(448 * var(--u) * 1px)}
 .pv-replica .pv-ritmo{left:calc(44 * var(--u) * 1px);top:calc(490 * var(--u) * 1px);width:calc(598 * var(--u) * 1px);height:calc(220 * var(--u) * 1px)}
 .pv-replica .pv-foco{left:calc(660 * var(--u) * 1px);top:calc(469 * var(--u) * 1px);width:calc(355 * var(--u) * 1px);height:calc(335 * var(--u) * 1px)}
-.pv-replica .pv-mov{left:calc(1048 * var(--u) * 1px);top:calc(489 * var(--u) * 1px);width:calc(574 * var(--u) * 1px);height:calc(221 * var(--u) * 1px)}
 .pv-replica .pv-ritmo-cab{position:static;padding:0;min-height:0}
-.pv-replica .pv-ritmo-cab .pv-t,.pv-replica .pv-mov-cab .pv-t{position:absolute;height:0;line-height:0;font-size:var(--fs)}
+.pv-replica .pv-ritmo-cab .pv-t{position:absolute;height:0;line-height:0;font-size:var(--fs)}
 .pv-replica .pv-pulso{left:calc(var(--x) * var(--k));top:calc(var(--y) * var(--k));width:calc(var(--w) * var(--k));height:calc(var(--h) * var(--k))}
 .pv-replica .pv-grafico{position:absolute;margin:0;left:calc(4 * var(--k));top:calc(24 * var(--k));width:calc(590 * var(--k));height:calc(156 * var(--k))}
 .pv-replica .pv-dias{display:block;margin:0}
 .pv-replica .pv-dia{position:absolute;left:calc(var(--cx) * var(--k));top:calc(182 * var(--k));width:calc(64 * var(--k));height:calc(23 * var(--k));margin-left:calc(-32 * var(--k));font-size:max(calc(13.5 * var(--k)),10px)}
-.pv-replica .pv-mov-cab{position:static;padding:0;min-height:0;display:block}
-.pv-replica .pv-mov-brilho{position:absolute!important;left:calc(var(--x) * var(--k));top:calc(var(--y) * var(--k));width:calc(16 * var(--k))!important;height:calc(18 * var(--k))!important}
-.pv-replica .pv-aovivo{left:calc(var(--x) * var(--k))!important;top:calc(var(--y) * var(--k))!important;right:auto;translate:none;width:calc(var(--w) * var(--k))!important;height:calc(var(--h) * var(--k))!important;padding:0 0 0 calc(10 * var(--k));gap:calc(8 * var(--k));font-size:max(calc(13 * var(--k)),10px)}
-.pv-replica .pv-aovivo i{width:calc(8 * var(--k));height:calc(8 * var(--k))}
-.pv-replica .pv-lista{margin:0}
-.pv-replica .pv-mov-linha{position:absolute!important;display:block;padding:0;border:0;left:calc(var(--x) * var(--k))!important;top:calc(var(--y) * var(--k))!important;width:calc(var(--w) * var(--k))!important;height:calc(var(--h) * var(--k))!important;border-radius:calc(8 * var(--k))}
-.pv-replica .pv-mov-linha .pv-t{position:absolute;height:0;line-height:0;font-size:var(--fs)!important;overflow:visible}
-.pv-replica .pv-mov-tempo{transform:translateX(-100%)}
-.pv-replica .pv-mini{position:absolute!important;left:calc(var(--x) * var(--k))!important;top:calc(var(--y) * var(--k))!important;width:calc(var(--w) * var(--k))!important;height:calc(var(--h) * var(--k))!important;padding:calc(7 * var(--k));border-radius:calc(9 * var(--k))}
-.pv-replica .pv-mov-vazio{position:absolute;left:calc(36 * var(--k));top:calc(64 * var(--k));right:calc(40 * var(--k));font-size:max(calc(14 * var(--k)),11px)}
 
 /* Movimento pausado ou reduzido */
 :root.movimento-pausado .pv-painel *,:root.movimento-pausado .pv-painel *:after,:root.movimento-pausado .pv-painel *:before{animation-play-state:paused!important}
 @media (prefers-reduced-motion:reduce){.pv-painel *,.pv-painel *:before,.pv-painel *:after{animation:none!important;transition:none!important}}
-body.alto-contraste .pv-sub,body.alto-contraste .pv-rot,body.alto-contraste .pv-mov-desc{color:#e3ecea}
+
+body.alto-contraste .pv-sub,body.alto-contraste .pv-rot{color:#e3ecea}
