@@ -50,8 +50,8 @@ function linha(ctx,ys,meiaFonte,yd,meiaDest,alt=1){
  ctx.drawImage(i,(CX-meiaFonte-IX)*k,(ys-IY)*k,meiaFonte*2*k,2,-meiaDest,yd-CY,meiaDest*2,alt);
 }
 function areia(ctx,f,t,intens=1){
- if(!pronta(IMG.areia))return;
  const g=geometria(f);
+ if(!pronta(IMG.areia))return g;
  ctx.save();caminhoInterior(ctx);ctx.clip();
  /* bulbo de cima: superfície remapeada (297 → nível, 358 → gargalo) */
  if(!g.vazio){const L=g.lt,alt=NECK-L;for(let y=L;y<NECK;y+=.5){const s=297+(y-L)/alt*61;linha(ctx,s,wi(s),y,wi(y),.75);}
@@ -79,7 +79,7 @@ function areia(ctx,f,t,intens=1){
 }
 /* fio de areia, grãos caindo e respingos no monte */
 function fio(ctx,g,t,f){
- if(g.vazio)return;
+ if(!g||g.vazio)return;
  const y0=NECK-CY+1,y1=g.apice-CY,len=y1-y0;if(len<=0)return;
  ctx.save();ctx.globalCompositeOperation='lighter';
  let gr=ctx.createLinearGradient(0,y0,0,y1);gr.addColorStop(0,'rgba(255,238,200,.95)');gr.addColorStop(.6,'rgba(255,210,150,.75)');gr.addColorStop(1,'rgba(255,190,110,.9)');

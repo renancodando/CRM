@@ -146,8 +146,9 @@ function criar(alvo){
  const replica=()=>palco.classList.contains('pv-replica');
  function quadroDe(agora){
   const t=(agora-inicio)/1000;
-  for(const c of camadas){if(!c.el||(c.so==='replica'&&!replica()))continue;const a=ajustar(c.el,c.L,c.A,qual);if(!a)continue;c.f(a.ctx,parado()?4.2:t,dados,agora-inicio);}
-  ritmo.desenhar(parado()?4.2:t,qual,parado());
+  /* uma camada com problema não interrompe as outras nem o laço */
+  for(const c of camadas){if(!c.el||(c.so==='replica'&&!replica()))continue;try{const a=ajustar(c.el,c.L,c.A,qual);if(!a)continue;c.f(a.ctx,parado()?4.2:t,dados,agora-inicio);}catch(erro){if(!c.avisou){c.avisou=1;console.warn('Painel: camada',erro);}}}
+  try{ritmo.desenhar(parado()?4.2:t,qual,parado());}catch(erro){if(!ritmo.avisou){ritmo.avisou=1;console.warn('Painel: ritmo',erro);}}
   const ea=estadoAmpulheta(agora-inicio),fig=q('[data-pv-relogio]');
   if(fig){const s=Math.ceil(ea.restante/1000),txt=ea.girando?'Ampulheta girando para um novo ciclo de 2 minutos':'Ampulheta: '+Math.floor(s/60)+' min '+(s%60)+' s restantes de 2 minutos';if(s%10===0&&fig.textContent!==txt)fig.textContent=txt;}
  }
