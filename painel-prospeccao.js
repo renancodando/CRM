@@ -195,9 +195,9 @@ function montar(alvo){
  h.push('</section>');
  /* Ritmo de prospecção */
  h.push('<section class="pv-m pv-ritmo" aria-labelledby="pv-tit-ritmo"><div class="pv-fundo" aria-hidden="true"></div>');
- h.push('<svg class="pv-pulso" viewBox="0 0 46 30" aria-hidden="true" '+caixa('ritmo',65,599,46,30)+'><path pathLength="100" d="M1 16h11l3-5 4 14 5-24 5 26 4-15 3 4h9"/></svg>');
+ h.push('<span class="pv-pulso" aria-hidden="true" '+caixa('ritmo',58,590,62,48)+'><img src="ativos/painel/ritmo-icone.webp" alt=""><svg viewBox="0 0 62 48"><path pathLength="100" d="M12 26H25L28 22L31 26L36 8L43 40L47 22L50 26H56"/></svg></span>');
  h.push('<div class="pv-ritmo-cab">'+tx('ritmo',135,611.8,19,'pv-tit','Ritmo de Prospecção',' id="pv-tit-ritmo" role="heading" aria-level="3"',-.03)+tx('ritmo',135,630,13.5,'pv-sub','Atividade ao longo da semana','',-.036)+'</div>');
- h.push('<div class="pv-grafico" '+caixa('ritmo',48,636,590,114)+'><canvas aria-hidden="true"></canvas><div class="pv-dica" hidden></div></div>');
+ h.push('<div class="pv-grafico" '+caixa('ritmo',48,600,590,156)+'><canvas aria-hidden="true"></canvas><div class="pv-dica" hidden></div></div>');
  h.push('<div class="pv-dias" role="group" aria-label="Mensagens confirmadas por dia desta semana">');
  DIAS_X.forEach((x,i)=>h.push('<button class="pv-dia" data-pv-dia="'+i+'" style="--cx:'+(x-ORIGEM.ritmo[0])+'"><span>'+['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'][i]+'</span></button>'));
  h.push('</div></section>');
